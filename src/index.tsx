@@ -10,6 +10,8 @@ const LINKING_ERROR =
 interface GleapUserSession {
   id: string;
   hash: string;
+  email?: string;
+  name?: string;
 }
 
 type GleapSdkType = {
@@ -25,16 +27,13 @@ type GleapSdkType = {
   clearIdentity(): void;
   setApiUrl(apiUrl: string): void;
   setWidgetUrl(widgetUrl: string): void;
-  setLanguage(language: string): void;
   attachCustomData(customData: any): void;
   setCustomData(key: string, value: string): void;
   removeCustomDataForKey(key: string): void;
   clearCustomData(): void;
-  startNetworkLogging(): void;
   registerCustomAction(
     customActionCallback: (data: { name: string }) => void
   ): void;
-  logEvent(name: string): void;
   logEvent(name: string, data: any): void;
   //TODO: FILETYPE?
   addAttachment(file: any): void;
