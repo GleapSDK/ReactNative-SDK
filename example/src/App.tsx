@@ -1,18 +1,22 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-gleapsdk';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import GleapSDK from 'react-native-gleapsdk';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
-
   React.useEffect(() => {
-    multiply(3, 7).then(setResult);
+    GleapSDK.initialize('7qnF4SaW8daomwcBLdXAd8ahlIYJtxos');
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <TouchableOpacity
+        onPress={() => {
+          GleapSDK.startFeedbackFlow();
+        }}
+      >
+        <Text>HOI</Text>
+      </TouchableOpacity>
     </View>
   );
 }
