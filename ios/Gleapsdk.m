@@ -201,14 +201,24 @@ RCT_EXPORT_METHOD(setWidgetUrl: (NSString *)apiUrl)
     [Gleap setWidgetUrl: apiUrl];
 }
 
+RCT_EXPORT_METHOD(logEvent:(NSString *)name andData:(NSDictionary *)data)
+{
+    [Gleap logEvent: name withData: data];
+}
+
 RCT_EXPORT_METHOD(removeAllAttachments)
 {
     [Gleap removeAllAttachments];
 }
 
-RCT_EXPORT_METHOD(logEvent:(NSString *)name andData:(NSDictionary *)data)
+RCT_EXPORT_METHOD(addAttachment:(NSString *)base64file withFileName:(NSString *)fileName)
 {
-    [Gleap logEvent: name withData: data];
+    NSData *fileData = [[NSData alloc] initWithBase64EncodedString: base64file options:0];
+    if (fileData != nil) {
+        [Gleap addAttachmentWithData: fileData andName: fileName];
+    } else {
+        NSLog(@"[Gleap]: Invalid base64 string passed.");
+    }
 }
 
 @end
