@@ -17,7 +17,7 @@ type GleapSdkType = {
   startFeedbackFlow(): void;
   sendSilentBugReport(
     description: string,
-    priority: 'LOW' | 'MEDIUM' | 'HIGH'
+    severity: 'LOW' | 'MEDIUM' | 'HIGH'
   ): void;
   identify(userId: string, userProperties: GleapUserProperty): void;
   clearIdentity(): void;
