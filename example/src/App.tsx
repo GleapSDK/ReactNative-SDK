@@ -12,9 +12,10 @@ export default function App() {
     GleapSDK.removeCustomDataForKey('b');
     GleapSDK.logEvent('ARE', { key: 'MOP' });
     GleapSDK.addAttachment('/data/media/0/Download/Untitled-1.png');
+    fetch('http://example.com/movies.json');
   }, []);
 
-  console.log(" JFKLJSLK");
+  console.log(' JFKLJSLK');
   return (
     <View style={styles.container}>
       <TouchableOpacity

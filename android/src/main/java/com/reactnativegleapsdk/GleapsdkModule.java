@@ -60,7 +60,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         Gleap.getInstance().setFeedbackWillBeSentCallback(new FeedbackWillBeSentCallback() {
           @Override
           public void flowInvoced() {
-            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("bugWillBeSent", null);
+            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("feedbackWillBeSent", null);
           }
         });
         Gleap.initialize(sdkKey, activity.getApplication());
