@@ -33,6 +33,8 @@ type GleapSdkType = {
   logEvent(name: string, data: any): void;
   addAttachment(base64file: string, fileName: string): void;
   removeAllAttachments(): void;
+  startNetworkLogging(): void;
+  stopNetworkLogging(): void;
 };
 
 const GleapSdk = NativeModules.Gleapsdk
@@ -47,12 +49,28 @@ const GleapSdk = NativeModules.Gleapsdk
     );
 const networkLogger = new GleapNetworkIntercepter();
 
+GleapSdk.startNetworkLogging = () => {
+  networkLogger.start();
+};
+
+GleapSdk.stopNetworkLogging = () => {
+  networkLogger.setStopped(true);
+};
+
 if (GleapSdk) {
   var callbacks: any[] = [];
+
   GleapSdk.registerCustomAction = (customActionCallback: any) => {
     callbacks.push(customActionCallback);
   };
+
   const gleapEmitter = new NativeEventEmitter(GleapSdk);
+  gleapEmitter.addListener('configLoaded', (config) => {
+    const configJSON = JSON.parse(config);
+    if (configJSON.enableConsoleLogs) {
+      GleapSdk.startNetworkLogging();
+    }
+  });
   gleapEmitter.addListener('bugWillBeSent', () => {
     // Push the network log to the native SDK.
     const requests = networkLogger.getRequests();
@@ -62,6 +80,7 @@ if (GleapSdk) {
       GleapSdk.attachNetworkLog(requests);
     }
   });
+
   gleapEmitter.addListener('customActionTriggered', (data) => {
     if (isJsonString(data)) {
       data = JSON.parse(data);

@@ -8,7 +8,6 @@ import android.os.Handler;
 import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactApplication;
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -23,9 +22,12 @@ import org.json.JSONObject;
 import java.io.File;
 
 import io.gleap.APPLICATIONTYPE;
+import io.gleap.ConfigLoadedCallback;
+import io.gleap.CustomActionCallback;
 import io.gleap.FeedbackSentCallback;
 import io.gleap.FeedbackWillBeSentCallback;
 import io.gleap.Gleap;
+import io.gleap.GleapUserProperties;
 import io.gleap.RequestType;
 
 @ReactModule(name = GleapsdkModule.NAME)
@@ -62,6 +64,27 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           }
         });
         Gleap.initialize(sdkKey, activity.getApplication());
+        Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
+          @Override
+          public void configLoaded(JSONObject jsonObject) {
+            System.out.println(jsonObject);
+            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("configLoaded", jsonObject.toString());
+          }
+        });
+
+        Gleap.getInstance().registerCustomAction(new CustomActionCallback() {
+          @Override
+          public void invoke(String message) {
+            JSONObject obj = new JSONObject();
+            try {
+              obj.put("name", message);
+            } catch (JSONException e) {
+              e.printStackTrace();
+            }
+
+            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("customActionTriggered", obj.toString());
+          }
+        });
         Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
           @Override
           public void close() {
@@ -132,8 +155,8 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void identify(String userid, String hash, String name, String email) {
-    GleapUserSession gleapUserSession = new GleapUserSession(userid, hash, name, email);
-    Gleap.getInstance().identifyUser(gleapUserSession);
+    GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
+    Gleap.getInstance().identifyUser(userid, gleapUserSession);
   }
 
   @ReactMethod
@@ -303,6 +326,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
       System.err.println("Gleap: The file is not existing.");
     }
   }
+
+  @ReactMethod
+  public void registerConfigLoadedAction(ConfigLoadedCallback configLoadedCallback) {
+    Gleap.getInstance().setConfigLoadedCallback(configLoadedCallback);
+  };
 
   /**
    * Show dev menu after shaking the phone.

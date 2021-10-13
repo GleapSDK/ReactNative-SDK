@@ -1,20 +1,11 @@
 import * as React from 'react';
 
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import GleapSDK, { GleapUserSession } from 'react-native-gleapsdk';
+import GleapSDK from 'react-native-gleapsdk';
 
 export default function App() {
   React.useEffect(() => {
-    const session: GleapUserSession = {
-      id: '12',
-      hash: '3ec01e9f99aa53258626cd85bde0d3af859004f904c2ab30725de2720196526e',
-      email: 'e',
-      name: 'B',
-    };
-    GleapSDK.initializeWithUserSession(
-      'UkzcTBCsX5nmsu2cV5hEcENkNuAT838O',
-      session
-    );
+    GleapSDK.initialize('UkzcTBCsX5nmsu2cV5hEcENkNuAT838O');
     GleapSDK.attachCustomData({ key: 'YOU' });
     GleapSDK.setCustomData('a', 'B');
     GleapSDK.setCustomData('b', 'c');
@@ -23,6 +14,7 @@ export default function App() {
     GleapSDK.addAttachment('/data/media/0/Download/Untitled-1.png');
   }, []);
 
+  console.log(" JFKLJSLK");
   return (
     <View style={styles.container}>
       <TouchableOpacity
