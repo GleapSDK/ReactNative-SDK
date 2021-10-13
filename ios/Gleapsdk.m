@@ -37,9 +37,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token andActivationMethod:(NSString *)a
 {
     // Initialize the SDK
     if ([activationMethod isEqualToString: @"SCREENSHOT"]) {
-        [Gleap initWithToken: token andActivationMethod: SCREENSHOT];
-    } else {
-        [Gleap initWithToken: token andActivationMethod: NONE];
+        [[Gleap sharedInstance] setActivationMethods: @[@(SCREENSHOT)]];
     }
     
     if ([activationMethod isEqualToString: @"SHAKE"]) {
@@ -64,9 +62,7 @@ RCT_EXPORT_METHOD(initializeMany:(NSString *)token andActivationMethods:(NSArray
 {
     // Initialize the SDK
     if ([self activationMethods: activationMethods contain: @"SCREENSHOT"]) {
-        [Gleap initWithToken: token andActivationMethod: SCREENSHOT];
-    } else {
-        [Gleap initWithToken: token andActivationMethod: NONE];
+        [[Gleap sharedInstance] setActivationMethods: @[@(SCREENSHOT)]];
     }
     
     if ([self activationMethods: activationMethods contain: @"SHAKE"]) {

@@ -1,6 +1,7 @@
 #import <React/RCTBridgeModule.h>
 #import <Gleap/Gleap.h>
+#import <React/RCTEventEmitter.h>
 
-@interface Gleapsdk : NSObject <RCTBridgeModule, GleapDelegate>
+@interface Gleapsdk : RCTEventEmitter <RCTBridgeModule, GleapDelegate>
 
 @end
