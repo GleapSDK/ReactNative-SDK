@@ -84,6 +84,63 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
+   * Auto-configures the Gleap SDK from the remote config.
+   *
+   * @param sdkKey      The SDK key, which can be found on dashboard.Gleap.io
+   */
+  @ReactMethod
+  public void initializeWithUserSession(String sdkKey, ReadableMap gleapUserSession) {
+    try {
+      Activity activity = getReactApplicationContext()
+        .getCurrentActivity();
+      if (activity != null) {
+        Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
+        Gleap.getInstance().setBugWillBeSentCallback(new BugWillBeSentCallback() {
+          @Override
+          public void flowInvoced() {
+            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("bugWillBeSent", null);
+          }
+        });
+        Gleap.initialize(sdkKey, activity.getApplication());
+        JSONObject jsonObject = convertMapToJson(gleapUserSession);
+        String id = "";
+        String hash = "";
+        String email = "";
+        String name = "";
+        if(jsonObject.has("id")) {
+            id = jsonObject.getString("id");
+        }
+        if(jsonObject.has("hash")) {
+          hash = jsonObject.getString("hash");
+        }
+        if(jsonObject.has("email")) {
+          email = jsonObject.getString("email");
+        }
+        if(jsonObject.has("name")) {
+          name = jsonObject.getString("name");
+        }
+        GleapUserSession gleapUserSessionObj = new GleapUserSession(id, hash, email, name);
+        Gleap.getInstance().identifyUser(gleapUserSessionObj);
+        Gleap.getInstance().setBugSentCallback(new GleapSentCallback() {
+          @Override
+          public void close() {
+            new java.util.Timer().schedule(
+              new java.util.TimerTask() {
+                @Override
+                public void run() {
+                  showDevMenu();
+                }
+              },
+              500
+            );
+          }
+        });
+      }
+    } catch (Exception ex) {
+    }
+  }
+
+  /**
    * Start bug report manually by calling this function.
    */
   @ReactMethod
