@@ -1,4 +1,3 @@
-// @ts-ignore
 import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 import GleapNetworkIntercepter from './networklogger';
 
