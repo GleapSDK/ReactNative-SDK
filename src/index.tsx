@@ -7,26 +7,19 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo managed workflow\n';
 
-export type GleapUserSession = {
-  id: string;
-  hash: string;
+export type GleapUserProperty = {
   email?: string;
   name?: string;
 };
 
 type GleapSdkType = {
   initialize(token: string): void;
-  //Todo initialize with GleapUserSession
-  initializeWithUserSession(
-    token: string,
-    gleapUserSession: GleapUserSession
-  ): void;
   startFeedbackFlow(): void;
   sendSilentBugReport(
     description: string,
     priority: 'LOW' | 'MEDIUM' | 'HIGH'
   ): void;
-  identifyUser(gleapUserSession: GleapUserSession): void;
+  identify(userId: string, userProperties: GleapUserProperty): void;
   clearIdentity(): void;
   setApiUrl(apiUrl: string): void;
   setWidgetUrl(widgetUrl: string): void;
@@ -38,8 +31,7 @@ type GleapSdkType = {
     customActionCallback: (data: { name: string }) => void
   ): void;
   logEvent(name: string, data: any): void;
-  //TODO: FILETYPE?
-  addAttachment(file: any): void;
+  addAttachment(base64file: string, fileName: string): void;
   removeAllAttachments(): void;
 };
 
