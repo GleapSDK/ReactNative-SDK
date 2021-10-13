@@ -3,9 +3,11 @@ package com.reactnativegleapsdk;
 import static com.reactnativegleapsdk.GleapUtil.convertMapToJson;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Handler;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.facebook.react.ReactApplication;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -20,6 +22,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.gleap.APPLICATIONTYPE;
 import io.gleap.ConfigLoadedCallback;
@@ -48,7 +55,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   /**
    * Auto-configures the Gleap SDK from the remote config.
    *
-   * @param sdkKey      The SDK key, which can be found on dashboard.Gleap.io
+   * @param sdkKey The SDK key, which can be found on dashboard.Gleap.io
    */
   @ReactMethod
   public void initialize(String sdkKey) {
@@ -118,9 +125,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
             new java.util.TimerTask() {
               @Override
               public void run() {
-                if(!isSilentBugReport) {
+                if (!isSilentBugReport) {
                   showDevMenu();
-                }else {
+                } else {
                   isSilentBugReport = false;
                 }
               }
@@ -270,7 +277,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         JSONObject currentRequest = (JSONObject) object.get(i);
         JSONObject response = (JSONObject) currentRequest.get("response");
         JSONObject request = new JSONObject();
-        if(currentRequest.has("request")) {
+        if (currentRequest.has("request")) {
           request = (JSONObject) currentRequest.get("request");
         }
         Gleap.getInstance().logNetwork(currentRequest.getString("url"), RequestType.valueOf(currentRequest.getString("type")), response.getInt("status"), currentRequest.getInt("duration"), request, response);
@@ -311,6 +318,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
 
+  @RequiresApi(api = Build.VERSION_CODES.O)
   @ReactMethod
   /**
    * Attaches a file to the bug report
@@ -318,19 +326,83 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
    * @param file The file to attach to the bug report
    * @author Gleap
    */
-  void addAttachment(String path){
-    File file = new File(path);
-    if(file.exists()) {
-      Gleap.getInstance().addAttachment(file);
-    }else {
-      System.err.println("Gleap: The file is not existing.");
+  void addAttachment(String base64file, String fileName) {
+    try {
+      if (checkAllowedEndings(fileName)) {
+        String[] splittedBase64File = base64file.split(",");
+        byte[] data;
+        if (splittedBase64File.length == 2) {
+          data = Base64.getDecoder().decode(splittedBase64File[1]);
+        } else {
+          data = Base64.getDecoder().decode(splittedBase64File[0]);
+        }
+
+        String mimetype = extractMimeType(base64file);
+        String[] splitted = mimetype.split("/");
+        String fileNameConcated = fileName;
+        if (splitted.length == 2 && !fileName.contains(".")) {
+          fileNameConcated += "." + splitted[1];
+        }
+
+        File file = new File(getReactApplicationContext().getCacheDir() + "/" + fileNameConcated);
+        if (!file.exists()) {
+          file.createNewFile();
+        }
+        try (OutputStream stream = new FileOutputStream(file)) {
+          stream.write(data);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+
+        if (file.exists()) {
+          Gleap.getInstance().addAttachment(file);
+        } else {
+          System.err.println("Gleap: The file is not existing.");
+        }
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+
+  }
+
+  /**
+   * Extract the MIME type from a base64 string
+   *
+   * @param encoded Base64 string
+   * @return MIME type string
+   */
+  private String extractMimeType(final String encoded) {
+    final Pattern mime = Pattern.compile("^data:([a-zA-Z0-9]+/[a-zA-Z0-9]+).*,.*");
+    final Matcher matcher = mime.matcher(encoded);
+    if (!matcher.find())
+      return "";
+    return matcher.group(1).toLowerCase();
   }
 
   @ReactMethod
   public void registerConfigLoadedAction(ConfigLoadedCallback configLoadedCallback) {
     Gleap.getInstance().setConfigLoadedCallback(configLoadedCallback);
-  };
+  }
+
+  ;
+
+  private boolean checkAllowedEndings(String fileName) {
+    String[] fileType = fileName.split("\\.");
+    String[] allowedTypes = {"jpeg", "svg", "png", "mp4", "webp", "xml", "plain", "xml", "json"};
+    if (fileType.length <= 1) {
+      return false;
+    }
+    boolean found = false;
+    for (String type : allowedTypes) {
+      if (type.equals(fileType[1])) {
+        found = true;
+      }
+    }
+
+    return found;
+  }
 
   /**
    * Show dev menu after shaking the phone.
