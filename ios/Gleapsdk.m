@@ -127,7 +127,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     return @[@"feedbackSent", @"feedbackWillBeSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered"];
 }
 
-RCT_EXPORT_METHOD(sendSilentBugReportWith:(NSString *)description andPriority:(NSString *)priority)
+RCT_EXPORT_METHOD(sendSilentBugReport:(NSString *)description andPriority:(NSString *)priority)
 {
     GleapBugSeverity prio = MEDIUM;
     if ([priority isEqualToString: @"LOW"]) {
@@ -154,6 +154,23 @@ RCT_EXPORT_METHOD(setLanguage:(NSString *)language)
     [Gleap setLanguage: language];
 }
 
+RCT_EXPORT_METHOD(clearIdentity)
+{
+    [Gleap clearIdentity];
+}
+
+RCT_EXPORT_METHOD(userId:(NSString *)userId withUserProperties: (NSDictionary *)userProperties)
+{
+    GleapUserProperty *userProperty = [[GleapUserProperty alloc] init];
+    if (userProperties != nil && [userProperties objectForKey: @"name"] != nil) {
+        userProperty.name = [userProperties objectForKey: @"name"];
+    }
+    if (userProperties != nil && [userProperties objectForKey: @"email"] != nil) {
+        userProperty.email = [userProperties objectForKey: @"email"];
+    }
+    [Gleap identifyUserWith: userId andData: userProperty];
+}
+
 RCT_EXPORT_METHOD(attachCustomData:(NSDictionary *)customData)
 {
     [Gleap attachCustomData: customData];
@@ -164,7 +181,7 @@ RCT_EXPORT_METHOD(setCustomData:(NSString *)key andData:(NSString *)value)
     [Gleap setCustomData: value forKey: key];
 }
 
-RCT_EXPORT_METHOD(removeCustomData:(NSString *)key)
+RCT_EXPORT_METHOD(removeCustomDataForKey:(NSString *)key)
 {
     [Gleap removeCustomDataForKey: key];
 }
@@ -174,14 +191,19 @@ RCT_EXPORT_METHOD(clearCustomData)
     [Gleap clearCustomData];
 }
 
-RCT_EXPORT_METHOD(enableReplays:(BOOL)enable)
-{
-    [Gleap enableReplays: enable];
-}
-
 RCT_EXPORT_METHOD(setApiUrl: (NSString *)apiUrl)
 {
     [Gleap setApiUrl: apiUrl];
+}
+
+RCT_EXPORT_METHOD(setWidgetUrl: (NSString *)apiUrl)
+{
+    [Gleap setWidgetUrl: apiUrl];
+}
+
+RCT_EXPORT_METHOD(removeAllAttachments)
+{
+    [Gleap removeAllAttachments];
 }
 
 RCT_EXPORT_METHOD(logEvent:(NSString *)name andData:(NSDictionary *)data)
