@@ -33,14 +33,14 @@ RCT_EXPORT_MODULE()
     [Gleap setApplicationType: REACTNATIVE];
 }
 
-RCT_EXPORT_METHOD(initialize:(NSString *)token andActivationMethod:(NSString *)activationMethod)
+RCT_EXPORT_METHOD(initialize:(NSString *)token)
 {
-    // Initialize the SDK
-    if ([activationMethod isEqualToString: @"SCREENSHOT"]) {
-        [[Gleap sharedInstance] setActivationMethods: @[@(SCREENSHOT)]];
-    }
-    
-    if ([activationMethod isEqualToString: @"SHAKE"]) {
+    [self initSDK];
+    [Gleap initializeWithToken: token];
+}
+
+- (void)configLoaded:(NSDictionary *)config {
+    if ([config objectForKey: @"activationMethodShake"] != nil && [[config objectForKey: @"activationMethodShake"] boolValue] == YES) {
         [[NSNotificationCenter defaultCenter] addObserver: self
                                                      selector: @selector(motionEnded:)
                                                          name: RCTShowDevMenuNotification
@@ -50,46 +50,22 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token andActivationMethod:(NSString *)a
             RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(handleShakeEvent:withEvent:));
         #endif
     }
-    
-    if ([activationMethod isEqualToString: @"THREE_FINGER_DOUBLE_TAB"]) {
+    if ([config objectForKey: @"activationMethodScreenshotGesture"] != nil && [[config objectForKey: @"activationMethodScreenshotGesture"] boolValue] == YES) {
+        NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
+                                                              object:nil
+                                                               queue:mainQueue
+                                                          usingBlock:^(NSNotification *note) {
+                                                            [Gleap startFeedbackFlow];
+                                                          }];
+    }
+    if ([config objectForKey: @"activationMethodThreeFingerDoubleTab"] != nil && [[config objectForKey: @"activationMethodThreeFingerDoubleTab"] boolValue] == YES) {
         [self initializeGestureRecognizer];
     }
     
-    [self initSDK];
-}
-
-RCT_EXPORT_METHOD(initializeMany:(NSString *)token andActivationMethods:(NSArray *)activationMethods)
-{
-    // Initialize the SDK
-    if ([self activationMethods: activationMethods contain: @"SCREENSHOT"]) {
-        [[Gleap sharedInstance] setActivationMethods: @[@(SCREENSHOT)]];
+    if (_hasListeners) {
+        [self sendEventWithName:@"configLoaded" body: config];
     }
-    
-    if ([self activationMethods: activationMethods contain: @"SHAKE"]) {
-        [[NSNotificationCenter defaultCenter] addObserver: self
-                                                     selector: @selector(motionEnded:)
-                                                         name: RCTShowDevMenuNotification
-                                                    object: nil];
-        
-        #if !RCT_DEV
-            RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(handleShakeEvent:withEvent:));
-        #endif
-    }
-    
-    if ([self activationMethods: activationMethods contain: @"THREE_FINGER_DOUBLE_TAB"]) {
-        [self initializeGestureRecognizer];
-    }
-
-    [self initSDK];
-}
-
-- (BOOL)activationMethods: (NSArray *)activationMethods contain: (NSString *)activationMethod {
-    for (int i = 0; i < activationMethods.count; i++) {
-        if ([activationMethod isEqualToString: [activationMethods objectAtIndex: i]]) {
-            return true;
-        }
-    }
-    return false;
 }
 
 - (void)initializeGestureRecognizer {
@@ -111,9 +87,21 @@ RCT_EXPORT_METHOD(initializeMany:(NSString *)token andActivationMethods:(NSArray
     [Gleap startFeedbackFlow];
 }
 
-- (void)bugWillBeSent {
+- (void)feedbackWillBeSent {
     if (_hasListeners) {
         [self sendEventWithName:@"feedbackWillBeSent" body:@{}];
+    }
+}
+
+- (void)feedbackSendingFailed {
+    if (_hasListeners) {
+        [self sendEventWithName:@"feedbackSendingFailed" body:@{}];
+    }
+}
+
+- (void)feedbackSent {
+    if (_hasListeners) {
+        [self sendEventWithName:@"feedbackSent" body:@{}];
     }
 }
 
@@ -135,16 +123,8 @@ RCT_EXPORT_METHOD(initializeMany:(NSString *)token andActivationMethods:(NSArray
   _hasListeners = NO;
 }
 
--(UIColor *)colorFromHexString:(NSString *)hexString {
-    unsigned rgbValue = 0;
-    NSScanner *scanner = [NSScanner scannerWithString:hexString];
-    [scanner setScanLocation:1];
-    [scanner scanHexInt:&rgbValue];
-    return [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:1.0];
-}
-
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"bugWillBeSent", @"customActionTriggered"];
+    return @[@"feedbackSent", @"feedbackWillBeSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered"];
 }
 
 RCT_EXPORT_METHOD(sendSilentBugReportWith:(NSString *)description andPriority:(NSString *)priority)
@@ -164,7 +144,7 @@ RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
     [Gleap attachData: @{ @"networkLogs": networkLogs }];
 }
 
-RCT_EXPORT_METHOD(startBugReporting)
+RCT_EXPORT_METHOD(startFeedbackFlow)
 {
     [Gleap startFeedbackFlow];
 }
