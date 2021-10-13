@@ -65,13 +65,13 @@ if (GleapSdk) {
   };
 
   const gleapEmitter = new NativeEventEmitter(GleapSdk);
-  gleapEmitter.addListener('configLoaded', (config) => {
+  gleapEmitter.addListener('configLoaded', (config: any) => {
     const configJSON = JSON.parse(config);
     if (configJSON.enableConsoleLogs) {
       GleapSdk.startNetworkLogging();
     }
   });
-  gleapEmitter.addListener('bugWillBeSent', () => {
+  gleapEmitter.addListener('feedbackWillBeSent', () => {
     // Push the network log to the native SDK.
     const requests = networkLogger.getRequests();
     if (Platform.OS === 'android') {
