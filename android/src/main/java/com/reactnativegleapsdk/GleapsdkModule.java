@@ -154,6 +154,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void setLanguage(String language) {
+    Gleap.getInstance().setLanguage(language);
+  }
+
+  @ReactMethod
   public void identify(String userid, String hash, String name, String email) {
     GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
     Gleap.getInstance().identifyUser(userid, gleapUserSession);

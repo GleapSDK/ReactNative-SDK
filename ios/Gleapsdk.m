@@ -159,7 +159,7 @@ RCT_EXPORT_METHOD(clearIdentity)
     [Gleap clearIdentity];
 }
 
-RCT_EXPORT_METHOD(userId:(NSString *)userId withUserProperties: (NSDictionary *)userProperties)
+RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary *)userProperties)
 {
     GleapUserProperty *userProperty = [[GleapUserProperty alloc] init];
     if (userProperties != nil && [userProperties objectForKey: @"name"] != nil) {
@@ -168,6 +168,10 @@ RCT_EXPORT_METHOD(userId:(NSString *)userId withUserProperties: (NSDictionary *)
     if (userProperties != nil && [userProperties objectForKey: @"email"] != nil) {
         userProperty.email = [userProperties objectForKey: @"email"];
     }
+    
+    NSLog(@"identifying user... %@", userId);
+    NSLog(@"%@", userProperty);
+    
     [Gleap identifyUserWith: userId andData: userProperty];
 }
 
@@ -213,7 +217,8 @@ RCT_EXPORT_METHOD(removeAllAttachments)
 
 RCT_EXPORT_METHOD(addAttachment:(NSString *)base64file withFileName:(NSString *)fileName)
 {
-    NSData *fileData = [[NSData alloc] initWithBase64EncodedString: base64file options:0];
+    NSArray *dataParts = [base64file componentsSeparatedByString: @";base64,"];
+    NSData *fileData = [[NSData alloc] initWithBase64EncodedString: [dataParts lastObject] options:0];
     if (fileData != nil) {
         [Gleap addAttachmentWithData: fileData andName: fileName];
     } else {

@@ -1,26 +1,43 @@
 import * as React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import GleapSDK from 'react-native-gleapsdk';
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import Gleap from 'react-native-gleapsdk';
+import SampleData from './SampleData';
 
 export default function App() {
   React.useEffect(() => {
-    GleapSDK.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
-    GleapSDK.attachCustomData({ key: 'YOU' });
-    GleapSDK.setCustomData('a', 'B');
-    GleapSDK.setCustomData('b', 'c');
-    GleapSDK.removeCustomDataForKey('b');
-    GleapSDK.logEvent('ARE', { key: 'MOP' });
+    Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
+    Gleap.attachCustomData({ key: 'YOU' });
+    Gleap.setCustomData('a', 'B');
+    Gleap.setCustomData('b', 'c');
+    Gleap.removeCustomDataForKey('b');
+    Gleap.logEvent('ARE', { key: 'MOP' });
+    Gleap.setLanguage('fr');
+    Gleap.logEvent('ARE', { key: 'MOP' });
+    Gleap.logEvent('ARE', { key: 'MOP' });
+    Gleap.logEvent('ARE', { key: 'MOP' });
+    Gleap.addAttachment(SampleData.img, 'test.jpg');
+    Gleap.identify('12334', {
+      name: 'Franzi',
+      email: 'lukas@boehlerbrothers.com',
+    });
   }, []);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          GleapSDK.sendSilentBugReport('Sneaky silent bug report.', 'HIGH');
-          GleapSDK.startFeedbackFlow();
+          Gleap.sendSilentBugReport('Sneaky silent bug report.', 'HIGH');
+          Gleap.startFeedbackFlow();
         }}
       >
-        <Text>Gleap Example</Text>
+        <Image
+          source={require('./Logo.png')}
+          style={{
+            width: 200,
+            height: 100,
+          }}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
     </View>
   );
@@ -31,6 +48,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#060D25',
   },
   box: {
     width: 60,

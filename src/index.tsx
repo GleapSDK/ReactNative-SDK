@@ -30,6 +30,7 @@ type GleapSdkType = {
   registerCustomAction(
     customActionCallback: (data: { name: string }) => void
   ): void;
+  setLanguage(language: string): void;
   logEvent(name: string, data: any): void;
   addAttachment(base64file: string, fileName: string): void;
   removeAllAttachments(): void;
