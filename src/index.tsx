@@ -71,7 +71,7 @@ if (GleapSdk) {
       GleapSdk.startNetworkLogging();
     }
   });
-  gleapEmitter.addListener('bugWillBeSent', () => {
+  gleapEmitter.addListener('feedbackWillBeSent', () => {
     // Push the network log to the native SDK.
     const requests = networkLogger.getRequests();
     if (Platform.OS === 'android') {
