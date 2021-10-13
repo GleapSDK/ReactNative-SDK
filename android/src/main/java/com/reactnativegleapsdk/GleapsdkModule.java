@@ -23,11 +23,9 @@ import org.json.JSONObject;
 import java.io.File;
 
 import io.gleap.APPLICATIONTYPE;
-import io.gleap.BugWillBeSentCallback;
+import io.gleap.FeedbackSentCallback;
+import io.gleap.FeedbackWillBeSentCallback;
 import io.gleap.Gleap;
-import io.gleap.GleapActivationMethod;
-import io.gleap.GleapSentCallback;
-import io.gleap.GleapUserSession;
 import io.gleap.RequestType;
 
 @ReactModule(name = GleapsdkModule.NAME)
@@ -57,71 +55,14 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         .getCurrentActivity();
       if (activity != null) {
         Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
-        Gleap.getInstance().setBugWillBeSentCallback(new BugWillBeSentCallback() {
+        Gleap.getInstance().setFeedbackWillBeSentCallback(new FeedbackWillBeSentCallback() {
           @Override
           public void flowInvoced() {
             getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("bugWillBeSent", null);
           }
         });
         Gleap.initialize(sdkKey, activity.getApplication());
-        Gleap.getInstance().setBugSentCallback(new GleapSentCallback() {
-          @Override
-          public void close() {
-            new java.util.Timer().schedule(
-              new java.util.TimerTask() {
-                @Override
-                public void run() {
-                  showDevMenu();
-                }
-              },
-              500
-            );
-          }
-        });
-      }
-    } catch (Exception ex) {
-    }
-  }
-
-  /**
-   * Auto-configures the Gleap SDK from the remote config.
-   *
-   * @param sdkKey      The SDK key, which can be found on dashboard.Gleap.io
-   */
-  @ReactMethod
-  public void initializeWithUserSession(String sdkKey, ReadableMap gleapUserSession) {
-    try {
-      Activity activity = getReactApplicationContext()
-        .getCurrentActivity();
-      if (activity != null) {
-        Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
-        Gleap.getInstance().setBugWillBeSentCallback(new BugWillBeSentCallback() {
-          @Override
-          public void flowInvoced() {
-            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("bugWillBeSent", null);
-          }
-        });
-        Gleap.initialize(sdkKey, activity.getApplication());
-        JSONObject jsonObject = convertMapToJson(gleapUserSession);
-        String id = "";
-        String hash = "";
-        String email = "";
-        String name = "";
-        if(jsonObject.has("id")) {
-            id = jsonObject.getString("id");
-        }
-        if(jsonObject.has("hash")) {
-          hash = jsonObject.getString("hash");
-        }
-        if(jsonObject.has("email")) {
-          email = jsonObject.getString("email");
-        }
-        if(jsonObject.has("name")) {
-          name = jsonObject.getString("name");
-        }
-        GleapUserSession gleapUserSessionObj = new GleapUserSession(id, hash, email, name);
-        Gleap.getInstance().identifyUser(gleapUserSessionObj);
-        Gleap.getInstance().setBugSentCallback(new GleapSentCallback() {
+        Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
           @Override
           public void close() {
             new java.util.Timer().schedule(
@@ -147,7 +88,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   public void startFeedbackFlow() {
     try {
       Gleap.getInstance().startFeedbackFlow();
-      Gleap.getInstance().setBugSentCallback(new GleapSentCallback() {
+      Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
         @Override
         public void close() {
           new java.util.Timer().schedule(
@@ -190,7 +131,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void identifyUser(String userid, String hash, String name, String email) {
+  public void identify(String userid, String hash, String name, String email) {
     GleapUserSession gleapUserSession = new GleapUserSession(userid, hash, name, email);
     Gleap.getInstance().identifyUser(gleapUserSession);
   }
