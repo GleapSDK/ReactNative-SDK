@@ -7,17 +7,20 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo managed workflow\n';
 
-interface GleapUserSession {
+export type GleapUserSession = {
   id: string;
   hash: string;
   email?: string;
   name?: string;
-}
+};
 
 type GleapSdkType = {
   initialize(token: string): void;
   //Todo initialize with GleapUserSession
-  initialize(token: string, gleapUserSession: GleapUserSession): void;
+  initializeWithUserSession(
+    token: string,
+    gleapUserSession: GleapUserSession
+  ): void;
   startFeedbackFlow(): void;
   sendSilentBugReport(
     description: string,
