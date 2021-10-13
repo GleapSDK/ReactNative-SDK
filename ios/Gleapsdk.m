@@ -127,7 +127,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     return @[@"feedbackSent", @"feedbackWillBeSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered"];
 }
 
-RCT_EXPORT_METHOD(sendSilentBugReport:(NSString *)description andPriority:(NSString *)priority)
+RCT_EXPORT_METHOD(sendSilentBugReport:(NSString *)description andSeverity:(NSString *)priority)
 {
     GleapBugSeverity prio = MEDIUM;
     if ([priority isEqualToString: @"LOW"]) {
@@ -136,7 +136,7 @@ RCT_EXPORT_METHOD(sendSilentBugReport:(NSString *)description andPriority:(NSStr
     if ([priority isEqualToString: @"HIGH"]) {
         prio = HIGH;
     }
-    [Gleap sendSilentBugReportWith: description andPriority: prio];
+    [Gleap sendSilentBugReportWith: description andSeverity: prio];
 }
 
 RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
