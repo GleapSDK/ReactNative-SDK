@@ -1,6 +1,10 @@
-# react-native-gleapsdk
+# Gleap ReactNative SDK
 
-Know exactly why and how a bug happened. Get reports with screenshots, live action replays and all of the important metadata every time.
+![Gleap ReactNative SDK Intro](https://raw.githubusercontent.com/GleapSDK/iOS-SDK/main/imgs/gleapheader.png)
+
+The Gleap SDK for ReactNative is the easiest way to integrate Gleap into your apps!
+
+You have two ways to set up the Gleap SDK for ReactNative. The easiest way ist to use the maven repository to add Gleap SDK to your project.  (it's super easy to get started & worth using 😍)
 
 ## Installation
 
@@ -11,18 +15,13 @@ npm install react-native-gleapsdk
 ## Usage
 
 ```js
-import { multiply } from "react-native-gleapsdk";
+// Import the SDK
+import Gleap from "react-native-gleapsdk";
 
-// ...
-
-const result = await multiply(3, 7);
+// Initialize it
+Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
 ```
 
-## Contributing
+## Need help?
 
-See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
-
-## License
-
-MIT
-# ReactNative-SDK
+Checkout our [documentation](https://docs.gleap.io/react-native/getting-started) or [contact us](https://gleap.io/).
