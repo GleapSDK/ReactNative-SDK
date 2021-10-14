@@ -5,7 +5,6 @@ import SampleData from './SampleData';
 
 export default function App() {
   React.useEffect(() => {
-    Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
     Gleap.attachCustomData({ key: 'YOU' });
     Gleap.setCustomData('a', 'B');
     Gleap.setCustomData('b', 'c');
