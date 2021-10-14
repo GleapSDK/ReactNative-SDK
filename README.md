@@ -24,4 +24,4 @@ Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
 
 ## Need help?
 
-Checkout our [documentation](https://docs.gleap.io/react-native/getting-started) or [contact us](https://gleap.io/).
+Checkout our full [documentation](https://docs.gleap.io/react-native/getting-started) or [contact us](https://gleap.io/) - we are always here to help 👋.
