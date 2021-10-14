@@ -20,6 +20,10 @@ export default function App() {
       name: 'Franzi',
       email: 'lukas@boehlerbrothers.com',
     });
+
+    Gleap.registerCustomAction((data) => {
+      console.log(data);
+    });
   }, []);
 
   return (

@@ -166,7 +166,21 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void identify(String userid, String hash, String name, String email) {
+  public void identify(String userid, ReadableMap data) {
+    JSONObject jsonObject = null;
+    String name = "";
+    String email ="";
+    try {
+      jsonObject = convertMapToJson(data);
+      if(jsonObject.has("name")) {
+        name = jsonObject.getString("name");
+      }
+      if(jsonObject.has("email")) {
+        email = jsonObject.getString("email");
+      }
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
     GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
     Gleap.getInstance().identifyUser(userid, gleapUserSession);
   }
