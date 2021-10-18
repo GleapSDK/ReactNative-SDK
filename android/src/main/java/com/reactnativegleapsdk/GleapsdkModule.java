@@ -275,6 +275,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     Gleap.getInstance().removeCustomDataForKey(key);
   }
 
+
   /**
    * Clears all custom data.
    */
@@ -384,6 +385,14 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
       e.printStackTrace();
     }
 
+  }
+
+  /**
+   * Clear all added attachments
+   */
+  @ReactMethod
+  public void removeAllAttachments() {
+    Gleap.getInstance().removeAllAttachments();
   }
 
   /**
