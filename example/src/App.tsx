@@ -25,12 +25,17 @@ export default function App() {
     });
   }, []);
 
+  const getMoviesFromApi = async () => {
+    await fetch(
+      'https://raw.githubusercontent.com/json-iterator/test-data/master/large-file.json'
+    ).then((response) => response.json());
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Gleap.sendSilentBugReport('Sneaky silent bug report.', 'HIGH');
-          Gleap.startFeedbackFlow();
+          getMoviesFromApi();
         }}
       >
         <Image

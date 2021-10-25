@@ -35,10 +35,21 @@ class BugBattleNetworkIntercepter {
     if (startDate) {
       this.requests[gleapRequestId].duration =
         new Date().getTime() - startDate.getTime();
-      this.requests[gleapRequestId].date = this.requests[
-        gleapRequestId
-      ].date.toString();
+      this.requests[gleapRequestId].date =
+        this.requests[gleapRequestId].date.toString();
     }
+  }
+
+  contentSizeOk(text: string) {
+    if (text && text.length) {
+      const size = text.length * 16;
+      const kiloBytes = size / 1024;
+      const megaBytes = kiloBytes / 1024;
+      if (megaBytes < 0.5) {
+        return true;
+      }
+    }
+    return false;
   }
 
   start() {
@@ -81,11 +92,12 @@ class BugBattleNetworkIntercepter {
           this.requests[gleapRequestId].response = {
             status: req.status,
             statusText: req.statusText,
-            responseText: responseText,
+            responseText: this.contentSizeOk(responseText)
+              ? responseText
+              : '<response_too_large>',
           };
 
           this.calcRequestTime(gleapRequestId);
-
           this.cleanRequests();
         });
       },
@@ -96,7 +108,6 @@ class BugBattleNetworkIntercepter {
 
         this.requests[gleapRequestId].success = false;
         this.calcRequestTime(gleapRequestId);
-
         this.cleanRequests();
       },
       onOpen: (request: any, args: string | any[]) => {
@@ -180,7 +191,9 @@ class BugBattleNetworkIntercepter {
           this.requests[request.gleapRequestId].success = true;
           this.requests[request.gleapRequestId].response = {
             status: request.status,
-            responseText: responseText,
+            responseText: this.contentSizeOk(responseText)
+              ? responseText
+              : '<response_too_large>',
           };
 
           this.calcRequestTime(request.gleapRequestId);
