@@ -1,6 +1,5 @@
 package com.reactnativegleapsdk;
 
-import static com.reactnativegleapsdk.GleapUtil.convertMapToJson;
 
 import android.app.Activity;
 import android.os.Build;
@@ -171,7 +170,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     String name = "";
     String email ="";
     try {
-      jsonObject = convertMapToJson(data);
+      jsonObject = GleapUtil.convertMapToJson(data);
       if(jsonObject.has("name")) {
         name = jsonObject.getString("name");
       }
@@ -199,7 +198,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void attachCustomData(ReadableMap customData) {
     try {
-      JSONObject jsonObject = convertMapToJson(customData);
+      JSONObject jsonObject = GleapUtil.convertMapToJson(customData);
       Gleap.getInstance().appendCustomData(jsonObject);
     } catch (Exception e) {
       System.out.println(e);
@@ -244,7 +243,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void appendCustomData(ReadableMap customData) {
     try {
-      JSONObject jsonObject = convertMapToJson(customData);
+      JSONObject jsonObject = GleapUtil.convertMapToJson(customData);
       Gleap.getInstance().appendCustomData(jsonObject);
     } catch (Exception e) {
       System.out.println(e);
@@ -330,7 +329,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   void logEvent(String name, ReadableMap data) {
     JSONObject jsonObject = null;
     try {
-      jsonObject = convertMapToJson(data);
+      jsonObject = GleapUtil.convertMapToJson(data);
       Gleap.getInstance().logEvent(name, jsonObject);
     } catch (JSONException e) {
       e.printStackTrace();
