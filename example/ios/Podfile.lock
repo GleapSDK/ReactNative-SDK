@@ -18,7 +18,7 @@ PODS:
     - boost-for-react-native
     - DoubleConversion
     - glog
-  - Gleap (6.0.11)
+  - Gleap (6.0.13)
   - glog (0.3.5)
   - RCTRequired (0.63.4)
   - RCTTypeSafety (0.63.4):
@@ -186,8 +186,8 @@ PODS:
     - React-cxxreact (= 0.63.4)
     - React-jsi (= 0.63.4)
   - React-jsinspector (0.63.4)
-  - react-native-gleapsdk (6.0.1):
-    - Gleap (= 6.0.11)
+  - react-native-gleapsdk (6.0.3):
+    - Gleap (= 6.0.13)
     - React-Core
   - React-RCTActionSheet (0.63.4):
     - React-Core/RCTActionSheetHeaders (= 0.63.4)
@@ -349,7 +349,7 @@ SPEC CHECKSUMS:
   FBLazyVector: 3bb422f41b18121b71783a905c10e58606f7dc3e
   FBReactNativeSpec: f2c97f2529dd79c083355182cc158c9f98f4bd6e
   Folly: b73c3869541e86821df3c387eb0af5f65addfab4
-  Gleap: e7432e5277816b084f9c2e670d09a75a49215dea
+  Gleap: 17dac245bf304503b6ed5e1a04a3347a2541f43a
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
   RCTRequired: 082f10cd3f905d6c124597fd1c14f6f2655ff65e
   RCTTypeSafety: 8c9c544ecbf20337d069e4ae7fd9a377aadf504b
@@ -361,7 +361,7 @@ SPEC CHECKSUMS:
   React-jsi: a0418934cf48f25b485631deb27c64dc40fb4c31
   React-jsiexecutor: 93bd528844ad21dc07aab1c67cb10abae6df6949
   React-jsinspector: 58aef7155bc9a9683f5b60b35eccea8722a4f53a
-  react-native-gleapsdk: 980a1e462f498e2edfffc2389c7fe9726d4f78b3
+  react-native-gleapsdk: bbb7b8dc025aaaf13491cf6704a17023cd964cac
   React-RCTActionSheet: 89a0ca9f4a06c1f93c26067af074ccdce0f40336
   React-RCTAnimation: 1bde3ecc0c104c55df246eda516e0deb03c4e49b
   React-RCTBlob: a97d378b527740cc667e03ebfa183a75231ab0f0

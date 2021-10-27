@@ -68,7 +68,7 @@ if (GleapSdk) {
   const gleapEmitter = new NativeEventEmitter(GleapSdk);
   gleapEmitter.addListener('configLoaded', (config: any) => {
     try {
-      const configJSON = JSON.parse(config);
+      const configJSON = config instanceof Object ? config : JSON.parse(config);
       if (configJSON.enableNetworkLogs) {
         GleapSdk.startNetworkLogging();
       }
