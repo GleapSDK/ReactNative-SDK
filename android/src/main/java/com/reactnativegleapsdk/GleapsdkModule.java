@@ -58,56 +58,62 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
    */
   @ReactMethod
   public void initialize(String sdkKey) {
-    try {
-      Activity activity = getReactApplicationContext()
-        .getCurrentActivity();
-      if (activity != null) {
-        Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
-        Gleap.getInstance().setFeedbackWillBeSentCallback(new FeedbackWillBeSentCallback() {
-          @Override
-          public void flowInvoced() {
-            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("feedbackWillBeSent", null);
-          }
-        });
-        Gleap.initialize(sdkKey, activity.getApplication());
-        Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
-          @Override
-          public void configLoaded(JSONObject jsonObject) {
-            System.out.println(jsonObject);
-            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("configLoaded", jsonObject.toString());
-          }
-        });
-
-        Gleap.getInstance().registerCustomAction(new CustomActionCallback() {
-          @Override
-          public void invoke(String message) {
-            JSONObject obj = new JSONObject();
-            try {
-              obj.put("name", message);
-            } catch (JSONException e) {
-              e.printStackTrace();
-            }
-
-            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("customActionTriggered", obj.toString());
-          }
-        });
-        Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
-          @Override
-          public void close() {
-            new java.util.Timer().schedule(
-              new java.util.TimerTask() {
+    getCurrentActivity().runOnUiThread(
+      new Runnable() {
+        @Override
+        public void run() {
+          try {
+            Activity activity = getReactApplicationContext()
+              .getCurrentActivity();
+            if (activity != null) {
+              Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
+              Gleap.getInstance().setFeedbackWillBeSentCallback(new FeedbackWillBeSentCallback() {
                 @Override
-                public void run() {
-                  showDevMenu();
+                public void flowInvoced() {
+                  getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("feedbackWillBeSent", null);
                 }
-              },
-              500
-            );
+              });
+              Gleap.initialize(sdkKey, activity.getApplication());
+              Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
+                @Override
+                public void configLoaded(JSONObject jsonObject) {
+                  getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("configLoaded", jsonObject.toString());
+                }
+              });
+
+              Gleap.getInstance().registerCustomAction(new CustomActionCallback() {
+                @Override
+                public void invoke(String message) {
+                  JSONObject obj = new JSONObject();
+                  try {
+                    obj.put("name", message);
+                  } catch (JSONException e) {
+                    e.printStackTrace();
+                  }
+
+                  getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("customActionTriggered", obj.toString());
+                }
+              });
+              Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
+                @Override
+                public void close() {
+                  new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                      @Override
+                      public void run() {
+                        showDevMenu();
+                      }
+                    },
+                    500
+                  );
+                }
+              });
+            }
+          } catch (Exception ex) {
           }
-        });
+        }
       }
-    } catch (Exception ex) {
-    }
+    );
   }
 
   /**
@@ -115,29 +121,35 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
    */
   @ReactMethod
   public void startFeedbackFlow() {
-    try {
-      Gleap.getInstance().startFeedbackFlow();
-      Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
+    getCurrentActivity().runOnUiThread(
+      new Runnable() {
         @Override
-        public void close() {
-          new java.util.Timer().schedule(
-            new java.util.TimerTask() {
+        public void run() {
+          try {
+            Gleap.getInstance().startFeedbackFlow();
+            Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
               @Override
-              public void run() {
-                if (!isSilentBugReport) {
-                  showDevMenu();
-                } else {
-                  isSilentBugReport = false;
-                }
+              public void close() {
+                new java.util.Timer().schedule(
+                  new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                      if (!isSilentBugReport) {
+                        showDevMenu();
+                      } else {
+                        isSilentBugReport = false;
+                      }
+                    }
+                  },
+                  500
+                );
               }
-            },
-            500
-          );
+            });
+          } catch (Exception e) {
+            System.out.println(e);
+          }
         }
       });
-    } catch (Exception e) {
-      System.out.println(e);
-    }
   }
 
   /**
@@ -148,15 +160,21 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     String description,
     String priority
   ) {
-    isSilentBugReport = true;
-    Gleap.SEVERITY severity = Gleap.SEVERITY.LOW;
-    if (priority == "MEDIUM") {
-      severity = Gleap.SEVERITY.MEDIUM;
-    }
-    if (priority == "HIGH") {
-      severity = Gleap.SEVERITY.HIGH;
-    }
-    Gleap.getInstance().sendSilentBugReport(description, severity);
+    getCurrentActivity().runOnUiThread(
+      new Runnable() {
+        @Override
+        public void run() {
+          isSilentBugReport = true;
+          Gleap.SEVERITY severity = Gleap.SEVERITY.LOW;
+          if (priority == "MEDIUM") {
+            severity = Gleap.SEVERITY.MEDIUM;
+          }
+          if (priority == "HIGH") {
+            severity = Gleap.SEVERITY.HIGH;
+          }
+          Gleap.getInstance().sendSilentBugReport(description, severity);
+        }
+      });
   }
 
   @ReactMethod
@@ -166,22 +184,28 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void identify(String userid, ReadableMap data) {
-    JSONObject jsonObject = null;
-    String name = "";
-    String email ="";
-    try {
-      jsonObject = GleapUtil.convertMapToJson(data);
-      if(jsonObject.has("name")) {
-        name = jsonObject.getString("name");
-      }
-      if(jsonObject.has("email")) {
-        email = jsonObject.getString("email");
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
-    Gleap.getInstance().identifyUser(userid, gleapUserSession);
+    getCurrentActivity().runOnUiThread(
+      new Runnable() {
+        @Override
+        public void run() {
+          JSONObject jsonObject = null;
+          String name = "";
+          String email = "";
+          try {
+            jsonObject = GleapUtil.convertMapToJson(data);
+            if (jsonObject.has("name")) {
+              name = jsonObject.getString("name");
+            }
+            if (jsonObject.has("email")) {
+              email = jsonObject.getString("email");
+            }
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+          GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
+          Gleap.getInstance().identifyUser(userid, gleapUserSession);
+        }
+      });
   }
 
   @ReactMethod
@@ -435,24 +459,30 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
    * Show dev menu after shaking the phone.
    */
   private void showDevMenu() {
-    final ReactApplication application = (ReactApplication) getReactApplicationContext()
-      .getCurrentActivity()
-      .getApplication();
-    Handler mainHandler = new Handler(this.getReactApplicationContext().getMainLooper());
-    Runnable myRunnable = new Runnable() {
-      @Override
-      public void run() {
-        try {
-          application
-            .getReactNativeHost()
-            .getReactInstanceManager()
-            .getDevSupportManager()
-            .showDevOptionsDialog();
-        } catch (Exception e) {
-          e.printStackTrace();
+    getCurrentActivity().runOnUiThread(
+      new Runnable() {
+        @Override
+        public void run() {
+          final ReactApplication application = (ReactApplication) getReactApplicationContext()
+            .getCurrentActivity()
+            .getApplication();
+          Handler mainHandler = new Handler(GleapsdkModule.this.getReactApplicationContext().getMainLooper());
+          Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+              try {
+                application
+                  .getReactNativeHost()
+                  .getReactInstanceManager()
+                  .getDevSupportManager()
+                  .showDevOptionsDialog();
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
+            }
+          };
+          mainHandler.post(myRunnable);
         }
-      }
-    };
-    mainHandler.post(myRunnable);
+      });
   }
 }
