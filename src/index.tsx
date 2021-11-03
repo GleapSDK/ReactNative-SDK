@@ -14,7 +14,9 @@ export type GleapUserProperty = {
 
 type GleapSdkType = {
   initialize(token: string): void;
+  open(): void;
   startFeedbackFlow(): void;
+  startFeedbackFlowWith(feedbackFlow: string): void;
   sendSilentBugReport(
     description: string,
     severity: 'LOW' | 'MEDIUM' | 'HIGH'
