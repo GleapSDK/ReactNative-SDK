@@ -219,6 +219,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void enableDebugConsoleLog() {}
+
+  @ReactMethod
   public void identify(String userid, ReadableMap data) {
     getCurrentActivity().runOnUiThread(
       new Runnable() {
