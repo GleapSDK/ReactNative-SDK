@@ -36,6 +36,21 @@ export default function App() {
       <TouchableOpacity
         onPress={() => {
           getMoviesFromApi();
+          Gleap.startFeedbackFlow('bugreporting');
+        }}
+      >
+        <Image
+          source={require('./Logo.png')}
+          style={{
+            width: 200,
+            height: 100,
+          }}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          Gleap.open();
         }}
       >
         <Image

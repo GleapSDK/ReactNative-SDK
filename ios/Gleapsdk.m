@@ -35,8 +35,10 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(initialize:(NSString *)token)
 {
-    [self initSDK];
-    [Gleap initializeWithToken: token];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self initSDK];
+        [Gleap initializeWithToken: token];
+    });
 }
 
 - (void)configLoaded:(NSDictionary *)config {
@@ -129,101 +131,142 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 
 RCT_EXPORT_METHOD(sendSilentBugReport:(NSString *)description andSeverity:(NSString *)priority)
 {
-    GleapBugSeverity prio = MEDIUM;
-    if ([priority isEqualToString: @"LOW"]) {
-        prio = LOW;
-    }
-    if ([priority isEqualToString: @"HIGH"]) {
-        prio = HIGH;
-    }
-    [Gleap sendSilentBugReportWith: description andSeverity: prio];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        GleapBugSeverity prio = MEDIUM;
+        if ([priority isEqualToString: @"LOW"]) {
+            prio = LOW;
+        }
+        if ([priority isEqualToString: @"HIGH"]) {
+            prio = HIGH;
+        }
+        [Gleap sendSilentBugReportWith: description andSeverity: prio];
+    });
 }
 
 RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
 {
-    [Gleap attachData: @{ @"networkLogs": networkLogs }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap attachData: @{ @"networkLogs": networkLogs }];
+    });
 }
 
-RCT_EXPORT_METHOD(startFeedbackFlow)
+RCT_EXPORT_METHOD(startFeedbackFlow:(NSString *)feedbackFlow)
 {
-    [Gleap startFeedbackFlow];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap startFeedbackFlow: feedbackFlow];
+    });
+}
+
+RCT_EXPORT_METHOD(enableDebugConsoleLog)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap enableDebugConsoleLog];
+    });
+}
+
+RCT_EXPORT_METHOD(open)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap open];
+    });
 }
 
 RCT_EXPORT_METHOD(setLanguage:(NSString *)language)
 {
-    [Gleap setLanguage: language];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setLanguage: language];
+    });
 }
 
 RCT_EXPORT_METHOD(clearIdentity)
 {
-    [Gleap clearIdentity];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap clearIdentity];
+    });
 }
 
 RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary *)userProperties)
 {
-    GleapUserProperty *userProperty = [[GleapUserProperty alloc] init];
-    if (userProperties != nil && [userProperties objectForKey: @"name"] != nil) {
-        userProperty.name = [userProperties objectForKey: @"name"];
-    }
-    if (userProperties != nil && [userProperties objectForKey: @"email"] != nil) {
-        userProperty.email = [userProperties objectForKey: @"email"];
-    }
-    
-    NSLog(@"identifying user... %@", userId);
-    NSLog(@"%@", userProperty);
-    
-    [Gleap identifyUserWith: userId andData: userProperty];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        GleapUserProperty *userProperty = [[GleapUserProperty alloc] init];
+        if (userProperties != nil && [userProperties objectForKey: @"name"] != nil) {
+            userProperty.name = [userProperties objectForKey: @"name"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"email"] != nil) {
+            userProperty.email = [userProperties objectForKey: @"email"];
+        }
+        
+        [Gleap identifyUserWith: userId andData: userProperty];
+    });
 }
 
 RCT_EXPORT_METHOD(attachCustomData:(NSDictionary *)customData)
 {
-    [Gleap attachCustomData: customData];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap attachCustomData: customData];
+    });
 }
 
 RCT_EXPORT_METHOD(setCustomData:(NSString *)key andData:(NSString *)value)
 {
-    [Gleap setCustomData: value forKey: key];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setCustomData: value forKey: key];
+    });
 }
 
 RCT_EXPORT_METHOD(removeCustomDataForKey:(NSString *)key)
 {
-    [Gleap removeCustomDataForKey: key];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap removeCustomDataForKey: key];
+    });
 }
 
 RCT_EXPORT_METHOD(clearCustomData)
 {
-    [Gleap clearCustomData];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap clearCustomData];
+    });
 }
 
 RCT_EXPORT_METHOD(setApiUrl: (NSString *)apiUrl)
 {
-    [Gleap setApiUrl: apiUrl];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setApiUrl: apiUrl];
+    });
 }
 
 RCT_EXPORT_METHOD(setWidgetUrl: (NSString *)apiUrl)
 {
-    [Gleap setWidgetUrl: apiUrl];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setWidgetUrl: apiUrl];
+    });
 }
 
 RCT_EXPORT_METHOD(logEvent:(NSString *)name andData:(NSDictionary *)data)
 {
-    [Gleap logEvent: name withData: data];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap logEvent: name withData: data];
+    });
 }
 
 RCT_EXPORT_METHOD(removeAllAttachments)
 {
-    [Gleap removeAllAttachments];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap removeAllAttachments];
+    });
 }
 
 RCT_EXPORT_METHOD(addAttachment:(NSString *)base64file withFileName:(NSString *)fileName)
 {
-    NSArray *dataParts = [base64file componentsSeparatedByString: @";base64,"];
-    NSData *fileData = [[NSData alloc] initWithBase64EncodedString: [dataParts lastObject] options:0];
-    if (fileData != nil) {
-        [Gleap addAttachmentWithData: fileData andName: fileName];
-    } else {
-        NSLog(@"[Gleap]: Invalid base64 string passed.");
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSArray *dataParts = [base64file componentsSeparatedByString: @";base64,"];
+        NSData *fileData = [[NSData alloc] initWithBase64EncodedString: [dataParts lastObject] options:0];
+        if (fileData != nil) {
+            [Gleap addAttachmentWithData: fileData andName: fileName];
+        } else {
+            NSLog(@"[Gleap]: Invalid base64 string passed.");
+        }
+    });
 }
 
 @end

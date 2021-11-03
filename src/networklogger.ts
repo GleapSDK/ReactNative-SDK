@@ -32,7 +32,7 @@ class BugBattleNetworkIntercepter {
     }
 
     var startDate = this.requests[gleapRequestId].date;
-    if (startDate) {
+    if (startDate && !Object.isFrozen(this.requests[gleapRequestId])) {
       this.requests[gleapRequestId].duration =
         new Date().getTime() - startDate.getTime();
       this.requests[gleapRequestId].date =

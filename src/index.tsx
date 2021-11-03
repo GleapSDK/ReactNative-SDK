@@ -37,6 +37,7 @@ type GleapSdkType = {
   removeAllAttachments(): void;
   startNetworkLogging(): void;
   stopNetworkLogging(): void;
+  enableDebugConsoleLog(): void;
 };
 
 const GleapSdk = NativeModules.Gleapsdk
@@ -81,7 +82,7 @@ if (GleapSdk) {
     if (Platform.OS === 'android') {
       GleapSdk.attachNetworkLog(JSON.stringify(requests));
     } else {
-      GleapSdk.attachNetworkLog(requests);
+      GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
     }
   });
 
