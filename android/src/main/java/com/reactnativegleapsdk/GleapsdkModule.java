@@ -120,13 +120,49 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
    * Start bug report manually by calling this function.
    */
   @ReactMethod
-  public void startFeedbackFlow() {
+  public void open() {
     getCurrentActivity().runOnUiThread(
       new Runnable() {
         @Override
         public void run() {
           try {
             Gleap.getInstance().startFeedbackFlow();
+            Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
+              @Override
+              public void close() {
+                new java.util.Timer().schedule(
+                  new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                      if (!isSilentBugReport) {
+                        showDevMenu();
+                      } else {
+                        isSilentBugReport = false;
+                      }
+                    }
+                  },
+                  500
+                );
+              }
+            });
+          } catch (Exception e) {
+            System.out.println(e);
+          }
+        }
+      });
+  }
+
+  /**
+   * Start bug report manually by calling this function.
+   */
+  @ReactMethod
+  public void startFeedbackFlow(String feedbackFlow) {
+    getCurrentActivity().runOnUiThread(
+      new Runnable() {
+        @Override
+        public void run() {
+          try {
+            Gleap.getInstance().startFeedbackFlow(feedbackFlow);
             Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
               @Override
               public void close() {

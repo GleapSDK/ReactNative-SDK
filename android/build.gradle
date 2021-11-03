@@ -56,6 +56,6 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
     // https://mvnrepository.com/artifact/io.gleap/gleap-android-sdk
-    implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '6.0.58'
+    implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '6.1.0'
 
 }
