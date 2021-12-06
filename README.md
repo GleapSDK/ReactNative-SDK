@@ -1,6 +1,6 @@
 # Gleap ReactNative SDK
 
-![Gleap ReactNative SDK Intro](https://raw.githubusercontent.com/GleapSDK/iOS-SDK/main/imgs/gleapheader.png)
+![Gleap iOS SDK Intro](https://raw.githubusercontent.com/GleapSDK/Gleap-iOS-SDK/main/Resources/GleapHeaderImage.png)
 
 The Gleap SDK for ReactNative is the easiest way to integrate Gleap into your apps!
 
