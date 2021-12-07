@@ -138,12 +138,11 @@ class BugBattleNetworkIntercepter {
         if (
           request &&
           request.gleapRequestId &&
-          args.length > 0 &&
           this.requests &&
           this.requests[request.gleapRequestId]
         ) {
           this.requests[request.gleapRequestId].request = {
-            payload: args[0],
+            payload: args.length > 0 ? args[0] : '',
             headers: request.requestHeaders,
           };
         }
