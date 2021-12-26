@@ -19,7 +19,7 @@ npm install react-native-gleapsdk
 import Gleap from "react-native-gleapsdk";
 
 // Initialize it
-Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
+Gleap.initialize('YOUR_API_KEY');
 ```
 
 ## Need help?
