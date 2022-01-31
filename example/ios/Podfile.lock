@@ -10,7 +10,7 @@ PODS:
     - React-jsi (= 0.66.1)
     - ReactCommon/turbomodule/core (= 0.66.1)
   - fmt (6.2.1)
-  - Gleap (6.2.1)
+  - Gleap (6.3.4)
   - glog (0.3.5)
   - RCT-Folly (2021.06.28.00-v2):
     - boost
@@ -210,8 +210,8 @@ PODS:
   - React-jsinspector (0.66.1)
   - React-logger (0.66.1):
     - glog
-  - react-native-gleapsdk (6.2.0):
-    - Gleap (= 6.2.1)
+  - react-native-gleapsdk (6.3.5):
+    - Gleap (= 6.3.4)
     - React-Core
   - React-perflogger (0.66.1)
   - React-RCTActionSheet (0.66.1):
@@ -390,7 +390,7 @@ SPEC CHECKSUMS:
   FBLazyVector: 500821d196c3d1bd10e7e828bc93ce075234080f
   FBReactNativeSpec: 74c869e2cffa2ffec685cd1bac6788c021da6005
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  Gleap: b95f9093c7d44b105080fc9683029e0799bf972b
+  Gleap: 85808ed7b67cb551d035adfb13415d2c3ffc2890
   glog: 5337263514dd6f09803962437687240c5dc39aa4
   RCT-Folly: a21c126816d8025b547704b777a2ba552f3d9fa9
   RCTRequired: 3cc065b52aa18db729268b9bd78a2feffb4d0f91
@@ -404,7 +404,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: db2f6e22a534d466fc0e34e622df47d9d20bab2f
   React-jsinspector: 8c0517dee5e8c70cd6c3066f20213ff7ce54f176
   React-logger: bfddd3418dc1d45b77b822958f3e31422e2c179b
-  react-native-gleapsdk: 223382a13a9bdb6c2988681906acf0ba59beb83c
+  react-native-gleapsdk: e084a049c867394889ba172cf406c5f7cf256499
   React-perflogger: fcac6090a80e3d967791b4c7f1b1a017f9d4a398
   React-RCTActionSheet: caf5913d9f9e605f5467206cf9d1caa6d47d7ad6
   React-RCTAnimation: 6539e3bf594f6a529cd861985ba6548286ae1ead
@@ -421,4 +421,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: d2fc207f8a2c85097067de247f0d94c786b9730a
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.2
