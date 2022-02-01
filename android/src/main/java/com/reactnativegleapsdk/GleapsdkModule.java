@@ -73,6 +73,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("feedbackWillBeSent", null);
                 }
               });
+              
               Gleap.initialize(sdkKey, activity.getApplication());
               Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
                 @Override
@@ -90,10 +91,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   } catch (JSONException e) {
                     e.printStackTrace();
                   }
-
                   getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("customActionTriggered", obj.toString());
                 }
               });
+
               Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
                 @Override
                 public void close() {
@@ -474,6 +475,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void registerConfigLoadedAction(ConfigLoadedCallback configLoadedCallback) {
     Gleap.getInstance().setConfigLoadedCallback(configLoadedCallback);
+
   }
 
   ;
