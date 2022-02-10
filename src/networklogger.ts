@@ -124,8 +124,8 @@ class GleapNetworkIntercepter {
               this.cleanRequests();
             }
           })
-          // eslint-disable-next-line handle-callback-err
           .catch((err: any) => {
+            console.log(err);
             if (this) {
               this.cleanRequests();
             }
