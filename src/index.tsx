@@ -50,17 +50,18 @@ const GleapSdk = NativeModules.Gleapsdk
         },
       }
     );
-const networkLogger = new GleapNetworkIntercepter();
 
-GleapSdk.startNetworkLogging = () => {
-  networkLogger.start();
-};
+if (GleapSdk && !GleapSdk.touched) {
+  const networkLogger = new GleapNetworkIntercepter();
 
-GleapSdk.stopNetworkLogging = () => {
-  networkLogger.setStopped(true);
-};
+  GleapSdk.startNetworkLogging = () => {
+    networkLogger.start();
+  };
 
-if (GleapSdk) {
+  GleapSdk.stopNetworkLogging = () => {
+    networkLogger.setStopped(true);
+  };
+
   var callbacks: any[] = [];
 
   GleapSdk.registerCustomAction = (customActionCallback: any) => {
@@ -68,6 +69,7 @@ if (GleapSdk) {
   };
 
   const gleapEmitter = new NativeEventEmitter(GleapSdk);
+
   gleapEmitter.addListener('configLoaded', (config: any) => {
     try {
       const configJSON = config instanceof Object ? config : JSON.parse(config);
@@ -76,6 +78,7 @@ if (GleapSdk) {
       }
     } catch (exp) {}
   });
+
   gleapEmitter.addListener('feedbackWillBeSent', () => {
     // Push the network log to the native SDK.
     const requests = networkLogger.getRequests();
@@ -85,6 +88,15 @@ if (GleapSdk) {
       GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
     }
   });
+
+  function isJsonString(str: string) {
+    try {
+      JSON.parse(str);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
 
   gleapEmitter.addListener('customActionTriggered', (data: any) => {
     try {
@@ -103,15 +115,8 @@ if (GleapSdk) {
       }
     } catch (exp) {}
   });
-}
 
-function isJsonString(str: string) {
-  try {
-    JSON.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
+  GleapSdk.touched = true;
 }
 
 export default GleapSdk as GleapSdkType;
