@@ -23,7 +23,9 @@ static NSString *const RCTShowDevMenuNotification = @"RCTShowDevMenuNotification
 
 @implementation Gleapsdk
 {
-  BOOL _hasListeners;
+    BOOL _hasListeners;
+    BOOL _invalidated;
+    UITapGestureRecognizer *tapGestureRecognizer;
 }
 
 RCT_EXPORT_MODULE()
@@ -65,13 +67,13 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
         [self initializeGestureRecognizer];
     }
     
-    if (_hasListeners) {
+    if (_hasListeners && !_invalidated) {
         [self sendEventWithName:@"configLoaded" body: config];
     }
 }
 
 - (void)initializeGestureRecognizer {
-    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(handleTapGestureActivation:)];
+    tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(handleTapGestureActivation:)];
     tapGestureRecognizer.numberOfTapsRequired = 2;
     tapGestureRecognizer.numberOfTouchesRequired = 3;
     tapGestureRecognizer.cancelsTouchesInView = false;
@@ -90,25 +92,25 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (void)feedbackWillBeSent {
-    if (_hasListeners) {
+    if (_hasListeners && !_invalidated) {
         [self sendEventWithName:@"feedbackWillBeSent" body:@{}];
     }
 }
 
 - (void)feedbackSendingFailed {
-    if (_hasListeners) {
+    if (_hasListeners && !_invalidated) {
         [self sendEventWithName:@"feedbackSendingFailed" body:@{}];
     }
 }
 
 - (void)feedbackSent {
-    if (_hasListeners) {
+    if (_hasListeners && !_invalidated) {
         [self sendEventWithName:@"feedbackSent" body:@{}];
     }
 }
 
 - (void)customActionCalled:(NSString *)customAction {
-    if (_hasListeners) {
+    if (_hasListeners && !_invalidated) {
         [self sendEventWithName:@"customActionTriggered" body:@{
             @"name": customAction
         }];
@@ -269,4 +271,14 @@ RCT_EXPORT_METHOD(addAttachment:(NSString *)base64file withFileName:(NSString *)
     });
 }
 
+- (void)invalidate {
+    [super invalidate];
+    
+    _invalidated = YES;
+    if (tapGestureRecognizer != nil) {
+        [[[[UIApplication sharedApplication] delegate] window] removeGestureRecognizer: tapGestureRecognizer];
+    }
+}
+
 @end
+
