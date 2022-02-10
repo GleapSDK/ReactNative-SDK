@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.facebook.react.ReactApplication;
+import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -37,9 +38,10 @@ import io.gleap.GleapUserProperties;
 import io.gleap.RequestType;
 
 @ReactModule(name = GleapsdkModule.NAME)
-public class GleapsdkModule extends ReactContextBaseJavaModule {
+public class GleapsdkModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
   public static final String NAME = "Gleapsdk";
   private boolean isSilentBugReport = false;
+  private boolean invalidated = false;
 
   public GleapsdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -65,12 +67,14 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           try {
             Activity activity = getReactApplicationContext()
               .getCurrentActivity();
-            if (activity != null) {
+            if (activity != null && !invalidated) {
               Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
               Gleap.getInstance().setFeedbackWillBeSentCallback(new FeedbackWillBeSentCallback() {
                 @Override
                 public void flowInvoced() {
-                  getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("feedbackWillBeSent", null);
+                  if (!invalidated) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("feedbackWillBeSent", null);
+                  }
                 }
               });
               
@@ -78,7 +82,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
                 @Override
                 public void configLoaded(JSONObject jsonObject) {
-                  getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("configLoaded", jsonObject.toString());
+                  if (!invalidated) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("configLoaded", jsonObject.toString());
+                  }
                 }
               });
 
@@ -91,7 +97,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   } catch (JSONException e) {
                     e.printStackTrace();
                   }
-                  getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("customActionTriggered", obj.toString());
+                  if (!invalidated) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("customActionTriggered", obj.toString());
+                  }
                 }
               });
 
@@ -111,10 +119,21 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               });
             }
           } catch (Exception ex) {
+            System.out.println(ex);
           }
         }
       }
     );
+  }
+
+  @ReactMethod
+  public void addListener(String eventName) {
+    // Set up any upstream listeners or background tasks as necessary
+  }
+
+  @ReactMethod
+  public void removeListeners(Integer count) {
+    // Remove upstream listeners, stop unnecessary background tasks
   }
 
   /**
@@ -525,5 +544,26 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           mainHandler.post(myRunnable);
         }
       });
+  }
+
+  @Override
+  public void onHostResume() {}
+
+  @Override
+  public void onHostPause() {}
+
+  @Override
+  public void onHostDestroy() {}
+
+  @Override
+  public void onCatalystInstanceDestroy() {
+    invalidated = true;
+    super.onCatalystInstanceDestroy();
+  }
+  
+  @Override
+  public void invalidate() {
+    invalidated = true;
+    super.invalidate();
   }
 }
