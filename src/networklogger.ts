@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 class GleapNetworkIntercepter {
   requestId = 0;
   requests: any = {};
@@ -32,7 +33,11 @@ class GleapNetworkIntercepter {
     }
 
     var startDate = this.requests[gleapRequestId].date;
-    if (startDate && !Object.isFrozen(this.requests[gleapRequestId])) {
+    if (
+      startDate &&
+      typeof startDate.getTime === 'function' &&
+      !Object.isFrozen(this.requests[gleapRequestId])
+    ) {
       this.requests[gleapRequestId].duration =
         new Date().getTime() - startDate.getTime();
       this.requests[gleapRequestId].date =
@@ -105,20 +110,25 @@ class GleapNetworkIntercepter {
         req
           .text()
           .then((responseText: any) => {
-            this.requests[gleapRequestId].success = true;
-            this.requests[gleapRequestId].response = {
-              status: req.status,
-              statusText: req.statusText,
-              responseText: this.contentSizeOk(responseText)
-                ? responseText
-                : '<response_too_large>',
-            };
+            if (this.requests && this.requests[gleapRequestId]) {
+              this.requests[gleapRequestId].success = true;
+              this.requests[gleapRequestId].response = {
+                status: req.status,
+                statusText: req.statusText,
+                responseText: this.contentSizeOk(responseText)
+                  ? responseText
+                  : '<response_too_large>',
+              };
 
-            this.calcRequestTime(gleapRequestId);
-            this.cleanRequests();
+              this.calcRequestTime(gleapRequestId);
+              this.cleanRequests();
+            }
           })
-          .catch((err) => {
-            this.cleanRequests();
+          // eslint-disable-next-line handle-callback-err
+          .catch((err: any) => {
+            if (this) {
+              this.cleanRequests();
+            }
           });
       },
       onFetchFailed: (_err: any, gleapRequestId: any) => {
@@ -227,7 +237,13 @@ class GleapNetworkIntercepter {
     // eslint-disable-next-line consistent-this
     var self = this;
 
-    console.log(XMLHttpRequest.prototype.open);
+    // @ts-ignore
+    if (XMLHttpRequest.prototype['gleapTouched']) {
+      return;
+    }
+
+    // @ts-ignore
+    XMLHttpRequest.prototype['gleapTouched'] = true;
 
     // XMLHttpRequest
     const open = XMLHttpRequest.prototype.open;
@@ -238,12 +254,14 @@ class GleapNetworkIntercepter {
       XMLHttpRequest.prototype.setRequestHeader;
     XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
       // @ts-ignore
-      this.wrappedSetRequestHeader(header, value);
-
-      // @ts-ignore
       if (!this.requestHeaders) {
         // @ts-ignore
         this.requestHeaders = {};
+      }
+
+      // @ts-ignore
+      if (this.requestHeaders && this.requestHeaders.hasOwnProperty(header)) {
+        return;
       }
 
       // @ts-ignore
@@ -254,6 +272,8 @@ class GleapNetworkIntercepter {
 
       // @ts-ignore
       this.requestHeaders[header].push(value);
+      // @ts-ignore
+      this.wrappedSetRequestHeader(header, value);
     };
 
     XMLHttpRequest.prototype.open = function () {
@@ -291,20 +311,23 @@ class GleapNetworkIntercepter {
           var gleapRequestId = ++self.requestId;
           callback.onFetch(arguments, gleapRequestId);
 
-          return originalFetch
-            .apply(this, arguments)
-            .then(function (response) {
-              if (response && typeof response.clone === 'function') {
-                const data = response.clone();
-                callback.onFetchLoad(data, gleapRequestId);
-              }
+          return (
+            originalFetch
+              // @ts-ignore
+              .apply(this, arguments)
+              .then(function (response) {
+                if (response && typeof response.clone === 'function') {
+                  const data = response.clone();
+                  callback.onFetchLoad(data, gleapRequestId);
+                }
 
-              return response;
-            })
-            .catch((err) => {
-              callback.onFetchFailed(err, gleapRequestId);
-              throw err;
-            });
+                return response;
+              })
+              .catch((err) => {
+                callback.onFetchFailed(err, gleapRequestId);
+                throw err;
+              })
+          );
         };
       })();
     }
