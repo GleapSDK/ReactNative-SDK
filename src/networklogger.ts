@@ -1,4 +1,4 @@
-class BugBattleNetworkIntercepter {
+class GleapNetworkIntercepter {
   requestId = 0;
   requests: any = {};
   maxRequests = 10;
@@ -83,23 +83,43 @@ class BugBattleNetworkIntercepter {
         this.cleanRequests();
       },
       onFetchLoad: (req: any, gleapRequestId: any) => {
-        if (this.stopped) {
+        if (
+          this.stopped ||
+          !gleapRequestId ||
+          !this.requests ||
+          !this.requests[gleapRequestId]
+        ) {
           return;
         }
 
-        req.text().then((responseText: any) => {
-          this.requests[gleapRequestId].success = true;
-          this.requests[gleapRequestId].response = {
+        try {
+          this.requests[gleapRequestId]['success'] = true;
+          this.requests[gleapRequestId]['response'] = {
             status: req.status,
-            statusText: req.statusText,
-            responseText: this.contentSizeOk(responseText)
-              ? responseText
-              : '<response_too_large>',
+            statusText: '',
+            responseText: '<request_still_open>',
           };
-
           this.calcRequestTime(gleapRequestId);
-          this.cleanRequests();
-        });
+        } catch (exp) {}
+
+        req
+          .text()
+          .then((responseText: any) => {
+            this.requests[gleapRequestId].success = true;
+            this.requests[gleapRequestId].response = {
+              status: req.status,
+              statusText: req.statusText,
+              responseText: this.contentSizeOk(responseText)
+                ? responseText
+                : '<response_too_large>',
+            };
+
+            this.calcRequestTime(gleapRequestId);
+            this.cleanRequests();
+          })
+          .catch((err) => {
+            this.cleanRequests();
+          });
       },
       onFetchFailed: (_err: any, gleapRequestId: any) => {
         if (this.stopped) {
@@ -207,6 +227,8 @@ class BugBattleNetworkIntercepter {
     // eslint-disable-next-line consistent-this
     var self = this;
 
+    console.log(XMLHttpRequest.prototype.open);
+
     // XMLHttpRequest
     const open = XMLHttpRequest.prototype.open;
     const send = XMLHttpRequest.prototype.send;
@@ -269,30 +291,20 @@ class BugBattleNetworkIntercepter {
           var gleapRequestId = ++self.requestId;
           callback.onFetch(arguments, gleapRequestId);
 
-          return (
-            originalFetch
-              // @ts-ignore
-              .apply(this, arguments)
-              .then(function (data) {
-                return data.text().then((textData) => {
-                  data.text = function () {
-                    return Promise.resolve(textData);
-                  };
+          return originalFetch
+            .apply(this, arguments)
+            .then(function (response) {
+              if (response && typeof response.clone === 'function') {
+                const data = response.clone();
+                callback.onFetchLoad(data, gleapRequestId);
+              }
 
-                  data.json = function () {
-                    return Promise.resolve(JSON.parse(textData));
-                  };
-
-                  callback.onFetchLoad(data, gleapRequestId);
-
-                  return data;
-                });
-              })
-              .catch((err) => {
-                callback.onFetchFailed(err, gleapRequestId);
-                throw err;
-              })
-          );
+              return response;
+            })
+            .catch((err) => {
+              callback.onFetchFailed(err, gleapRequestId);
+              throw err;
+            });
         };
       })();
     }
@@ -301,4 +313,4 @@ class BugBattleNetworkIntercepter {
   }
 }
 
-export default BugBattleNetworkIntercepter;
+export default GleapNetworkIntercepter;
