@@ -24,7 +24,6 @@ static NSString *const RCTShowDevMenuNotification = @"RCTShowDevMenuNotification
 @implementation Gleapsdk
 {
     BOOL _hasListeners;
-    BOOL _invalidated;
     UITapGestureRecognizer *tapGestureRecognizer;
 }
 
@@ -67,7 +66,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
         [self initializeGestureRecognizer];
     }
     
-    if (_hasListeners && !_invalidated) {
+    if (_hasListeners) {
         [self sendEventWithName:@"configLoaded" body: config];
     }
 }
@@ -92,25 +91,25 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (void)feedbackWillBeSent {
-    if (_hasListeners && !_invalidated) {
+    if (_hasListeners) {
         [self sendEventWithName:@"feedbackWillBeSent" body:@{}];
     }
 }
 
 - (void)feedbackSendingFailed {
-    if (_hasListeners && !_invalidated) {
+    if (_hasListeners) {
         [self sendEventWithName:@"feedbackSendingFailed" body:@{}];
     }
 }
 
 - (void)feedbackSent {
-    if (_hasListeners && !_invalidated) {
+    if (_hasListeners) {
         [self sendEventWithName:@"feedbackSent" body:@{}];
     }
 }
 
 - (void)customActionCalled:(NSString *)customAction {
-    if (_hasListeners && !_invalidated) {
+    if (_hasListeners) {
         [self sendEventWithName:@"customActionTriggered" body:@{
             @"name": customAction
         }];
@@ -271,10 +270,8 @@ RCT_EXPORT_METHOD(addAttachment:(NSString *)base64file withFileName:(NSString *)
     });
 }
 
-- (void)invalidate {
-    [super invalidate];
-    
-    _invalidated = YES;
+- (void)dealloc
+{
     if (tapGestureRecognizer != nil) {
         [[[[UIApplication sharedApplication] delegate] window] removeGestureRecognizer: tapGestureRecognizer];
     }

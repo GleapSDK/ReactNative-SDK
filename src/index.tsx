@@ -116,6 +116,8 @@ if (GleapSdk && !GleapSdk.touched) {
     } catch (exp) {}
   });
 
+  GleapSdk.removeAllAttachments();
+
   GleapSdk.touched = true;
 }
 

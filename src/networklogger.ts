@@ -98,8 +98,8 @@ class GleapNetworkIntercepter {
         }
 
         try {
-          this.requests[gleapRequestId]['success'] = true;
-          this.requests[gleapRequestId]['response'] = {
+          this.requests[gleapRequestId].success = true;
+          this.requests[gleapRequestId].response = {
             status: req.status,
             statusText: '',
             responseText: '<request_still_open>',
