@@ -24,7 +24,6 @@ static NSString *const RCTShowDevMenuNotification = @"RCTShowDevMenuNotification
 @implementation Gleapsdk
 {
     BOOL _hasListeners;
-    UITapGestureRecognizer *tapGestureRecognizer;
 }
 
 RCT_EXPORT_MODULE()
@@ -38,56 +37,53 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [self initSDK];
+        [Gleap setAutoActivationMethodsDisabled];
         [Gleap initializeWithToken: token];
     });
 }
 
 - (void)configLoaded:(NSDictionary *)config {
+    // Hook up shake gesture recognizer.
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(motionEnded:)
+                                                     name: RCTShowDevMenuNotification
+                                                object: nil];
+    
+    #if !RCT_DEV
+        RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(handleShakeEvent:withEvent:));
+    #endif
+
+    // Add screenshot gesture recognizer
+    NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
+                                                          object:nil
+                                                           queue:mainQueue
+                                                      usingBlock:^(NSNotification *note) {
+        if ([[Gleap sharedInstance] isActivationMethodActive: SCREENSHOT]) {
+            [Gleap startFeedbackFlow];
+        }
+    }];
+
+    NSMutableArray *activationMethods = [[NSMutableArray alloc] init];
     if ([config objectForKey: @"activationMethodShake"] != nil && [[config objectForKey: @"activationMethodShake"] boolValue] == YES) {
-        [[NSNotificationCenter defaultCenter] addObserver: self
-                                                     selector: @selector(motionEnded:)
-                                                         name: RCTShowDevMenuNotification
-                                                    object: nil];
-        
-        #if !RCT_DEV
-            RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(handleShakeEvent:withEvent:));
-        #endif
+        [activationMethods addObject: @(SHAKE)];
     }
     if ([config objectForKey: @"activationMethodScreenshotGesture"] != nil && [[config objectForKey: @"activationMethodScreenshotGesture"] boolValue] == YES) {
-        NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
-            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
-                                                              object:nil
-                                                               queue:mainQueue
-                                                          usingBlock:^(NSNotification *note) {
-                                                            [Gleap startFeedbackFlow];
-                                                          }];
+        [activationMethods addObject: @(SCREENSHOT)];
     }
-    if ([config objectForKey: @"activationMethodThreeFingerDoubleTab"] != nil && [[config objectForKey: @"activationMethodThreeFingerDoubleTab"] boolValue] == YES) {
-        [self initializeGestureRecognizer];
-    }
+    
+    [[Gleap sharedInstance] setActivationMethods: activationMethods];
     
     if (_hasListeners) {
         [self sendEventWithName:@"configLoaded" body: config];
     }
 }
 
-- (void)initializeGestureRecognizer {
-    tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(handleTapGestureActivation:)];
-    tapGestureRecognizer.numberOfTapsRequired = 2;
-    tapGestureRecognizer.numberOfTouchesRequired = 3;
-    tapGestureRecognizer.cancelsTouchesInView = false;
-    
-    [[[[UIApplication sharedApplication] delegate] window] addGestureRecognizer: tapGestureRecognizer];
-}
-
-- (void)handleTapGestureActivation: (UITapGestureRecognizer *)recognizer
-{
-    [Gleap startFeedbackFlow];
-}
-
 - (void)motionEnded:(NSNotification *)notification
 {
-    [Gleap startFeedbackFlow];
+    if ([[Gleap sharedInstance] isActivationMethodActive: SHAKE]) {
+        [Gleap startFeedbackFlow];
+    }
 }
 
 - (void)feedbackWillBeSent {
@@ -272,9 +268,9 @@ RCT_EXPORT_METHOD(addAttachment:(NSString *)base64file withFileName:(NSString *)
 
 - (void)dealloc
 {
-    if (tapGestureRecognizer != nil) {
-        [[[[UIApplication sharedApplication] delegate] window] removeGestureRecognizer: tapGestureRecognizer];
-    }
+    @try{
+       [[NSNotificationCenter defaultCenter] removeObserver: self];
+    } @catch(id anException) {}
 }
 
 @end
