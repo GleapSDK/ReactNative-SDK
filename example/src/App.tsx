@@ -29,16 +29,7 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          fetch('https://api.npms.io/v2/search?q=react')
-            .then((response) => response.json())
-            .then((data) => {
-              console.log(data);
-            });
-
-          var xmlHttp = new XMLHttpRequest();
-          xmlHttp.onreadystatechange = function () {};
-          xmlHttp.open('GET', 'https://api.npms.io/v2/search?q=react', true); // true for asynchronous
-          xmlHttp.send(null);
+          Gleap.setActivationMethods(['SCREENSHOT']);
         }}
       >
         <Image

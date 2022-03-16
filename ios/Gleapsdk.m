@@ -147,6 +147,24 @@ RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
     });
 }
 
+
+RCT_EXPORT_METHOD(setActivationMethods:(NSArray *)activationMethods)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSMutableArray *internalActivationMethods = [[NSMutableArray alloc] init];
+        for (int i = 0; i < activationMethods.count; i++) {
+            if ([[activationMethods objectAtIndex: i] isEqualToString: @"SHAKE"]) {
+                [internalActivationMethods addObject: @(SHAKE)];
+            }
+            if ([[activationMethods objectAtIndex: i] isEqualToString: @"SCREENSHOT"]) {
+                [internalActivationMethods addObject: @(SCREENSHOT)];
+            }
+        }
+        
+        [Gleap setActivationMethods: internalActivationMethods];
+    });
+}
+
 RCT_EXPORT_METHOD(startFeedbackFlow:(NSString *)feedbackFlow)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

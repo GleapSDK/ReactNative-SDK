@@ -12,6 +12,8 @@ export type GleapUserProperty = {
   name?: string;
 };
 
+type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
+
 type GleapSdkType = {
   initialize(token: string): void;
   open(): void;
@@ -38,6 +40,7 @@ type GleapSdkType = {
   startNetworkLogging(): void;
   stopNetworkLogging(): void;
   enableDebugConsoleLog(): void;
+  setActivationMethods(activationMethods: GleapActivationMethod[]): void;
 };
 
 const GleapSdk = NativeModules.Gleapsdk
