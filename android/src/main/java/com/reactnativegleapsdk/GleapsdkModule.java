@@ -13,6 +13,7 @@ import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -24,6 +25,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +36,7 @@ import io.gleap.CustomActionCallback;
 import io.gleap.FeedbackSentCallback;
 import io.gleap.FeedbackWillBeSentCallback;
 import io.gleap.Gleap;
+import io.gleap.GleapActivationMethod;
 import io.gleap.GleapUserProperties;
 import io.gleap.RequestType;
 
@@ -77,7 +80,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                   }
                 }
               });
-              
+
               Gleap.initialize(sdkKey, activity.getApplication());
               Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
                 @Override
@@ -377,7 +380,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     }
     Gleap.getInstance().setActivationMethods(internalActivationMethods.toArray(new GleapActivationMethod[internalActivationMethods.size()]));
   }
-  
+
 
   /**
    * Clears all custom data.
@@ -581,7 +584,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     invalidated = true;
     super.onCatalystInstanceDestroy();
   }
-  
+
   @Override
   public void invalidate() {
     invalidated = true;

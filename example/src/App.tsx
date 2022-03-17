@@ -29,7 +29,7 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Gleap.setActivationMethods(['SCREENSHOT']);
+          Gleap.setActivationMethods(['SCREENSHOT', 'SHAKE']);
         }}
       >
         <Image
