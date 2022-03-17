@@ -359,6 +359,27 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
 
 
   /**
+   * Sets an array of activation methods.
+   *
+   * @param activationMethods Array of activation methods.
+   * @author Gleap
+   */
+  @ReactMethod
+  public void setActivationMethods(ReadableArray activationMethods) {
+    ArrayList<GleapActivationMethod> internalActivationMethods = new ArrayList<>();
+    for (int i = 0; i < activationMethods.size(); i++) {
+      if (activationMethods.getString(i).equalsIgnoreCase("SHAKE")) {
+        internalActivationMethods.add(GleapActivationMethod.SHAKE);
+      }
+      if (activationMethods.getString(i).equalsIgnoreCase("SCREENSHOT")) {
+        internalActivationMethods.add(GleapActivationMethod.SCREENSHOT);
+      }
+    }
+    Gleap.getInstance().setActivationMethods(internalActivationMethods.toArray(new GleapActivationMethod[internalActivationMethods.size()]));
+  }
+  
+
+  /**
    * Clears all custom data.
    */
   @ReactMethod

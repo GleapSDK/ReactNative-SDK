@@ -10,7 +10,7 @@ export default function App() {
     Gleap.setCustomData('b', 'c');
     Gleap.removeCustomDataForKey('b');
     Gleap.logEvent('ARE', { key: 'MOP' });
-    Gleap.setLanguage('fr');
+    Gleap.setLanguage('en');
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.logEvent('ARE', { key: 'MOP' });
