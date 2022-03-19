@@ -98,9 +98,9 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
-- (void)feedbackSent {
+- (void)feedbackSent:(NSDictionary *)data {
     if (_hasListeners) {
-        [self sendEventWithName:@"feedbackSent" body:@{}];
+        [self sendEventWithName:@"feedbackSent" body: data];
     }
 }
 
