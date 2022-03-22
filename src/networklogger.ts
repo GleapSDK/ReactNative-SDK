@@ -125,7 +125,6 @@ class GleapNetworkIntercepter {
             }
           })
           .catch((err: any) => {
-            console.log(err);
             if (this) {
               this.cleanRequests();
             }
