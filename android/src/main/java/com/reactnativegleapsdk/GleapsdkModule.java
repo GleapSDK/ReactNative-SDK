@@ -34,6 +34,7 @@ import io.gleap.APPLICATIONTYPE;
 import io.gleap.ConfigLoadedCallback;
 import io.gleap.CustomActionCallback;
 import io.gleap.FeedbackSentCallback;
+import io.gleap.FeedbackSentWithDataCallback;
 import io.gleap.FeedbackWillBeSentCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
@@ -103,6 +104,22 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                   if (!invalidated) {
                     getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("customActionTriggered", obj.toString());
                   }
+                }
+              });
+
+              Gleap.getInstance().setFeedbackSentWithDataCallback(new FeedbackSentWithDataCallback() {
+                @Override
+                public void close(JSONObject jsonObject) {
+                  getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("feedbackSent", jsonObject.toString());
+                  new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                      @Override
+                      public void run() {
+                        showDevMenu();
+                      }
+                    },
+                    500
+                  );
                 }
               });
 
@@ -518,7 +535,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   @ReactMethod
   public void registerConfigLoadedAction(ConfigLoadedCallback configLoadedCallback) {
     Gleap.getInstance().setConfigLoadedCallback(configLoadedCallback);
-
   }
 
   ;
