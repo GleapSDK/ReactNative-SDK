@@ -33,6 +33,7 @@ type GleapSdkType = {
   registerCustomAction(
     customActionCallback: (data: { name: string }) => void
   ): void;
+  registerListener(eventType: string, callback: (data?: any) => void): void;
   setLanguage(language: string): void;
   logEvent(name: string, data: any): void;
   addAttachment(base64file: string, fileName: string): void;
@@ -65,13 +66,32 @@ if (GleapSdk && !GleapSdk.touched) {
     networkLogger.setStopped(true);
   };
 
-  var callbacks: any[] = [];
+  var callbacks: any = {};
 
-  GleapSdk.registerCustomAction = (customActionCallback: any) => {
-    callbacks.push(customActionCallback);
+  GleapSdk.registerListener = (eventType: string, callback: any) => {
+    if (!callbacks[eventType]) {
+      callbacks[eventType] = [];
+    }
+    callbacks[eventType].push(callback);
   };
 
-  const gleapEmitter = new NativeEventEmitter(GleapSdk);
+  GleapSdk.registerCustomAction = (customActionCallback: any) => {
+    GleapSdk.registerListener('customActionTriggered', customActionCallback);
+  };
+
+  const notifyCallback = function (eventType: string, data?: any) {
+    console.log(eventType);
+    console.log(data);
+    if (callbacks && callbacks[eventType] && callbacks[eventType].length > 0) {
+      for (var i = 0; i < callbacks[eventType].length; i++) {
+        if (callbacks[eventType][i]) {
+          callbacks[eventType][i](data);
+        }
+      }
+    }
+  };
+
+  const gleapEmitter = new NativeEventEmitter(NativeModules.Gleapsdk);
 
   gleapEmitter.addListener('configLoaded', (config: any) => {
     try {
@@ -79,7 +99,10 @@ if (GleapSdk && !GleapSdk.touched) {
       if (configJSON.enableNetworkLogs) {
         GleapSdk.startNetworkLogging();
       }
-    } catch (exp) {}
+      notifyCallback('configLoaded', configJSON);
+    } catch (exp) {
+      console.log(exp);
+    }
   });
 
   gleapEmitter.addListener('feedbackWillBeSent', () => {
@@ -90,6 +113,16 @@ if (GleapSdk && !GleapSdk.touched) {
     } else {
       GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
     }
+
+    notifyCallback('feedbackWillBeSent');
+  });
+
+  gleapEmitter.addListener('feedbackSent', (data) => {
+    notifyCallback('feedbackSent', data);
+  });
+
+  gleapEmitter.addListener('feedbackSendingFailed', () => {
+    notifyCallback('feedbackSendingFailed');
   });
 
   function isJsonString(str: string) {
@@ -107,14 +140,10 @@ if (GleapSdk && !GleapSdk.touched) {
         data = JSON.parse(data);
       }
       const { name } = data;
-      if (name && callbacks.length > 0) {
-        for (var i = 0; i < callbacks.length; i++) {
-          if (callbacks[i]) {
-            callbacks[i]({
-              name,
-            });
-          }
-        }
+      if (name) {
+        notifyCallback('customActionTriggered', {
+          name,
+        });
       }
     } catch (exp) {}
   });
