@@ -80,8 +80,6 @@ if (GleapSdk && !GleapSdk.touched) {
   };
 
   const notifyCallback = function (eventType: string, data?: any) {
-    console.log(eventType);
-    console.log(data);
     if (callbacks && callbacks[eventType] && callbacks[eventType].length > 0) {
       for (var i = 0; i < callbacks[eventType].length; i++) {
         if (callbacks[eventType][i]) {

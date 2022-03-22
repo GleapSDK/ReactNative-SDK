@@ -12,7 +12,7 @@ Gleap.registerListener('customActionTriggered', (data) => {
 
 Gleap.registerListener('configLoaded', (data) => {
   console.log('configLoaded');
-  // console.log(data);
+  console.log(data);
 });
 
 Gleap.registerListener('feedbackWillBeSent', (data) => {
