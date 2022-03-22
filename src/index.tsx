@@ -98,9 +98,7 @@ if (GleapSdk && !GleapSdk.touched) {
         GleapSdk.startNetworkLogging();
       }
       notifyCallback('configLoaded', configJSON);
-    } catch (exp) {
-      console.log(exp);
-    }
+    } catch (exp) {}
   });
 
   gleapEmitter.addListener('feedbackWillBeSent', () => {
@@ -116,7 +114,10 @@ if (GleapSdk && !GleapSdk.touched) {
   });
 
   gleapEmitter.addListener('feedbackSent', (data) => {
-    notifyCallback('feedbackSent', data);
+    try {
+      const dataJSON = data instanceof Object ? data : JSON.parse(data);
+      notifyCallback('feedbackSent', dataJSON);
+    } catch (exp) {}
   });
 
   gleapEmitter.addListener('feedbackSendingFailed', () => {
