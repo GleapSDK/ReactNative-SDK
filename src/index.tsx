@@ -22,6 +22,11 @@ type GleapSdkType = {
     description: string,
     severity: 'LOW' | 'MEDIUM' | 'HIGH'
   ): void;
+  sendSilentBugReportWithType(
+    description: string,
+    severity: 'LOW' | 'MEDIUM' | 'HIGH',
+    type: string
+  ): void;
   identify(userId: string, userProperties: GleapUserProperty): void;
   clearIdentity(): void;
   setApiUrl(apiUrl: string): void;
