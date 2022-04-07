@@ -35,6 +35,7 @@ import io.gleap.CustomActionCallback;
 import io.gleap.FeedbackSentCallback;
 import io.gleap.FeedbackSentWithDataCallback;
 import io.gleap.FeedbackWillBeSentCallback;
+import io.gleap.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
 import io.gleap.GleapUserProperties;
@@ -48,6 +49,12 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
 
   public GleapsdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
+    Gleap.getInstance().setGetActivityCallback(new GetActivityCallback() {
+      @Override
+      public Activity getActivity() {
+        return reactContext.getCurrentActivity();
+      }
+    });
   }
 
   @Override
