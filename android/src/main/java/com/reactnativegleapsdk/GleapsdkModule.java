@@ -628,9 +628,4 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     super.onCatalystInstanceDestroy();
   }
 
-  @Override
-  public void invalidate() {
-    invalidated = true;
-    super.invalidate();
-  }
 }
