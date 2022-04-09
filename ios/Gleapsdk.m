@@ -140,6 +140,20 @@ RCT_EXPORT_METHOD(sendSilentBugReport:(NSString *)description andSeverity:(NSStr
     });
 }
 
+RCT_EXPORT_METHOD(sendSilentBugReportWithType:(NSString *)description andSeverity:(NSString *)priority andType:(NSString *)type)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        GleapBugSeverity prio = MEDIUM;
+        if ([priority isEqualToString: @"LOW"]) {
+            prio = LOW;
+        }
+        if ([priority isEqualToString: @"HIGH"]) {
+            prio = HIGH;
+        }
+        [Gleap sendSilentBugReportWith: description andSeverity: prio andType: type];
+    });
+}
+
 RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
