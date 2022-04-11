@@ -29,7 +29,11 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Gleap.setActivationMethods(['SCREENSHOT', 'SHAKE']);
+          Gleap.sendSilentBugReportWithType(
+            'A crash happened.',
+            'LOW',
+            'CRASH'
+          );
         }}
       >
         <Image
