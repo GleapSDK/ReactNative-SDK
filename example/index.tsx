@@ -3,7 +3,8 @@ import App from './src/App';
 import Gleap from 'react-native-gleapsdk';
 import { name as appName } from './app.json';
 
-Gleap.initialize('g4yw8blWFi0d50TubfV4iyN6HGG5Z2c1');
+// Gleap.setActivationMethods(['SCREENSHOT']);
+Gleap.initialize('DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc');
 
 Gleap.registerListener('customActionTriggered', (data) => {
   console.log('customActionTriggered');

@@ -64,15 +64,17 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
         }
     }];
 
-    NSMutableArray *activationMethods = [[NSMutableArray alloc] init];
-    if ([config objectForKey: @"activationMethodShake"] != nil && [[config objectForKey: @"activationMethodShake"] boolValue] == YES) {
-        [activationMethods addObject: @(SHAKE)];
+    if ([Gleap sharedInstance].activationMethods.count == 0) {
+        NSMutableArray *activationMethods = [[NSMutableArray alloc] init];
+        if ([config objectForKey: @"activationMethodShake"] != nil && [[config objectForKey: @"activationMethodShake"] boolValue] == YES) {
+            [activationMethods addObject: @(SHAKE)];
+        }
+        if ([config objectForKey: @"activationMethodScreenshotGesture"] != nil && [[config objectForKey: @"activationMethodScreenshotGesture"] boolValue] == YES) {
+            [activationMethods addObject: @(SCREENSHOT)];
+        }
+        
+        [[Gleap sharedInstance] setActivationMethods: activationMethods];
     }
-    if ([config objectForKey: @"activationMethodScreenshotGesture"] != nil && [[config objectForKey: @"activationMethodScreenshotGesture"] boolValue] == YES) {
-        [activationMethods addObject: @(SCREENSHOT)];
-    }
-    
-    [[Gleap sharedInstance] setActivationMethods: activationMethods];
     
     if (_hasListeners) {
         [self sendEventWithName:@"configLoaded" body: config];
