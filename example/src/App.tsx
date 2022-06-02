@@ -10,16 +10,20 @@ export default function App() {
     Gleap.setCustomData('b', 'c');
     Gleap.removeCustomDataForKey('b');
     Gleap.logEvent('ARE', { key: 'MOP' });
-    Gleap.setLanguage('de-AT');
+    Gleap.setLanguage('AR_IQ');
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.addAttachment(SampleData.img, 'test.jpg');
 
-    Gleap.identifyWithUserHash('12334', {
-      name: 'Franzi',
-      email: 'lukas@boehlerbrothers.com',
-    }, "asdfasdf");
+    Gleap.identifyWithUserHash(
+      '12334',
+      {
+        name: 'Franzi',
+        email: 'lukas@boehlerbrothers.com',
+      },
+      'asdfasdf'
+    );
 
     Gleap.registerCustomAction((data) => {
       console.log(data);
@@ -30,19 +34,22 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Gleap.sendSilentCrashReportWithExcludeData(
-            'A crash happened.',
-            'LOW',
-            {
-              screenshot: true,
-              replays: true,
-              customData: true,
-              networkLogs: true,
-              attachments: true,
-              consoleLog: true,
-              customEventLog: true,
-              metaData: true,
-            }
+          // Gleap.sendSilentCrashReportWithExcludeData(
+          //   'A crash happened.',
+          //   'LOW',
+          //   {
+          //     screenshot: true,
+          //     replays: true,
+          //     customData: true,
+          //     networkLogs: true,
+          //     attachments: true,
+          //     consoleLog: true,
+          //     customEventLog: true,
+          //     metaData: true,
+          //   }
+          //);
+          fetch('https://6170243923781c00172898a1.mockapi.io/users').then(
+            (data) => console.log(data)
           );
         }}
       >
