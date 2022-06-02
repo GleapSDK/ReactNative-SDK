@@ -265,6 +265,13 @@ RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary 
     });
 }
 
+RCT_EXPORT_METHOD(preFillForm:(NSDictionary *)formData)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap preFillForm: formData];
+    });
+}
+
 RCT_EXPORT_METHOD(attachCustomData:(NSDictionary *)customData)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
