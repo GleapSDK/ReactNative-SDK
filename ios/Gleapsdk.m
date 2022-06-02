@@ -59,12 +59,12 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
                                                           object:nil
                                                            queue:mainQueue
                                                       usingBlock:^(NSNotification *note) {
-        if ([[Gleap sharedInstance] isActivationMethodActive: SCREENSHOT]) {
-            [Gleap startFeedbackFlow];
+        if ([Gleap isActivationMethodActive: SCREENSHOT]) {
+            [Gleap open];
         }
     }];
 
-    if ([Gleap sharedInstance].activationMethods.count == 0) {
+    if ([Gleap getActivationMethods].count == 0) {
         NSMutableArray *activationMethods = [[NSMutableArray alloc] init];
         if ([config objectForKey: @"activationMethodShake"] != nil && [[config objectForKey: @"activationMethodShake"] boolValue] == YES) {
             [activationMethods addObject: @(SHAKE)];
@@ -73,7 +73,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
             [activationMethods addObject: @(SCREENSHOT)];
         }
         
-        [[Gleap sharedInstance] setActivationMethods: activationMethods];
+        [Gleap setActivationMethods: activationMethods];
     }
     
     if (_hasListeners) {
@@ -83,20 +83,32 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 
 - (void)motionEnded:(NSNotification *)notification
 {
-    if ([[Gleap sharedInstance] isActivationMethodActive: SHAKE]) {
-        [Gleap startFeedbackFlow];
+    if ([Gleap isActivationMethodActive: SHAKE]) {
+        [Gleap open];
     }
 }
 
-- (void)feedbackWillBeSent {
+- (void)feedbackWillBeSent:(NSDictionary *)formData {
     if (_hasListeners) {
-        [self sendEventWithName:@"feedbackWillBeSent" body:@{}];
+        [self sendEventWithName:@"feedbackWillBeSent" body: formData];
     }
 }
 
 - (void)feedbackSendingFailed {
     if (_hasListeners) {
         [self sendEventWithName:@"feedbackSendingFailed" body:@{}];
+    }
+}
+
+- (void)widgetOpened {
+    if (_hasListeners) {
+        [self sendEventWithName:@"widgetOpened" body:@{}];
+    }
+}
+
+- (void)widgetClosed {
+    if (_hasListeners) {
+        [self sendEventWithName:@"widgetClosed" body:@{}];
     }
 }
 
@@ -114,6 +126,12 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
+- (void)feedbackFlowStarted:(NSDictionary *)feedbackAction {
+    if (_hasListeners) {
+        [self sendEventWithName:@"feedbackFlowStarted" body: feedbackAction];
+    }
+}
+
 - (void)startObserving
 {
   _hasListeners = YES;
@@ -125,44 +143,45 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"feedbackWillBeSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered"];
+    return @[@"feedbackSent", @"feedbackWillBeSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed"];
 }
 
-RCT_EXPORT_METHOD(sendSilentBugReport:(NSString *)description andSeverity:(NSString *)priority)
+RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         GleapBugSeverity prio = MEDIUM;
-        if ([priority isEqualToString: @"LOW"]) {
+        if ([severity isEqualToString: @"LOW"]) {
             prio = LOW;
         }
-        if ([priority isEqualToString: @"HIGH"]) {
+        if ([severity isEqualToString: @"HIGH"]) {
             prio = HIGH;
         }
-        [Gleap sendSilentBugReportWith: description andSeverity: prio];
+        
+        [Gleap sendSilentCrashReportWith: description andSeverity: prio andDataExclusion: nil andCompletion:^(bool success) {}];
     });
 }
 
-RCT_EXPORT_METHOD(sendSilentBugReportWithType:(NSString *)description andSeverity:(NSString *)priority andType:(NSString *)type)
+RCT_EXPORT_METHOD(sendSilentCrashReportWithExcludeData:(NSString *)description andSeverity:(NSString *)severity andExcludeData:(NSDictionary *)excludeData)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         GleapBugSeverity prio = MEDIUM;
-        if ([priority isEqualToString: @"LOW"]) {
+        if ([severity isEqualToString: @"LOW"]) {
             prio = LOW;
         }
-        if ([priority isEqualToString: @"HIGH"]) {
+        if ([severity isEqualToString: @"HIGH"]) {
             prio = HIGH;
         }
-        [Gleap sendSilentBugReportWith: description andSeverity: prio andType: type];
+        
+        [Gleap sendSilentCrashReportWith: description andSeverity: prio andDataExclusion: excludeData andCompletion:^(bool success) {}];
     });
 }
 
 RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [Gleap attachData: @{ @"networkLogs": networkLogs }];
+        [Gleap attachExternalData: @{ @"networkLogs": networkLogs }];
     });
 }
-
 
 RCT_EXPORT_METHOD(setActivationMethods:(NSArray *)activationMethods)
 {
@@ -181,10 +200,10 @@ RCT_EXPORT_METHOD(setActivationMethods:(NSArray *)activationMethods)
     });
 }
 
-RCT_EXPORT_METHOD(startFeedbackFlow:(NSString *)feedbackFlow)
+RCT_EXPORT_METHOD(startFeedbackFlow:(NSString *)feedbackFlow andShowBackButton:(BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [Gleap startFeedbackFlow: feedbackFlow];
+        [Gleap startFeedbackFlow: feedbackFlow showBackButton: showBackButton];
     });
 }
 
@@ -213,6 +232,21 @@ RCT_EXPORT_METHOD(clearIdentity)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [Gleap clearIdentity];
+    });
+}
+
+RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (NSDictionary *)userProperties andUserHash:(NSString *)userHash)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        GleapUserProperty *userProperty = [[GleapUserProperty alloc] init];
+        if (userProperties != nil && [userProperties objectForKey: @"name"] != nil) {
+            userProperty.name = [userProperties objectForKey: @"name"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"email"] != nil) {
+            userProperty.email = [userProperties objectForKey: @"email"];
+        }
+        
+        [Gleap identifyUserWith: userId andData: userProperty andUserHash: userHash];
     });
 }
 
@@ -266,10 +300,10 @@ RCT_EXPORT_METHOD(setApiUrl: (NSString *)apiUrl)
     });
 }
 
-RCT_EXPORT_METHOD(setWidgetUrl: (NSString *)apiUrl)
+RCT_EXPORT_METHOD(setFrameUrl: (NSString *)frameUrl)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [Gleap setWidgetUrl: apiUrl];
+        [Gleap setFrameUrl: frameUrl];
     });
 }
 

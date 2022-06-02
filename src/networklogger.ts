@@ -45,16 +45,44 @@ class GleapNetworkIntercepter {
     }
   }
 
-  contentSizeOk(text: string) {
+  getTextContentSizeOk(text: string) {
     if (text && text.length) {
       const size = text.length * 16;
       const kiloBytes = size / 1024;
       const megaBytes = kiloBytes / 1024;
-      if (megaBytes < 0.5) {
+      if (megaBytes < 0.2) {
         return true;
       }
     }
     return false;
+  }
+
+  prepareContent(text: string) {
+    if (!this.getTextContentSizeOk(text)) {
+      return "<content_too_large>";
+    }
+
+    return text;
+  }
+
+  cleanupPayload(payload: any) {
+    if (payload === undefined || payload === null) {
+      return "{}";
+    }
+
+    try {
+      if (ArrayBuffer.isView(payload)) {
+        return `{ type: "binary", length: ${payload.byteLength} }`;
+      }
+    } catch (exp) { }
+
+    return payload;
+  }
+
+  preparePayload(payload: any) {
+    console.log(payload);
+    var payloadText = this.cleanupPayload(payload);
+    return this.prepareContent(payloadText);
   }
 
   start() {
@@ -69,7 +97,7 @@ class GleapNetworkIntercepter {
           var method = params[1].method ? params[1].method : 'GET';
           this.requests[gleapRequestId] = {
             request: {
-              payload: params[1].body,
+              payload: this.preparePayload(params[1].body),
               headers: params[1].headers,
             },
             type: method,
@@ -115,9 +143,7 @@ class GleapNetworkIntercepter {
               this.requests[gleapRequestId].response = {
                 status: req.status,
                 statusText: req.statusText,
-                responseText: this.contentSizeOk(responseText)
-                  ? responseText
-                  : '<response_too_large>',
+                responseText: this.prepareContent(responseText),
               };
 
               this.calcRequestTime(gleapRequestId);
@@ -171,7 +197,7 @@ class GleapNetworkIntercepter {
           this.requests[request.gleapRequestId]
         ) {
           this.requests[request.gleapRequestId].request = {
-            payload: args.length > 0 ? args[0] : '',
+            payload: this.preparePayload(args.length > 0 ? args[0] : ''),
             headers: request.requestHeaders,
           };
         }
@@ -219,9 +245,7 @@ class GleapNetworkIntercepter {
           this.requests[request.gleapRequestId].success = true;
           this.requests[request.gleapRequestId].response = {
             status: request.status,
-            responseText: this.contentSizeOk(responseText)
-              ? responseText
-              : '<response_too_large>',
+            responseText: this.prepareContent(responseText),
           };
 
           this.calcRequestTime(request.gleapRequestId);

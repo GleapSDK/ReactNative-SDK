@@ -10,15 +10,16 @@ export default function App() {
     Gleap.setCustomData('b', 'c');
     Gleap.removeCustomDataForKey('b');
     Gleap.logEvent('ARE', { key: 'MOP' });
-    Gleap.setLanguage('en');
+    Gleap.setLanguage('de-AT');
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.addAttachment(SampleData.img, 'test.jpg');
-    Gleap.identify('12334', {
+
+    Gleap.identifyWithUserHash('12334', {
       name: 'Franzi',
       email: 'lukas@boehlerbrothers.com',
-    });
+    }, "asdfasdf");
 
     Gleap.registerCustomAction((data) => {
       console.log(data);
@@ -29,10 +30,19 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Gleap.sendSilentBugReportWithType(
+          Gleap.sendSilentCrashReportWithExcludeData(
             'A crash happened.',
             'LOW',
-            'CRASH'
+            {
+              screenshot: true,
+              replays: true,
+              customData: true,
+              networkLogs: true,
+              attachments: true,
+              consoleLog: true,
+              customEventLog: true,
+              metaData: true,
+            }
           );
         }}
       >

@@ -16,28 +16,38 @@ type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
 
 type GleapSdkType = {
   initialize(token: string): void;
-  open(): void;
-  startFeedbackFlow(feedbackFlow: string): void;
-  sendSilentBugReport(
-    description: string,
-    severity: 'LOW' | 'MEDIUM' | 'HIGH'
-  ): void;
-  sendSilentBugReportWithType(
+  startFeedbackFlow(feedbackFlow: string, showBackButton: boolean): void;
+  sendSilentCrashReport(
     description: string,
     severity: 'LOW' | 'MEDIUM' | 'HIGH',
-    type: string
   ): void;
+  sendSilentCrashReportWithExcludeData(
+    description: string,
+    severity: 'LOW' | 'MEDIUM' | 'HIGH',
+    excludeData: {
+      customData?: Boolean;
+      metaData?: Boolean;
+      attachments?: Boolean;
+      consoleLog?: Boolean;
+      networkLogs?: Boolean;
+      customEventLog?: Boolean;
+      screenshot?: Boolean;
+      replays?: Boolean;
+    }
+  ): void;
+  open(): void;
+  close(): void;
+  isOpened(): boolean;
   identify(userId: string, userProperties: GleapUserProperty): void;
+  identifyWithUserHash(userId: string, userProperties: GleapUserProperty, userHash: string): void;
   clearIdentity(): void;
+  preFillForm(formData: { [key: string]: string }): void;
   setApiUrl(apiUrl: string): void;
-  setWidgetUrl(widgetUrl: string): void;
+  setFrameUrl(frameUrl: string): void;
   attachCustomData(customData: any): void;
   setCustomData(key: string, value: string): void;
   removeCustomDataForKey(key: string): void;
   clearCustomData(): void;
-  registerCustomAction(
-    customActionCallback: (data: { name: string }) => void
-  ): void;
   registerListener(eventType: string, callback: (data?: any) => void): void;
   setLanguage(language: string): void;
   logEvent(name: string, data: any): void;
@@ -47,18 +57,21 @@ type GleapSdkType = {
   stopNetworkLogging(): void;
   enableDebugConsoleLog(): void;
   setActivationMethods(activationMethods: GleapActivationMethod[]): void;
+  registerCustomAction(
+    customActionCallback: (data: { name: string }) => void
+  ): void;
 };
 
 const GleapSdk = NativeModules.Gleapsdk
   ? NativeModules.Gleapsdk
   : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+    {},
+    {
+      get() {
+        throw new Error(LINKING_ERROR);
+      },
+    }
+  );
 
 if (GleapSdk && !GleapSdk.touched) {
   const networkLogger = new GleapNetworkIntercepter();
@@ -103,10 +116,10 @@ if (GleapSdk && !GleapSdk.touched) {
         GleapSdk.startNetworkLogging();
       }
       notifyCallback('configLoaded', configJSON);
-    } catch (exp) {}
+    } catch (exp) { }
   });
 
-  gleapEmitter.addListener('feedbackWillBeSent', () => {
+  gleapEmitter.addListener('feedbackWillBeSent', (formData) => {
     // Push the network log to the native SDK.
     const requests = networkLogger.getRequests();
     if (Platform.OS === 'android') {
@@ -115,18 +128,30 @@ if (GleapSdk && !GleapSdk.touched) {
       GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
     }
 
-    notifyCallback('feedbackWillBeSent');
+    notifyCallback('feedbackWillBeSent', formData);
   });
 
   gleapEmitter.addListener('feedbackSent', (data) => {
     try {
       const dataJSON = data instanceof Object ? data : JSON.parse(data);
       notifyCallback('feedbackSent', dataJSON);
-    } catch (exp) {}
+    } catch (exp) { }
+  });
+  
+  gleapEmitter.addListener('feedbackFlowStarted', (feedbackAction) => {
+    notifyCallback('feedbackFlowStarted', feedbackAction);
   });
 
   gleapEmitter.addListener('feedbackSendingFailed', () => {
     notifyCallback('feedbackSendingFailed');
+  });
+
+  gleapEmitter.addListener('widgetOpened', () => {
+    notifyCallback('widgetOpened');
+  });
+
+  gleapEmitter.addListener('widgetClosed', () => {
+    notifyCallback('widgetClosed');
   });
 
   function isJsonString(str: string) {
@@ -149,11 +174,10 @@ if (GleapSdk && !GleapSdk.touched) {
           name,
         });
       }
-    } catch (exp) {}
+    } catch (exp) { }
   });
 
   GleapSdk.removeAllAttachments();
-
   GleapSdk.touched = true;
 }
 
