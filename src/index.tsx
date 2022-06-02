@@ -19,7 +19,7 @@ type GleapSdkType = {
   startFeedbackFlow(feedbackFlow: string, showBackButton: boolean): void;
   sendSilentCrashReport(
     description: string,
-    severity: 'LOW' | 'MEDIUM' | 'HIGH',
+    severity: 'LOW' | 'MEDIUM' | 'HIGH'
   ): void;
   sendSilentCrashReportWithExcludeData(
     description: string,
@@ -39,7 +39,11 @@ type GleapSdkType = {
   close(): void;
   isOpened(): boolean;
   identify(userId: string, userProperties: GleapUserProperty): void;
-  identifyWithUserHash(userId: string, userProperties: GleapUserProperty, userHash: string): void;
+  identifyWithUserHash(
+    userId: string,
+    userProperties: GleapUserProperty,
+    userHash: string
+  ): void;
   clearIdentity(): void;
   preFillForm(formData: { [key: string]: string }): void;
   setApiUrl(apiUrl: string): void;
@@ -65,13 +69,13 @@ type GleapSdkType = {
 const GleapSdk = NativeModules.Gleapsdk
   ? NativeModules.Gleapsdk
   : new Proxy(
-    {},
-    {
-      get() {
-        throw new Error(LINKING_ERROR);
-      },
-    }
-  );
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
 
 if (GleapSdk && !GleapSdk.touched) {
   const networkLogger = new GleapNetworkIntercepter();
@@ -110,19 +114,22 @@ if (GleapSdk && !GleapSdk.touched) {
   const gleapEmitter = new NativeEventEmitter(NativeModules.Gleapsdk);
 
   gleapEmitter.addListener('configLoaded', (config: any) => {
+    console.log(config)
     try {
       const configJSON = config instanceof Object ? config : JSON.parse(config);
-      if (configJSON.enableNetworkLogs) {
+      console.log('config loaded', configJSON);
+      if (configJSON.flowConfig.enableNetworkLogs) {
         GleapSdk.startNetworkLogging();
       }
       notifyCallback('configLoaded', configJSON);
-    } catch (exp) { }
+    } catch (exp) {}
   });
 
   gleapEmitter.addListener('feedbackWillBeSent', (formData) => {
     // Push the network log to the native SDK.
     const requests = networkLogger.getRequests();
     if (Platform.OS === 'android') {
+      console.log(requests);
       GleapSdk.attachNetworkLog(JSON.stringify(requests));
     } else {
       GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
@@ -135,9 +142,9 @@ if (GleapSdk && !GleapSdk.touched) {
     try {
       const dataJSON = data instanceof Object ? data : JSON.parse(data);
       notifyCallback('feedbackSent', dataJSON);
-    } catch (exp) { }
+    } catch (exp) {}
   });
-  
+
   gleapEmitter.addListener('feedbackFlowStarted', (feedbackAction) => {
     notifyCallback('feedbackFlowStarted', feedbackAction);
   });
@@ -174,7 +181,7 @@ if (GleapSdk && !GleapSdk.touched) {
           name,
         });
       }
-    } catch (exp) { }
+    } catch (exp) {}
   });
 
   GleapSdk.removeAllAttachments();

@@ -8,10 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.facebook.react.ReactApplication;
-import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
@@ -33,16 +31,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.gleap.APPLICATIONTYPE;
-import io.gleap.ConfigLoadedCallback;
-import io.gleap.CustomActionCallback;
-import io.gleap.FeedbackSentCallback;
-import io.gleap.FeedbackSentWithDataCallback;
-import io.gleap.FeedbackWillBeSentCallback;
-import io.gleap.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
 import io.gleap.GleapUserProperties;
+import io.gleap.PrefillHelper;
 import io.gleap.RequestType;
+import io.gleap.callbacks.ConfigLoadedCallback;
+import io.gleap.callbacks.CustomActionCallback;
+import io.gleap.callbacks.FeedbackFlowStartedCallback;
+import io.gleap.callbacks.FeedbackSendingFailedCallback;
+import io.gleap.callbacks.FeedbackSentCallback;
+import io.gleap.callbacks.FeedbackWillBeSentCallback;
+import io.gleap.callbacks.GetActivityCallback;
+import io.gleap.callbacks.WidgetClosedCallback;
+import io.gleap.callbacks.WidgetOpenedCallback;
 
 @ReactModule(name = GleapsdkModule.NAME)
 public class GleapsdkModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
@@ -85,17 +87,24 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                 .getCurrentActivity();
               if (activity != null && !invalidated) {
                 Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
-                Gleap.getInstance().setFeedbackWillBeSentCallback(new FeedbackWillBeSentCallback() {
+                Gleap.initialize(sdkKey, activity.getApplication());
+
+                Gleap.getInstance().setWidgetOpenedCallback(new WidgetOpenedCallback() {
                   @Override
-                  public void flowInvoced() {
-                    if (!invalidated) {
-                      getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("feedbackWillBeSent", null);
-                    }
+                  public void invoke() {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("widgetOpened",null);
                   }
                 });
 
-                Gleap.initialize(sdkKey, activity.getApplication());
+                Gleap.getInstance().setWidgetClosedCallback(new WidgetClosedCallback() {
+                  @Override
+                  public void invoke() {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("widgetClosed",null);
+                  }
+                });
+
                 Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
                   @Override
                   public void configLoaded(JSONObject jsonObject) {
@@ -103,6 +112,30 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                       getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit("configLoaded", jsonObject.toString());
                     }
+                  }
+                });
+
+                Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
+                  @Override
+                  public void invoke(String message) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("feedbackSent", message);
+                  }
+                });
+
+                Gleap.getInstance().setFeedbackWillBeSentCallback(new FeedbackWillBeSentCallback() {
+                  @Override
+                  public void invoke(String message) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("feedbackWillBeSent", message);
+                  }
+                });
+
+                Gleap.getInstance().setFeedbackSendingFailedCallback(new FeedbackSendingFailedCallback() {
+                  @Override
+                  public void invoke(String message) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("feedbackSendingFailed", message);
                   }
                 });
 
@@ -122,33 +155,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                   }
                 });
 
-                Gleap.getInstance().setFeedbackSentWithDataCallback(new FeedbackSentWithDataCallback() {
+                Gleap.getInstance().setFeedbackFlowStartedCallback(new FeedbackFlowStartedCallback() {
                   @Override
-                  public void close(JSONObject jsonObject) {
+                  public void invoke(String message) {
                     getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                      .emit("feedbackSent", jsonObject.toString());
-                    new java.util.Timer().schedule(
-                      new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                          showDevMenu();
-                        }
-                      },
-                      500);
-                  }
-                });
-
-                Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
-                  @Override
-                  public void close() {
-                    new java.util.Timer().schedule(
-                      new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                          showDevMenu();
-                        }
-                      },
-                      500);
+                      .emit("feedbackFlowStarted", message);
                   }
                 });
               }
@@ -183,10 +194,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
           @Override
           public void run() {
             try {
-              Gleap.getInstance().startFeedbackFlow();
+              Gleap.getInstance().open();
               Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
                 @Override
-                public void close() {
+                public void invoke(String message) {
                   new java.util.Timer().schedule(
                     new java.util.TimerTask() {
                       @Override
@@ -211,21 +222,51 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     }
   }
 
+  @ReactMethod
+  public void close() {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().close();
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+  @ReactMethod
+  public void isOpened() {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().isOpened();
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
   /**
    * Start bug report manually by calling this function.
    */
   @ReactMethod
-  public void startFeedbackFlow(String feedbackFlow){
+  public void startFeedbackFlow(String feedbackFlow, boolean showBackButton){
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
             try {
-              Gleap.getInstance().startFeedbackFlow(feedbackFlow);
+              Gleap.getInstance().startFeedbackFlow(feedbackFlow, showBackButton);
               Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
                 @Override
-                public void close() {
+                public void invoke(String message) {
                   new java.util.Timer().schedule(
                     new java.util.TimerTask() {
                       @Override
@@ -254,7 +295,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
    * Manually start a silent bug reporting workflow.
    */
   @ReactMethod
-  public void sendSilentBugReport(
+  public void sendSilentCrashReport(
     String description,
     String priority) {
     try {
@@ -270,7 +311,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
             if (priority == "HIGH") {
               severity = Gleap.SEVERITY.HIGH;
             }
-            Gleap.getInstance().sendSilentBugReport(description, severity);
+            Gleap.getInstance().sendSilentCrashReport(description, severity);
           }
         });
     } catch (NoUiThreadException e) {
@@ -282,15 +323,20 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
    * Manually start a silent bug reporting workflow.
    */
   @ReactMethod
-  public void sendSilentBugReportWithType(
+  public void sendSilentCrashReportWithExcludeData(
     String description,
     String priority,
-    String type) {
+    ReadableMap data) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
+            JSONObject jsonObject = new JSONObject();
+            try{
+              jsonObject = GleapUtil.convertMapToJson(data);
+            }catch (Exception ex){}
+
             isSilentBugReport = true;
             Gleap.SEVERITY severity = Gleap.SEVERITY.LOW;
             if (priority == "MEDIUM") {
@@ -299,7 +345,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
             if (priority == "HIGH") {
               severity = Gleap.SEVERITY.HIGH;
             }
-            Gleap.getInstance().sendSilentBugReport(description, severity, type);
+            Gleap.getInstance().sendSilentCrashReport(description, severity, jsonObject);
           }
         });
     } catch (NoUiThreadException e) {
@@ -308,12 +354,35 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   @ReactMethod
+  public void preFillForm(
+    ReadableMap data) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            JSONObject jsonObject = new JSONObject();
+            try {
+              jsonObject = GleapUtil.convertMapToJson(data);
+            } catch (Exception ex) {
+            }
+            PrefillHelper.getInstancen().setPrefillData(jsonObject);
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+
+  @ReactMethod
   public void setLanguage(String language) {
     Gleap.getInstance().setLanguage(language);
   }
 
   @ReactMethod
   public void enableDebugConsoleLog() {
+
   }
 
   @ReactMethod
@@ -350,8 +419,52 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   @ReactMethod
+  public void identifyWithUserHash(String userid, ReadableMap data, String hash) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            JSONObject jsonObject = null;
+            String name = "";
+            String email = "";
+            try {
+              jsonObject = GleapUtil.convertMapToJson(data);
+              if (jsonObject.has("name")) {
+                name = jsonObject.getString("name");
+              }
+              if (jsonObject.has("email")) {
+                email = jsonObject.getString("email");
+              }
+            } catch (JSONException e) {
+              e.printStackTrace();
+            }
+            GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
+            gleapUserSession.setHash(hash);
+            if(Gleap.getInstance() == null) {
+              return;
+            }
+            Gleap.getInstance().identifyUser(userid, gleapUserSession);
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+  @ReactMethod
   public void clearIdentity() {
-    Gleap.getInstance().clearIdentity();
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().clearIdentity();
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
   }
 
   /**
@@ -368,7 +481,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
       if(Gleap.getInstance() == null) {
         return;
       }
-      Gleap.getInstance().appendCustomData(jsonObject);
+      Gleap.getInstance().attachCustomData(jsonObject);
     } catch (Exception e) {
       System.out.println(e);
     }
@@ -390,31 +503,15 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   /**
-   * Used for dedicated server. Set the url, where the widget is loaded from.
+   * Frame url
+   * 330,.
    *
-   * @param widgetUrl Url to the dedicated server.
+   * @param frameUrl Url to the dedicated server.
    */
   @ReactMethod
-  public void setWidgetUrl(String widgetUrl) {
+  public void setFrameUrl(String frameUrl) {
     try {
-      Gleap.getInstance().setApiUrl(widgetUrl);
-    } catch (Exception e) {
-      System.out.println(e);
-    }
-  }
-
-  /**
-   * Attaches custom data, which can be viewed in the Gleap dashboard. New data
-   * will be merged with existing custom data.
-   *
-   * @param customData The data to attach to a bug report.
-   * @author Gleap
-   */
-  @ReactMethod
-  public void appendCustomData(ReadableMap customData) {
-    try {
-      JSONObject jsonObject = GleapUtil.convertMapToJson(customData);
-      Gleap.getInstance().appendCustomData(jsonObject);
+      Gleap.getInstance().setFrameUrl(frameUrl);
     } catch (Exception e) {
       System.out.println(e);
     }

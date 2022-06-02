@@ -28,10 +28,6 @@ export default function App() {
     Gleap.registerCustomAction((data) => {
       console.log(data);
     });
-
-    Gleap.preFillForm({
-      description: "TEEEEST :)"
-    });
   }, []);
 
   return (
