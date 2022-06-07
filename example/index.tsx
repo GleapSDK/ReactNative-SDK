@@ -3,6 +3,7 @@ import App from './src/App';
 import Gleap from 'react-native-gleapsdk';
 import { name as appName } from './app.json';
 
+Gleap.enableDebugConsoleLog();
 // Gleap.setActivationMethods(['SCREENSHOT']);
 Gleap.initialize('DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc');
 
