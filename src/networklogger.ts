@@ -4,7 +4,7 @@ class GleapNetworkIntercepter {
   requests: any = {};
   maxRequests = 10;
   stopped = false;
-  updatedCallback = null;
+  updatedCallback: any = null;
 
   setUpdatedCallback(updatedCallback: any) {
     this.updatedCallback = updatedCallback; 
