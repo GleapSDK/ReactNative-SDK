@@ -16,11 +16,6 @@ Gleap.registerListener('configLoaded', (data) => {
   console.log(data);
 });
 
-Gleap.registerListener('feedbackWillBeSent', (data) => {
-  console.log('feedbackWillBeSent');
-  console.log(data);
-});
-
 Gleap.registerListener('feedbackSent', (data) => {
   console.log('feedbackSent');
   console.log(data);

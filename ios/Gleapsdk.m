@@ -88,12 +88,6 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
-- (void)feedbackWillBeSent:(NSDictionary *)formData {
-    if (_hasListeners) {
-        [self sendEventWithName:@"feedbackWillBeSent" body: formData];
-    }
-}
-
 - (void)feedbackSendingFailed {
     if (_hasListeners) {
         [self sendEventWithName:@"feedbackSendingFailed" body:@{}];
@@ -143,7 +137,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"feedbackWillBeSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed"];
+    return @[@"feedbackSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed"];
 }
 
 RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)

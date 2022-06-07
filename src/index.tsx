@@ -69,18 +69,37 @@ type GleapSdkType = {
 const GleapSdk = NativeModules.Gleapsdk
   ? NativeModules.Gleapsdk
   : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+    {},
+    {
+      get() {
+        throw new Error(LINKING_ERROR);
+      },
+    }
+  );
 
 if (GleapSdk && !GleapSdk.touched) {
   const networkLogger = new GleapNetworkIntercepter();
 
+  // Push the network log to the native SDK.
   GleapSdk.startNetworkLogging = () => {
+    // Set the callback.
+    networkLogger.setUpdatedCallback(() => {
+      if (!networkLogger) {
+        return;
+      }
+
+      const requests = networkLogger.getRequests();
+   
+      if (requests && GleapSdk && typeof GleapSdk.attachNetworkLog !== 'undefined') {
+        if (Platform.OS === 'android') {
+          GleapSdk.attachNetworkLog(JSON.stringify(requests));
+        } else {
+          GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
+        }
+      }
+    });
+
+    // Start the logger.
     networkLogger.start();
   };
 
@@ -116,30 +135,18 @@ if (GleapSdk && !GleapSdk.touched) {
   gleapEmitter.addListener('configLoaded', (config: any) => {
     try {
       const configJSON = config instanceof Object ? config : JSON.parse(config);
-      if (configJSON.flowConfig.enableNetworkLogs) {
+      if (configJSON.enableNetworkLogs) {
         GleapSdk.startNetworkLogging();
       }
       notifyCallback('configLoaded', configJSON);
-    } catch (exp) {}
-  });
-
-  gleapEmitter.addListener('feedbackWillBeSent', (formData) => {
-    // Push the network log to the native SDK.
-    const requests = networkLogger.getRequests();
-    if (Platform.OS === 'android') {
-      GleapSdk.attachNetworkLog(JSON.stringify(requests));
-    } else {
-      GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
-    }
-
-    notifyCallback('feedbackWillBeSent', formData);
+    } catch (exp) { }
   });
 
   gleapEmitter.addListener('feedbackSent', (data) => {
     try {
       const dataJSON = data instanceof Object ? data : JSON.parse(data);
       notifyCallback('feedbackSent', dataJSON);
-    } catch (exp) {}
+    } catch (exp) { }
   });
 
   gleapEmitter.addListener('feedbackFlowStarted', (feedbackAction) => {
@@ -178,7 +185,7 @@ if (GleapSdk && !GleapSdk.touched) {
           name,
         });
       }
-    } catch (exp) {}
+    } catch (exp) { }
   });
 
   GleapSdk.removeAllAttachments();

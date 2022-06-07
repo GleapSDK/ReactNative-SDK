@@ -4,6 +4,11 @@ class GleapNetworkIntercepter {
   requests: any = {};
   maxRequests = 10;
   stopped = false;
+  updatedCallback = null;
+
+  setUpdatedCallback(updatedCallback: any) {
+    this.updatedCallback = updatedCallback; 
+  }
 
   getRequests() {
     return Object.values(this.requests);
@@ -24,6 +29,10 @@ class GleapNetworkIntercepter {
       for (var i = 0; i < keysToRemove.length; i++) {
         delete this.requests[keysToRemove[i]];
       }
+    }
+
+    if (this.updatedCallback) {
+      this.updatedCallback();
     }
   }
 
