@@ -80,7 +80,6 @@ class GleapNetworkIntercepter {
   }
 
   preparePayload(payload: any) {
-    console.log(payload);
     var payloadText = this.cleanupPayload(payload);
     return this.prepareContent(payloadText);
   }

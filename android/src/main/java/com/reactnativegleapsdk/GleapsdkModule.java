@@ -36,6 +36,7 @@ import io.gleap.GleapActivationMethod;
 import io.gleap.GleapUserProperties;
 import io.gleap.PrefillHelper;
 import io.gleap.RequestType;
+import io.gleap.UserSessionController;
 import io.gleap.callbacks.ConfigLoadedCallback;
 import io.gleap.callbacks.CustomActionCallback;
 import io.gleap.callbacks.FeedbackFlowStartedCallback;
@@ -93,7 +94,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                   @Override
                   public void invoke() {
                     getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                      .emit("widgetOpened",null);
+                      .emit("widgetOpened", null);
                   }
                 });
 
@@ -101,7 +102,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                   @Override
                   public void invoke() {
                     getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                      .emit("widgetClosed",null);
+                      .emit("widgetClosed", null);
                   }
                 });
 
@@ -229,7 +230,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
         new Runnable() {
           @Override
           public void run() {
-            Gleap.getInstance().close();
+            try {
+              Gleap.getInstance().close();
+            }catch (Exception ex) {}
           }
         });
     } catch (NoUiThreadException e) {
@@ -256,7 +259,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
    * Start bug report manually by calling this function.
    */
   @ReactMethod
-  public void startFeedbackFlow(String feedbackFlow, boolean showBackButton){
+  public void startFeedbackFlow(String feedbackFlow, boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
@@ -333,9 +336,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
           @Override
           public void run() {
             JSONObject jsonObject = new JSONObject();
-            try{
+            try {
               jsonObject = GleapUtil.convertMapToJson(data);
-            }catch (Exception ex){}
+            } catch (Exception ex) {
+            }
 
             isSilentBugReport = true;
             Gleap.SEVERITY severity = Gleap.SEVERITY.LOW;
@@ -407,7 +411,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               e.printStackTrace();
             }
             GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
-            if(Gleap.getInstance() == null) {
+            if (Gleap.getInstance() == null) {
               return;
             }
             Gleap.getInstance().identifyUser(userid, gleapUserSession);
@@ -441,10 +445,13 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
             }
             GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
             gleapUserSession.setHash(hash);
-            if(Gleap.getInstance() == null) {
+            if (Gleap.getInstance() == null) {
               return;
             }
-            Gleap.getInstance().identifyUser(userid, gleapUserSession);
+
+            if (UserSessionController.getInstance() != null) {
+              Gleap.getInstance().identifyUser(userid, gleapUserSession);
+            }
           }
         });
     } catch (NoUiThreadException e) {
@@ -478,7 +485,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   public void attachCustomData(ReadableMap customData) {
     try {
       JSONObject jsonObject = GleapUtil.convertMapToJson(customData);
-      if(Gleap.getInstance() == null) {
+      if (Gleap.getInstance() == null) {
         return;
       }
       Gleap.getInstance().attachCustomData(jsonObject);
@@ -557,8 +564,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
         internalActivationMethods.add(GleapActivationMethod.SCREENSHOT);
       }
     }
-    Gleap.getInstance().setActivationMethods(
-      internalActivationMethods.toArray(new GleapActivationMethod[internalActivationMethods.size()]));
+    if(Gleap.getInstance() != null) {
+      Gleap.getInstance().setActivationMethods(
+        internalActivationMethods.toArray(new GleapActivationMethod[internalActivationMethods.size()]));
+    }
   }
 
   /**
@@ -779,7 +788,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
 
   private Activity getActivitySafe() throws NoUiThreadException {
     Activity activity = getCurrentActivity();
-    if(activity == null) {
+    if (activity == null) {
       throw new NoUiThreadException();
     }
     return activity;

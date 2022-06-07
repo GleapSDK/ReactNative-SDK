@@ -114,10 +114,8 @@ if (GleapSdk && !GleapSdk.touched) {
   const gleapEmitter = new NativeEventEmitter(NativeModules.Gleapsdk);
 
   gleapEmitter.addListener('configLoaded', (config: any) => {
-    console.log(config)
     try {
       const configJSON = config instanceof Object ? config : JSON.parse(config);
-      console.log('config loaded', configJSON);
       if (configJSON.flowConfig.enableNetworkLogs) {
         GleapSdk.startNetworkLogging();
       }
@@ -129,7 +127,6 @@ if (GleapSdk && !GleapSdk.touched) {
     // Push the network log to the native SDK.
     const requests = networkLogger.getRequests();
     if (Platform.OS === 'android') {
-      console.log(requests);
       GleapSdk.attachNetworkLog(JSON.stringify(requests));
     } else {
       GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
