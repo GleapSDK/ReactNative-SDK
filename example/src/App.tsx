@@ -17,12 +17,12 @@ export default function App() {
     Gleap.addAttachment(SampleData.img, 'test.jpg');
 
     Gleap.identifyWithUserHash(
-      '12334',
+      'USER_ID',
       {
         name: 'Franzi',
         email: 'lukas@boehlerbrothers.com',
       },
-      'asdfasdf'
+      'USER_TOKEN'
     );
 
     Gleap.registerCustomAction((data) => {
@@ -34,20 +34,6 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          // Gleap.sendSilentCrashReportWithExcludeData(
-          //   'A crash happened.',
-          //   'LOW',
-          //   {
-          //     screenshot: true,
-          //     replays: true,
-          //     customData: true,
-          //     networkLogs: true,
-          //     attachments: true,
-          //     consoleLog: true,
-          //     customEventLog: true,
-          //     metaData: true,
-          //   }
-          //);
           fetch('https://6170243923781c00172898a1.mockapi.io/users').then(
             (data) => console.log(data)
           );
