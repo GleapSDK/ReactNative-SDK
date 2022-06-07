@@ -41,7 +41,6 @@ import io.gleap.callbacks.CustomActionCallback;
 import io.gleap.callbacks.FeedbackFlowStartedCallback;
 import io.gleap.callbacks.FeedbackSendingFailedCallback;
 import io.gleap.callbacks.FeedbackSentCallback;
-import io.gleap.callbacks.FeedbackWillBeSentCallback;
 import io.gleap.callbacks.GetActivityCallback;
 import io.gleap.callbacks.WidgetClosedCallback;
 import io.gleap.callbacks.WidgetOpenedCallback;
@@ -122,15 +121,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                       .emit("feedbackSent", message);
                   }
                 });
-
-                Gleap.getInstance().setFeedbackWillBeSentCallback(new FeedbackWillBeSentCallback() {
-                  @Override
-                  public void invoke(String message) {
-                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                      .emit("feedbackWillBeSent", message);
-                  }
-                });
-
+                
                 Gleap.getInstance().setFeedbackSendingFailedCallback(new FeedbackSendingFailedCallback() {
                   @Override
                   public void invoke(String message) {
