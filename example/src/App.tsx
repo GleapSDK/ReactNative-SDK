@@ -16,6 +16,12 @@ export default function App() {
     Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.addAttachment(SampleData.img, 'test.jpg');
 
+    Gleap.log("This is a test log.");
+    
+    Gleap.logWithLogLevel("This is a test log WARNING.", "WARNING");
+    Gleap.logWithLogLevel("This is a test log ERROR.", "ERROR");
+    Gleap.logWithLogLevel("This is a test log Info.", "INFO");
+
     Gleap.identifyWithUserHash(
       'USER_ID',
       {

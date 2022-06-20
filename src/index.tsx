@@ -54,12 +54,15 @@ type GleapSdkType = {
   clearCustomData(): void;
   registerListener(eventType: string, callback: (data?: any) => void): void;
   setLanguage(language: string): void;
+  enableDebugConsoleLog(): void;
+  disableConsoleLog(): void;
+  log(message: string): void;
+  logWithLogLevel(message: string, logLevel: 'INFO' | 'WARNING' | 'ERROR'): void;
   logEvent(name: string, data: any): void;
   addAttachment(base64file: string, fileName: string): void;
   removeAllAttachments(): void;
   startNetworkLogging(): void;
   stopNetworkLogging(): void;
-  enableDebugConsoleLog(): void;
   setActivationMethods(activationMethods: GleapActivationMethod[]): void;
   registerCustomAction(
     customActionCallback: (data: { name: string }) => void

@@ -201,6 +201,35 @@ RCT_EXPORT_METHOD(startFeedbackFlow:(NSString *)feedbackFlow andShowBackButton:(
     });
 }
 
+RCT_EXPORT_METHOD(logWithLogLevel:(NSString *)message andLogLevel:(NSString *)logLevel)
+{
+    GleapLogLevel logLevelType = INFO;
+    if (logLevel != nil && [logLevel isEqualToString: @"WARNING"]) {
+        logLevelType = WARNING;
+    }
+    if (logLevel != nil && [logLevel isEqualToString: @"ERROR"]) {
+        logLevelType = ERROR;
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap log: message withLogLevel: logLevelType];
+    });
+}
+
+RCT_EXPORT_METHOD(log:(NSString *)message)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap log: message];
+    });
+}
+
+RCT_EXPORT_METHOD(disableConsoleLog)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap disableConsoleLog];
+    });
+}
+
 RCT_EXPORT_METHOD(enableDebugConsoleLog)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
