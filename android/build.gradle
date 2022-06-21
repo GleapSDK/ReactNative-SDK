@@ -3,7 +3,6 @@ buildscript {
         repositories {
             google()
             mavenCentral()
-            jcenter()
         }
 
         dependencies {
@@ -19,10 +18,10 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
-    compileSdkVersion safeExtGet('Gleapsdk_compileSdkVersion', 29)
+    compileSdkVersion safeExtGet('Gleapsdk_compileSdkVersion', 31)
     defaultConfig {
         minSdkVersion safeExtGet('Gleapsdk_minSdkVersion', 16)
-        targetSdkVersion safeExtGet('Gleapsdk_targetSdkVersion', 29)
+        targetSdkVersion safeExtGet('Gleapsdk_targetSdkVersion', 31)
         versionCode 1
         versionName "1.0"
 
@@ -55,5 +54,6 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"
-    implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '7.0.12'
+  implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '7.0.18'
+  implementation 'androidx.core:core-ktx:1.7.0'
 }
