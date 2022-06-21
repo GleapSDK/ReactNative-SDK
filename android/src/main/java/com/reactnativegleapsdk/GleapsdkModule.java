@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import io.gleap.APPLICATIONTYPE;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
+import io.gleap.GleapLogLevel;
 import io.gleap.GleapUserProperties;
 import io.gleap.PrefillHelper;
 import io.gleap.RequestType;
@@ -112,6 +113,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                       getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit("configLoaded", jsonObject.toString());
                     }
+
                   }
                 });
 
@@ -122,7 +124,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
                       .emit("feedbackSent", message);
                   }
                 });
-                
+
                 Gleap.getInstance().setFeedbackSendingFailedCallback(new FeedbackSendingFailedCallback() {
                   @Override
                   public void invoke(String message) {
@@ -700,7 +702,32 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     Gleap.getInstance().setConfigLoadedCallback(configLoadedCallback);
   }
 
-  ;
+  @ReactMethod
+  public void disableConsoleLog() {
+    Gleap.getInstance().disableConsoleLog();
+  }
+
+
+    @ReactMethod
+  public void log(String msg) {
+    Gleap.getInstance().log(msg);
+  }
+
+  @ReactMethod
+  public void logWithLogLevel(String msg, String logLevel) {
+    GleapLogLevel ll;
+    switch (logLevel) {
+      case "WARNING":
+        ll = GleapLogLevel.WARNING;
+        break;
+      case "ERROR":
+        ll = GleapLogLevel.ERROR;
+        break;
+      default:
+        ll = GleapLogLevel.INFO;
+    }
+    Gleap.getInstance().log(msg, ll);
+  }
 
   private boolean checkAllowedEndings(String fileName) {
     String[] fileType = fileName.split("\\.");
@@ -776,6 +803,8 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     invalidated = true;
     super.invalidate();
   }
+
+
 
   private Activity getActivitySafe() throws NoUiThreadException {
     Activity activity = getCurrentActivity();
