@@ -26,11 +26,11 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.gleap.APPLICATIONTYPE;
+import io.gleap.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
 import io.gleap.GleapLogLevel;
@@ -38,14 +38,13 @@ import io.gleap.GleapUserProperties;
 import io.gleap.PrefillHelper;
 import io.gleap.RequestType;
 import io.gleap.UserSessionController;
-import io.gleap.callbacks.ConfigLoadedCallback;
-import io.gleap.callbacks.CustomActionCallback;
-import io.gleap.callbacks.FeedbackFlowStartedCallback;
-import io.gleap.callbacks.FeedbackSendingFailedCallback;
-import io.gleap.callbacks.FeedbackSentCallback;
-import io.gleap.callbacks.GetActivityCallback;
-import io.gleap.callbacks.WidgetClosedCallback;
-import io.gleap.callbacks.WidgetOpenedCallback;
+import io.gleap.ConfigLoadedCallback;
+import io.gleap.CustomActionCallback;
+import io.gleap.FeedbackFlowStartedCallback;
+import io.gleap.FeedbackSendingFailedCallback;
+import io.gleap.FeedbackSentCallback;
+import io.gleap.WidgetClosedCallback;
+import io.gleap.WidgetOpenedCallback;
 
 @ReactModule(name = GleapsdkModule.NAME)
 public class GleapsdkModule extends ReactContextBaseJavaModule implements LifecycleEventListener {

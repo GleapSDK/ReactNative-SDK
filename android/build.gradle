@@ -54,6 +54,6 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"
-    implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '7.0.19'
+    implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '7.0.22'
     implementation 'com.google.android.material:material:1.6.1'
 }
