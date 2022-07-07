@@ -52,8 +52,16 @@ repositories {
 }
 
 dependencies {
-    //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"
-    implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '7.0.22'
-    implementation 'com.google.android.material:material:1.6.1'
+  implementation "com.facebook.react:react-native:+"
+  implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '7.0.22'
+
+  if(rootProject.ext.targetSdkVersion == 30) {
+    //add this
+    implementation( "androidx.appcompat:appcompat:1.3.0") {
+      force = true
+    }
+    implementation( "com.google.android.material:material:1.4.0") {
+      force = true
+    }
+  }
 }
