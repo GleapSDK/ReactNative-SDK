@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +36,7 @@ import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
 import io.gleap.GleapLogLevel;
 import io.gleap.GleapUserProperties;
+import io.gleap.Networklog;
 import io.gleap.PrefillHelper;
 import io.gleap.RequestType;
 import io.gleap.UserSessionController;
@@ -389,20 +391,22 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
           @Override
           public void run() {
             JSONObject jsonObject = null;
-            String name = "";
-            String email = "";
+            GleapUserProperties gleapUserSession = new GleapUserProperties();
             try {
               jsonObject = GleapUtil.convertMapToJson(data);
               if (jsonObject.has("name")) {
-                name = jsonObject.getString("name");
+                gleapUserSession.setName(jsonObject.getString("name"));
               }
               if (jsonObject.has("email")) {
-                email = jsonObject.getString("email");
+                gleapUserSession.setEmail(jsonObject.getString("email"));
+              }
+              if(jsonObject.has("value")) {
+                gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
             } catch (JSONException e) {
               e.printStackTrace();
             }
-            GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
+
             if (Gleap.getInstance() == null) {
               return;
             }
@@ -422,20 +426,21 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
           @Override
           public void run() {
             JSONObject jsonObject = null;
-            String name = "";
-            String email = "";
+            GleapUserProperties gleapUserSession = new GleapUserProperties();
             try {
               jsonObject = GleapUtil.convertMapToJson(data);
               if (jsonObject.has("name")) {
-                name = jsonObject.getString("name");
+                gleapUserSession.setName(jsonObject.getString("name"));
               }
               if (jsonObject.has("email")) {
-                email = jsonObject.getString("email");
+                gleapUserSession.setEmail(jsonObject.getString("email"));
+              }
+              if(jsonObject.has("value")) {
+                gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
             } catch (JSONException e) {
               e.printStackTrace();
             }
-            GleapUserProperties gleapUserSession = new GleapUserProperties(name, email);
             gleapUserSession.setHash(hash);
             if (Gleap.getInstance() == null) {
               return;
@@ -579,6 +584,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   public void attachNetworkLog(String networkLog) {
     try {
       JSONArray object = new JSONArray(networkLog);
+
+      Networklog[] networklogs = new Networklog[object.length()];
+
       for (int i = 0; i < object.length(); i++) {
         JSONObject currentRequest = (JSONObject) object.get(i);
         JSONObject response = (JSONObject) currentRequest.get("response");
@@ -586,10 +594,12 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
         if (currentRequest.has("request")) {
           request = (JSONObject) currentRequest.get("request");
         }
-        Gleap.getInstance().logNetwork(currentRequest.getString("url"),
+        networklogs[i] = new Networklog(currentRequest.getString("url"),
           RequestType.valueOf(currentRequest.getString("type")), response.getInt("status"),
           currentRequest.getInt("duration"), request, response);
       }
+
+      Gleap.getInstance().attachNetworkLogs(networklogs);
 
     } catch (Exception ex) {
       System.out.println(ex);

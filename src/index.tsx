@@ -10,6 +10,7 @@ const LINKING_ERROR =
 export type GleapUserProperty = {
   email?: string;
   name?: string;
+  value?: number;
 };
 
 type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
