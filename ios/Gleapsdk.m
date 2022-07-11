@@ -285,7 +285,9 @@ RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary 
         if (userProperties != nil && [userProperties objectForKey: @"email"] != nil) {
             userProperty.email = [userProperties objectForKey: @"email"];
         }
-        
+        if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
+            userProperty.value = [userProperties objectForKey: @"value"];
+        }        
         [Gleap identifyUserWith: userId andData: userProperty];
     });
 }
