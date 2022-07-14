@@ -2,7 +2,7 @@
 class GleapNetworkIntercepter {
   requestId = 0;
   requests: any = {};
-  maxRequests = 10;
+  maxRequests = 25;
   stopped = false;
   updatedCallback: any = null;
 
