@@ -812,4 +812,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     super.onCatalystInstanceDestroy();
   }
 
+  private Activity getActivitySafe() throws NoUiThreadException {
+    Activity activity = getCurrentActivity();
+    if (activity == null) {
+      throw new NoUiThreadException();
+    }
+    return activity;
+  }
 }
