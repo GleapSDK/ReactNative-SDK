@@ -10,6 +10,7 @@ const LINKING_ERROR =
 export type GleapUserProperty = {
   email?: string;
   name?: string;
+  phone?: string;
   value?: number;
 };
 

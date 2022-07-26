@@ -27,6 +27,8 @@ export default function App() {
       {
         name: 'Franzi',
         email: 'lukas@boehlerbrothers.com',
+        value: 123,
+        phone: '+49 123456789',
       },
       'USER_TOKEN'
     );
@@ -40,9 +42,7 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          fetch('https://6170243923781c00172898a1.mockapi.io/users').then(
-            (data) => console.log(data)
-          );
+          Gleap.open();
         }}
       >
         <Image

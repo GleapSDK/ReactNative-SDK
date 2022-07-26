@@ -400,6 +400,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               if (jsonObject.has("email")) {
                 gleapUserSession.setEmail(jsonObject.getString("email"));
               }
+              if (jsonObject.has("phone")) {
+                gleapUserSession.setPhoneNumber(jsonObject.getString("phone"));
+              }
               if(jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
@@ -434,6 +437,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               }
               if (jsonObject.has("email")) {
                 gleapUserSession.setEmail(jsonObject.getString("email"));
+              }
+              if (jsonObject.has("phone")) {
+                gleapUserSession.setPhoneNumber(jsonObject.getString("phone"));
               }
               if(jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
@@ -677,7 +683,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
           System.err.println("Gleap: The file is not existing.");
         }
       }
-
     } catch (Exception e) {
       e.printStackTrace();
     }
