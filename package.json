@@ -1,6 +1,6 @@
 {
   "name": "react-native-gleapsdk",
-  "version": "7.0.8",
+  "version": "7.0.10",
   "description": "Know exactly why and how a bug happened. Get reports with screenshots, live action replays and all of the important metadata every time.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
