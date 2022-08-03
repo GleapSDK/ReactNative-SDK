@@ -96,12 +96,12 @@ class GleapNetworkIntercepter {
   start() {
     this.setStopped(false);
     this.interceptNetworkRequests({
-      onFetch: (params: any, gleapRequestId: any) => {
-        if (this.stopped) {
+      onFetch: (params: any[], gleapRequestId: any) => {
+        if (this.stopped || params.length === 0) {
           return;
         }
 
-        if (params.length >= 2) {
+        if (params.length >= 2 && params[1] !== undefined) {
           var method = params[1].method ? params[1].method : 'GET';
           this.requests[gleapRequestId] = {
             request: {
