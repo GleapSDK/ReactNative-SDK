@@ -244,6 +244,13 @@ RCT_EXPORT_METHOD(open)
     });
 }
 
+RCT_EXPORT_METHOD(close)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap close];
+    });
+}
+
 RCT_EXPORT_METHOD(setLanguage:(NSString *)language)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
