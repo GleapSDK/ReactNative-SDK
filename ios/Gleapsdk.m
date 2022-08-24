@@ -244,6 +244,13 @@ RCT_EXPORT_METHOD(open)
     });
 }
 
+RCT_EXPORT_METHOD(close)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap close];
+    });
+}
+
 RCT_EXPORT_METHOD(setLanguage:(NSString *)language)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -268,6 +275,9 @@ RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (N
         if (userProperties != nil && [userProperties objectForKey: @"email"] != nil) {
             userProperty.email = [userProperties objectForKey: @"email"];
         }
+        if (userProperties != nil && [userProperties objectForKey: @"phone"] != nil) {
+            userProperty.phone = [userProperties objectForKey: @"phone"];
+        }
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
         }
@@ -284,6 +294,9 @@ RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary 
         }
         if (userProperties != nil && [userProperties objectForKey: @"email"] != nil) {
             userProperty.email = [userProperties objectForKey: @"email"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"phone"] != nil) {
+            userProperty.phone = [userProperties objectForKey: @"phone"];
         }
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
