@@ -253,6 +253,28 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
    * Start bug report manually by calling this function.
    */
   @ReactMethod
+  public void showFeedbackButton(boolean show) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              Gleap.getInstance().showFeedbackButton(show);
+            } catch (Exception e) {
+              System.out.println(e);
+            }
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+  /**
+   * Start bug report manually by calling this function.
+   */
+  @ReactMethod
   public void startFeedbackFlow(String feedbackFlow, boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
@@ -619,8 +641,8 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
    * @author Gleap
    */
   @ReactMethod
-  void logEvent(String name) {
-    Gleap.getInstance().logEvent(name);
+  void trackEvent(String name) {
+    Gleap.getInstance().trackEvent(name);
   }
 
   /**
@@ -631,11 +653,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
    * @author Gleap
    */
   @ReactMethod
-  void logEvent(String name, ReadableMap data) {
+  void trackEvent(String name, ReadableMap data) {
     JSONObject jsonObject = null;
     try {
       jsonObject = GleapUtil.convertMapToJson(data);
-      Gleap.getInstance().logEvent(name, jsonObject);
+      Gleap.getInstance().trackEvent(name, jsonObject);
     } catch (JSONException e) {
       e.printStackTrace();
     }

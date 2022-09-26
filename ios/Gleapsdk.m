@@ -354,10 +354,17 @@ RCT_EXPORT_METHOD(setFrameUrl: (NSString *)frameUrl)
     });
 }
 
-RCT_EXPORT_METHOD(logEvent:(NSString *)name andData:(NSDictionary *)data)
+RCT_EXPORT_METHOD(showFeedbackButton: (bool)show)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [Gleap logEvent: name withData: data];
+        [Gleap showFeedbackButton: show];
+    });
+}
+
+RCT_EXPORT_METHOD(trackEvent:(NSString *)name andData:(NSDictionary *)data)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap trackEvent: name withData: data];
     });
 }
 
