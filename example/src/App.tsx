@@ -40,7 +40,8 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Gleap.open();
+          //Gleap.open();
+          Gleap.showFeedbackButton(true);
         }}
       >
         <Image
