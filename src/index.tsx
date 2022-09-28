@@ -60,7 +60,10 @@ type GleapSdkType = {
   enableDebugConsoleLog(): void;
   disableConsoleLog(): void;
   log(message: string): void;
-  logWithLogLevel(message: string, logLevel: 'INFO' | 'WARNING' | 'ERROR'): void;
+  logWithLogLevel(
+    message: string,
+    logLevel: 'INFO' | 'WARNING' | 'ERROR'
+  ): void;
   trackEvent(name: string, data: any): void;
   addAttachment(base64file: string, fileName: string): void;
   removeAllAttachments(): void;
@@ -75,13 +78,13 @@ type GleapSdkType = {
 const GleapSdk = NativeModules.Gleapsdk
   ? NativeModules.Gleapsdk
   : new Proxy(
-    {},
-    {
-      get() {
-        throw new Error(LINKING_ERROR);
-      },
-    }
-  );
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
 
 if (GleapSdk && !GleapSdk.touched) {
   const networkLogger = new GleapNetworkIntercepter();
@@ -95,8 +98,12 @@ if (GleapSdk && !GleapSdk.touched) {
       }
 
       const requests = networkLogger.getRequests();
-   
-      if (requests && GleapSdk && typeof GleapSdk.attachNetworkLog !== 'undefined') {
+
+      if (
+        requests &&
+        GleapSdk &&
+        typeof GleapSdk.attachNetworkLog !== 'undefined'
+      ) {
         if (Platform.OS === 'android') {
           GleapSdk.attachNetworkLog(JSON.stringify(requests));
         } else {
@@ -145,14 +152,14 @@ if (GleapSdk && !GleapSdk.touched) {
         GleapSdk.startNetworkLogging();
       }
       notifyCallback('configLoaded', configJSON);
-    } catch (exp) { }
+    } catch (exp) {}
   });
 
   gleapEmitter.addListener('feedbackSent', (data) => {
     try {
       const dataJSON = data instanceof Object ? data : JSON.parse(data);
       notifyCallback('feedbackSent', dataJSON);
-    } catch (exp) { }
+    } catch (exp) {}
   });
 
   gleapEmitter.addListener('feedbackFlowStarted', (feedbackAction) => {
@@ -191,7 +198,7 @@ if (GleapSdk && !GleapSdk.touched) {
           name,
         });
       }
-    } catch (exp) { }
+    } catch (exp) {}
   });
 
   GleapSdk.removeAllAttachments();

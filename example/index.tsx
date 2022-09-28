@@ -6,6 +6,7 @@ import { name as appName } from './app.json';
 Gleap.enableDebugConsoleLog();
 // Gleap.setActivationMethods(['SCREENSHOT']);
 Gleap.initialize('DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc');
+Gleap.showFeedbackButton(true);
 
 Gleap.registerListener('customActionTriggered', (data) => {
   console.log('customActionTriggered');

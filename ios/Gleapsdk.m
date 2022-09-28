@@ -354,7 +354,7 @@ RCT_EXPORT_METHOD(setFrameUrl: (NSString *)frameUrl)
     });
 }
 
-RCT_EXPORT_METHOD(showFeedbackButton: (bool)show)
+RCT_EXPORT_METHOD(showFeedbackButton: (BOOL)show)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [Gleap showFeedbackButton: show];
