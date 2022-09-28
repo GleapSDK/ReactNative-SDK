@@ -15,11 +15,11 @@ export default function App() {
     Gleap.trackEvent('ARE', { key: 'MOP' });
     Gleap.trackEvent('ARE', { key: 'MOP' });
     Gleap.addAttachment(SampleData.img, 'test.jpg');
-    Gleap.log("This is a test log.");
-    Gleap.logWithLogLevel("This is a test log WARNING.", "WARNING");
-    Gleap.logWithLogLevel("This is a test log ERROR.", "ERROR");
-    Gleap.logWithLogLevel("This is a test log Info.", "INFO");
-    
+    Gleap.log('This is a test log.');
+    Gleap.logWithLogLevel('This is a test log WARNING.', 'WARNING');
+    Gleap.logWithLogLevel('This is a test log ERROR.', 'ERROR');
+    Gleap.logWithLogLevel('This is a test log Info.', 'INFO');
+
     Gleap.identifyWithUserHash(
       'USER_ID',
       {
@@ -40,7 +40,7 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Gleap.open();
+          Gleap.trackEvent('FIRST_EVENT', {});
         }}
       >
         <Image
