@@ -20,19 +20,11 @@ export default function App() {
     Gleap.logWithLogLevel('This is a test log ERROR.', 'ERROR');
     Gleap.logWithLogLevel('This is a test log Info.', 'INFO');
 
-    Gleap.identifyWithUserHash(
-      'USER_ID',
-      {
-        name: 'Franzi',
-        email: 'lukas@boehlerbrothers.com',
-        value: 123,
-        phone: '+49 123456789',
-      },
-      'USER_TOKEN'
-    );
-
-    Gleap.registerCustomAction((data) => {
-      console.log(data);
+    Gleap.identify('asdfasdf', {
+      name: 'Franzi',
+      email: 'lukas@boehlerbrothers.com',
+      value: 123,
+      phone: '+49 123456789',
     });
   }, []);
 
