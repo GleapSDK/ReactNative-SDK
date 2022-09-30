@@ -120,6 +120,11 @@ if (GleapSdk && !GleapSdk.touched) {
     networkLogger.setStopped(true);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  GleapSdk.logEvent = (name: string, data: any) => {
+    console.log('logEvent is deprecated. Use trackEvent instead.');
+  };
+
   var callbacks: any = {};
 
   GleapSdk.registerListener = (eventType: string, callback: any) => {
