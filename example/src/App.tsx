@@ -13,7 +13,7 @@ export default function App() {
     Gleap.setLanguage('AR_IQ');
     Gleap.trackEvent('ARE', { key: 'MOP' });
     Gleap.trackEvent('ARE', { key: 'MOP' });
-    Gleap.trackEvent('ARE', { key: 'MOP' });
+    Gleap.logEvent('ARE', { key: 'MOP' });
     Gleap.addAttachment(SampleData.img, 'test.jpg');
     Gleap.log('This is a test log.');
     Gleap.logWithLogLevel('This is a test log WARNING.', 'WARNING');

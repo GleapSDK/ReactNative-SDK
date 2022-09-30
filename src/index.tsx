@@ -64,6 +64,7 @@ type GleapSdkType = {
     message: string,
     logLevel: 'INFO' | 'WARNING' | 'ERROR'
   ): void;
+  logEvent(name: string, data: any): void;
   trackEvent(name: string, data: any): void;
   addAttachment(base64file: string, fileName: string): void;
   removeAllAttachments(): void;
@@ -123,6 +124,7 @@ if (GleapSdk && !GleapSdk.touched) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   GleapSdk.logEvent = (name: string, data: any) => {
     console.log('logEvent is deprecated. Use trackEvent instead.');
+    GleapSdk.trackEvent(name, data);
   };
 
   var callbacks: any = {};
