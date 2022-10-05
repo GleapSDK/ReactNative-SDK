@@ -244,6 +244,13 @@ RCT_EXPORT_METHOD(open)
     });
 }
 
+RCT_EXPORT_METHOD(openNews)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openNews];
+    });
+}
+
 RCT_EXPORT_METHOD(close)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
