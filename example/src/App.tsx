@@ -32,7 +32,7 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() => {
-          Gleap.openNews();
+          Gleap.openFeatureRequests();
         }}
       >
         <Image

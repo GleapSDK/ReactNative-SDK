@@ -251,6 +251,13 @@ RCT_EXPORT_METHOD(openNews)
     });
 }
 
+RCT_EXPORT_METHOD(openFeatureRequests)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openFeatureRequests];
+    });
+}
+
 RCT_EXPORT_METHOD(close)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

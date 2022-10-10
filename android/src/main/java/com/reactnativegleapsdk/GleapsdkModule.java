@@ -239,6 +239,28 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     }
   }
 
+  /**
+   * Show the feature requests section.
+   */
+  @ReactMethod
+  public void openFeatureRequests() {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              Gleap.getInstance().openFeatureRequests();
+            } catch (Exception e) {
+              System.out.println(e);
+            }
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
   @ReactMethod
   public void close() {
     try {

@@ -39,6 +39,7 @@ type GleapSdkType = {
   ): void;
   open(): void;
   openNews(): void;
+  openFeatureRequests(): void;
   close(): void;
   isOpened(): boolean;
   identify(userId: string, userProperties: GleapUserProperty): void;
