@@ -76,6 +76,8 @@ type GleapSdkType = {
   registerCustomAction(
     customActionCallback: (data: { name: string }) => void
   ): void;
+  getIdentity(): Promise<any>;
+  isUserIdentified(): Promise<boolean>;
 };
 
 const GleapSdk = NativeModules.Gleapsdk

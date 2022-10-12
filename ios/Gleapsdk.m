@@ -279,6 +279,22 @@ RCT_EXPORT_METHOD(clearIdentity)
     });
 }
 
+RCT_EXPORT_METHOD(getIdentity:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary * userIdentity = [Gleap getIdentity];
+        resolve(userIdentity);
+    });
+}
+
+RCT_EXPORT_METHOD(isUserIdentified:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        BOOL isUserIdentified = [Gleap isUserIdentified];
+        resolve(@(isUserIdentified));
+    });
+}
+
 RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (NSDictionary *)userProperties andUserHash:(NSString *)userHash)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

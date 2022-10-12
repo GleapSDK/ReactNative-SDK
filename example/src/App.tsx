@@ -31,8 +31,9 @@ export default function App() {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() => {
-          Gleap.openFeatureRequests();
+        onPress={async () => {
+          console.log('getIdentity', await Gleap.getIdentity());
+          console.log('isUserIdentified', await Gleap.isUserIdentified());
         }}
       >
         <Image
