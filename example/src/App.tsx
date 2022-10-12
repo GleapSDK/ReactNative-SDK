@@ -34,6 +34,7 @@ export default function App() {
         onPress={async () => {
           console.log('getIdentity', await Gleap.getIdentity());
           console.log('isUserIdentified', await Gleap.isUserIdentified());
+          console.log('isOpened', await Gleap.isOpened());
         }}
       >
         <Image

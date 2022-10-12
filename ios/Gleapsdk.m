@@ -287,6 +287,13 @@ RCT_EXPORT_METHOD(getIdentity:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromi
     });
 }
 
+RCT_EXPORT_METHOD(isOpened:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        resolve(@([Gleap isOpened]));
+    });
+}
+
 RCT_EXPORT_METHOD(isUserIdentified:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

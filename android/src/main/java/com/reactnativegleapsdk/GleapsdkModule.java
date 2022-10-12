@@ -274,7 +274,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
           public void run() {
             try {
               promise.resolve(Gleap.getInstance().isUserIdentified());
-            }catch (Exception ex) {}
+            } catch (Exception ex) {}
           }
         });
     } catch (NoUiThreadException e) {
@@ -334,13 +334,13 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   @ReactMethod
-  public void isOpened() {
+  public void isOpened(final Promise promise) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
-            Gleap.getInstance().isOpened();
+            promise.resolve(Gleap.getInstance().isOpened());
           }
         });
     } catch (NoUiThreadException e) {
