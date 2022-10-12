@@ -14,6 +14,9 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
@@ -36,6 +39,7 @@ import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
 import io.gleap.GleapLogLevel;
 import io.gleap.GleapUserProperties;
+import io.gleap.GleapUser;
 import io.gleap.Networklog;
 import io.gleap.PrefillHelper;
 import io.gleap.RequestType;
@@ -254,6 +258,57 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
             } catch (Exception e) {
               System.out.println(e);
             }
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+  @ReactMethod
+  public void isUserIdentified(final Promise promise) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              promise.resolve(Gleap.getInstance().isUserIdentified());
+            }catch (Exception ex) {}
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+  @ReactMethod
+  public void getIdentity(final Promise promise) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              GleapUser gleapUser = Gleap.getInstance().getIdentity();
+              if (gleapUser != null) {
+                GleapUserProperties userProps = gleapUser.getGleapUserProperties();
+
+                WritableMap map = new WritableNativeMap();
+
+                if (userProps != null) {
+                  map.putString("userId", gleapUser.getUserId());
+                  map.putString("phone", userProps.getPhoneNumber());
+                  map.putString("email", userProps.getEmail());
+                  map.putString("name", userProps.getName());
+                  map.putDouble("value", userProps.getValue());
+                }
+
+                promise.resolve(map);
+              } else {
+                promise.resolve(null);
+              }
+            }catch (Exception ex) {}
           }
         });
     } catch (NoUiThreadException e) {
