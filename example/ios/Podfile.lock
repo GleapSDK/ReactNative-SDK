@@ -10,7 +10,7 @@ PODS:
     - React-jsi (= 0.66.1)
     - ReactCommon/turbomodule/core (= 0.66.1)
   - fmt (6.2.1)
-  - Gleap (7.0.16)
+  - Gleap (8.2.3)
   - glog (0.3.5)
   - RCT-Folly (2021.06.28.00-v2):
     - boost
@@ -210,8 +210,8 @@ PODS:
   - React-jsinspector (0.66.1)
   - React-logger (0.66.1):
     - glog
-  - react-native-gleapsdk (7.0.16):
-    - Gleap (= 7.0.16)
+  - react-native-gleapsdk (8.2.3):
+    - Gleap (= 8.2.3)
     - React-Core
   - React-perflogger (0.66.1)
   - React-RCTActionSheet (0.66.1):
