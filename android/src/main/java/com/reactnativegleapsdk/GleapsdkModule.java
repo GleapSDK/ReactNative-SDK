@@ -235,13 +235,13 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   @ReactMethod
-  public void isOpened(final Promise promise) {
+  public void isOpened() {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
-            promise.resolve(Gleap.getInstance().isOpened());          
+            leap.getInstance().isOpened();          
           }
         });
     } catch (NoUiThreadException e) {
