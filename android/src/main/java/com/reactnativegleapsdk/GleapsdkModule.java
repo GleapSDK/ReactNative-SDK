@@ -241,7 +241,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
         new Runnable() {
           @Override
           public void run() {
-            leap.getInstance().isOpened();          
+            gleap.getInstance().isOpened();          
           }
         });
     } catch (NoUiThreadException e) {
