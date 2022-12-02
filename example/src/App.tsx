@@ -32,9 +32,7 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={async () => {
-          console.log('getIdentity', await Gleap.getIdentity());
-          console.log('isUserIdentified', await Gleap.isUserIdentified());
-          console.log('isOpened', await Gleap.isOpened());
+          Gleap.openHelpCenterArticle('7', true);
         }}
       >
         <Image
