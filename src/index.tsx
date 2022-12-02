@@ -38,8 +38,13 @@ type GleapSdkType = {
     }
   ): void;
   open(): void;
-  openNews(): void;
-  openFeatureRequests(): void;
+  openNews(showBackButton: boolean): void;
+  openNewsArticle(articleId: string, showBackButton: boolean): void;
+  openFeatureRequests(showBackButton: boolean): void;
+  openHelpCenter(showBackButton: boolean): void;
+  openHelpCenterCollection(collectionId: string, showBackButton: boolean): void;
+  openHelpCenterArticle(articleId: string, showBackButton: boolean): void;
+  searchHelpCenter(term: string, showBackButton: boolean): void;
   close(): void;
   isOpened(): boolean;
   identify(userId: string, userProperties: GleapUserProperty): void;

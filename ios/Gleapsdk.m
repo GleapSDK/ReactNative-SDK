@@ -244,17 +244,52 @@ RCT_EXPORT_METHOD(open)
     });
 }
 
-RCT_EXPORT_METHOD(openNews)
+RCT_EXPORT_METHOD(openNews: (BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [Gleap openNews];
+        [Gleap openNews: showBackButton];
     });
 }
 
-RCT_EXPORT_METHOD(openFeatureRequests)
+RCT_EXPORT_METHOD(openNewsArticle: (NSString *)articleId andShowBackButton:(BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [Gleap openFeatureRequests];
+        [Gleap openNewsArticle: articleId andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openHelpCenterCollection: (NSString *)collectionId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openHelpCenterCollection: collectionId andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openHelpCenterArticle: (NSString *)articleId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openHelpCenterArticle: articleId andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(searchHelpCenter: (NSString *)term andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap searchHelpCenter: term andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openHelpCenter: (BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openHelpCenter: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openFeatureRequests: (BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openFeatureRequests: showBackButton];
     });
 }
 
