@@ -864,6 +864,106 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     Gleap.getInstance().log(msg, ll);
   }
 
+
+  @ReactMethod
+  public void openNews(Boolean showBackButton) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().openNews(showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+
+  @ReactMethod
+  public void openNewsArticle(String articleId, Boolean showBackButton){
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().openNewsArticle(articleId, showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
+  public void openFeatureRequests(Boolean showBackButton){
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().openFeatureRequests(showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
+  public void openHelpCenter(Boolean showBackButton) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().openHelpCenter(showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
+  public void openHelpCenterCollection(String collectionId, Boolean showBackButton){
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().openHelpCenterCollection(collectionId, showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
+  public void openHelpCenterArticle(String articleId, Boolean showBackButton){
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().openHelpCenterArticle(articleId, showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
+  public void searchHelpCenter(String term, Boolean showBackButton){
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().searchHelpCenter(term, showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
   private boolean checkAllowedEndings(String fileName) {
     String[] fileType = fileName.split("\\.");
     String[] allowedTypes = {"jpeg", "svg", "png", "mp4", "webp", "xml", "plain", "xml", "json"};
