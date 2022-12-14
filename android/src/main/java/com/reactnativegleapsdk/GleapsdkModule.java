@@ -29,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,7 +65,13 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
         return context.getCurrentActivity();
       }
     });
+    try {
+      JSONObject body = new JSONObject();
+      body.put("page", "MainActivity");
+      Gleap.getInstance().trackEvent("pageView", body);
+    }catch (Exception ex){
 
+    }
   }
 
 
@@ -527,6 +532,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               if(jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
+            gleapUserSession.setCustomData(jsonObject);
             } catch (JSONException e) {
               e.printStackTrace();
             }
@@ -565,6 +571,8 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               if(jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
+            gleapUserSession.setCustomData(jsonObject);
+
             } catch (JSONException e) {
               e.printStackTrace();
             }
