@@ -26,8 +26,9 @@ export default function App() {
       value: 123,
       phone: '+49 123456789',
       customData: {
-        fancykey: 'Lukas ist cool',
+        fancykey: 'Lukas ist cool, sent by android',
         aNumber: 1938,
+        newKey: 'new value',
       },
     });
   }, []);
@@ -36,10 +37,11 @@ export default function App() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={async () => {
-          console.log('getIdentity', await Gleap.getIdentity());
-          console.log('isUserIdentified', await Gleap.isUserIdentified());
-          console.log('isOpened', await Gleap.isOpened());
-          Gleap.openHelpCenter(false);
+          // console.log('getIdentity', await Gleap.getIdentity());
+          // console.log('isUserIdentified', await Gleap.isUserIdentified());
+          // console.log('isOpened', await Gleap.isOpened());
+          // Gleap.openHelpCenter(false);
+          Gleap.trackPage("NEW PAGE NAME");
         }}
       >
         <Image
