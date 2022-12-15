@@ -12,6 +12,7 @@ export type GleapUserProperty = {
   name?: string;
   phone?: string;
   value?: number;
+  customData?: { [key: string]: string | number };
 };
 
 type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
@@ -66,6 +67,7 @@ type GleapSdkType = {
   setLanguage(language: string): void;
   enableDebugConsoleLog(): void;
   disableConsoleLog(): void;
+  trackPage(pageName: String): void;
   log(message: string): void;
   logWithLogLevel(
     message: string,
