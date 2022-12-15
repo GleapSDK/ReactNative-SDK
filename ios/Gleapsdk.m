@@ -375,7 +375,10 @@ RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary 
         }
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
-        }        
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
+            userProperty.customData = [userProperties objectForKey: @"customData"];
+        }
         [Gleap identifyUserWith: userId andData: userProperty];
     });
 }
@@ -439,7 +442,7 @@ RCT_EXPORT_METHOD(showFeedbackButton: (BOOL)show)
 RCT_EXPORT_METHOD(trackPage:(NSString *)pageName)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [Gleap trackEvent: name withData: @{
+        [Gleap trackEvent: @"pageView" withData: @{
             @"page": pageName
         }];
     });
