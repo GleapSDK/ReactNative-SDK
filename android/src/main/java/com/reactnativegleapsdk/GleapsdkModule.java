@@ -70,7 +70,8 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
       JSONObject body = new JSONObject();
       body.put("page", "MainActivity");
       Gleap.getInstance().trackEvent("pageView", body);
-    } catch (Exception ex) {}
+    } catch (Exception ex) {
+    }
   }
 
 
@@ -278,7 +279,8 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
           public void run() {
             try {
               promise.resolve(Gleap.getInstance().isUserIdentified());
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+            }
           }
         });
     } catch (NoUiThreadException e) {
@@ -312,7 +314,8 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               } else {
                 promise.resolve(null);
               }
-            }catch (Exception ex) {}
+            } catch (Exception ex) {
+            }
           }
         });
     } catch (NoUiThreadException e) {
@@ -329,7 +332,8 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
           public void run() {
             try {
               Gleap.getInstance().close();
-            }catch (Exception ex) {}
+            } catch (Exception ex) {
+            }
           }
         });
     } catch (NoUiThreadException e) {
@@ -528,10 +532,12 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               if (jsonObject.has("phone")) {
                 gleapUserSession.setPhoneNumber(jsonObject.getString("phone"));
               }
-              if(jsonObject.has("value")) {
+              if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
-            gleapUserSession.setCustomData(jsonObject);
+              if (jsonObject.has("customData")) {
+                gleapUserSession.setCustomData(jsonObject.getJSONObject("customData"));
+              }
             } catch (JSONException e) {
               e.printStackTrace();
             }
@@ -540,6 +546,26 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               return;
             }
             Gleap.getInstance().identifyUser(userid, gleapUserSession);
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+  @ReactMethod
+  public void trackPage(String pageName) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              JSONObject body = new JSONObject();
+              body.put("page", "MainActivity" + Math.random() * 100);
+              Gleap.getInstance().trackEvent("pageView", body);
+            } catch (Exception ignore) {
+            }
           }
         });
     } catch (NoUiThreadException e) {
@@ -567,14 +593,16 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
               if (jsonObject.has("phone")) {
                 gleapUserSession.setPhoneNumber(jsonObject.getString("phone"));
               }
-              if(jsonObject.has("value")) {
+              if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
-            gleapUserSession.setCustomData(jsonObject);
-
+              if (jsonObject.has("customData")) {
+                gleapUserSession.setCustomData(jsonObject.getJSONObject("customData"));
+              }
             } catch (JSONException e) {
               e.printStackTrace();
             }
+
             gleapUserSession.setHash(hash);
             if (Gleap.getInstance() == null) {
               return;
@@ -695,7 +723,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
         internalActivationMethods.add(GleapActivationMethod.SCREENSHOT);
       }
     }
-    if(Gleap.getInstance() != null) {
+    if (Gleap.getInstance() != null) {
       Gleap.getInstance().setActivationMethods(
         internalActivationMethods.toArray(new GleapActivationMethod[internalActivationMethods.size()]));
     }
@@ -850,7 +878,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
 
-    @ReactMethod
+  @ReactMethod
   public void log(String msg) {
     Gleap.getInstance().log(msg);
   }
@@ -888,7 +916,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
 
 
   @ReactMethod
-  public void openNewsArticle(String articleId, Boolean showBackButton){
+  public void openNewsArticle(String articleId, Boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
@@ -902,7 +930,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   @ReactMethod
-  public void openFeatureRequests(Boolean showBackButton){
+  public void openFeatureRequests(Boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
@@ -930,7 +958,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   @ReactMethod
-  public void openHelpCenterCollection(String collectionId, Boolean showBackButton){
+  public void openHelpCenterCollection(String collectionId, Boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
@@ -944,7 +972,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   @ReactMethod
-  public void openHelpCenterArticle(String articleId, Boolean showBackButton){
+  public void openHelpCenterArticle(String articleId, Boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
@@ -958,7 +986,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
   }
 
   @ReactMethod
-  public void searchHelpCenter(String term, Boolean showBackButton){
+  public void searchHelpCenter(String term, Boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
@@ -1045,7 +1073,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     invalidated = true;
     super.invalidate();
   }
-
 
 
   private Activity getActivitySafe() throws NoUiThreadException {
