@@ -1,26 +1,10 @@
 import * as React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Gleap from 'react-native-gleapsdk';
-import SampleData from './SampleData';
 
 export default function App() {
   React.useEffect(() => {
-    Gleap.attachCustomData({ key: 'YOU' });
-    Gleap.setCustomData('a', 'B');
-    Gleap.setCustomData('b', 'c');
-    Gleap.removeCustomDataForKey('b');
-    Gleap.trackEvent('ARE', { key: 'MOP' });
-    Gleap.setLanguage('AR_IQ');
-    Gleap.trackEvent('ARE', { key: 'MOP' });
-    Gleap.trackEvent('ARE', { key: 'MOP' });
-    Gleap.logEvent('ARE', { key: 'MOP' });
-    Gleap.addAttachment(SampleData.img, 'test.jpg');
-    Gleap.log('This is a test log.');
-    Gleap.logWithLogLevel('This is a test log WARNING.', 'WARNING');
-    Gleap.logWithLogLevel('This is a test log ERROR.', 'ERROR');
-    Gleap.logWithLogLevel('This is a test log Info.', 'INFO');
-
-    Gleap.identify('asdfasdf2', {
+    Gleap.identify('asdfasdf999', {
       name: 'Franzi',
       email: 'lukas@boehlerbrothers.com',
       value: 123,
@@ -30,16 +14,15 @@ export default function App() {
         aNumber: 1938,
       },
     });
+
+    Gleap.trackPage('Home 2');
   }, []);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         onPress={async () => {
-          console.log('getIdentity', await Gleap.getIdentity());
-          console.log('isUserIdentified', await Gleap.isUserIdentified());
-          console.log('isOpened', await Gleap.isOpened());
-          Gleap.openHelpCenter(false);
+          Gleap.trackPage('Home 223');
         }}
       >
         <Image
