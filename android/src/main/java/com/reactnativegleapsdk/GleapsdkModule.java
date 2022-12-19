@@ -65,13 +65,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
         return context.getCurrentActivity();
       }
     });
-
-    try {
-      JSONObject body = new JSONObject();
-      body.put("page", "MainActivity");
-      Gleap.getInstance().trackEvent("pageView", body);
-    } catch (Exception ex) {
-    }
   }
 
 
