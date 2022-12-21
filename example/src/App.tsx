@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Gleap from 'react-native-gleapsdk';
-import SampleData from './SampleData';
 
 export default function App() {
   React.useEffect(() => {
@@ -30,19 +29,20 @@ export default function App() {
         value: 123,
         phone: '+49 123456789',
       },
-      'USER_TOKEN'
-    );
-
-    Gleap.registerCustomAction((data) => {
-      console.log(data);
     });
+
+    Gleap.trackPage('Home 2');
   }, []);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() => {
-          Gleap.open();
+        onPress={async () => {
+          // console.log('getIdentity', await Gleap.getIdentity());
+          // console.log('isUserIdentified', await Gleap.isUserIdentified());
+          // console.log('isOpened', await Gleap.isOpened());
+          // Gleap.openHelpCenter(false);
+          Gleap.trackPage('NEW PAGE NAME');
         }}
       >
         <Image

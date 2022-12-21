@@ -244,6 +244,7 @@ RCT_EXPORT_METHOD(open)
     });
 }
 
+
 RCT_EXPORT_METHOD(close)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -265,6 +266,29 @@ RCT_EXPORT_METHOD(clearIdentity)
     });
 }
 
+RCT_EXPORT_METHOD(getIdentity:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary * userIdentity = [Gleap getIdentity];
+        resolve(userIdentity);
+    });
+}
+
+RCT_EXPORT_METHOD(isOpened:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        resolve(@([Gleap isOpened]));
+    });
+}
+
+RCT_EXPORT_METHOD(isUserIdentified:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        BOOL isUserIdentified = [Gleap isUserIdentified];
+        resolve(@(isUserIdentified));
+    });
+}
+
 RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (NSDictionary *)userProperties andUserHash:(NSString *)userHash)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -280,6 +304,9 @@ RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (N
         }
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
+            userProperty.customData = [userProperties objectForKey: @"customData"];
         }
         [Gleap identifyUserWith: userId andData: userProperty andUserHash: userHash];
     });
@@ -300,7 +327,10 @@ RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary 
         }
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
-        }        
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
+            userProperty.customData = [userProperties objectForKey: @"customData"];
+        }
         [Gleap identifyUserWith: userId andData: userProperty];
     });
 }
