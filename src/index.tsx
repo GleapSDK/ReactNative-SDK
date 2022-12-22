@@ -12,6 +12,7 @@ export type GleapUserProperty = {
   name?: string;
   phone?: string;
   value?: number;
+  customData?: { [key: string]: string | number };
 };
 
 type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
@@ -38,6 +39,13 @@ type GleapSdkType = {
     }
   ): void;
   open(): void;
+  openNews(showBackButton: boolean): void;
+  openNewsArticle(articleId: string, showBackButton: boolean): void;
+  openFeatureRequests(showBackButton: boolean): void;
+  openHelpCenter(showBackButton: boolean): void;
+  openHelpCenterCollection(collectionId: string, showBackButton: boolean): void;
+  openHelpCenterArticle(articleId: string, showBackButton: boolean): void;
+  searchHelpCenter(term: string, showBackButton: boolean): void;
   close(): void;
   isOpened(): boolean;
   identify(userId: string, userProperties: GleapUserProperty): void;
@@ -46,6 +54,7 @@ type GleapSdkType = {
     userProperties: GleapUserProperty,
     userHash: string
   ): void;
+  showFeedbackButton(show: boolean): void;
   clearIdentity(): void;
   preFillForm(formData: { [key: string]: string }): void;
   setApiUrl(apiUrl: string): void;
@@ -58,9 +67,14 @@ type GleapSdkType = {
   setLanguage(language: string): void;
   enableDebugConsoleLog(): void;
   disableConsoleLog(): void;
+  trackPage(pageName: String): void;
   log(message: string): void;
-  logWithLogLevel(message: string, logLevel: 'INFO' | 'WARNING' | 'ERROR'): void;
+  logWithLogLevel(
+    message: string,
+    logLevel: 'INFO' | 'WARNING' | 'ERROR'
+  ): void;
   logEvent(name: string, data: any): void;
+  trackEvent(name: string, data: any): void;
   addAttachment(base64file: string, fileName: string): void;
   removeAllAttachments(): void;
   startNetworkLogging(): void;
@@ -69,18 +83,20 @@ type GleapSdkType = {
   registerCustomAction(
     customActionCallback: (data: { name: string }) => void
   ): void;
+  getIdentity(): Promise<any>;
+  isUserIdentified(): Promise<boolean>;
 };
 
 const GleapSdk = NativeModules.Gleapsdk
   ? NativeModules.Gleapsdk
   : new Proxy(
-    {},
-    {
-      get() {
-        throw new Error(LINKING_ERROR);
-      },
-    }
-  );
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
 
 if (GleapSdk && !GleapSdk.touched) {
   const networkLogger = new GleapNetworkIntercepter();
@@ -94,8 +110,12 @@ if (GleapSdk && !GleapSdk.touched) {
       }
 
       const requests = networkLogger.getRequests();
-   
-      if (requests && GleapSdk && typeof GleapSdk.attachNetworkLog !== 'undefined') {
+
+      if (
+        requests &&
+        GleapSdk &&
+        typeof GleapSdk.attachNetworkLog !== 'undefined'
+      ) {
         if (Platform.OS === 'android') {
           GleapSdk.attachNetworkLog(JSON.stringify(requests));
         } else {
@@ -110,6 +130,12 @@ if (GleapSdk && !GleapSdk.touched) {
 
   GleapSdk.stopNetworkLogging = () => {
     networkLogger.setStopped(true);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  GleapSdk.logEvent = (name: string, data: any) => {
+    console.log('logEvent is deprecated. Use trackEvent instead.');
+    GleapSdk.trackEvent(name, data);
   };
 
   var callbacks: any = {};
@@ -144,14 +170,14 @@ if (GleapSdk && !GleapSdk.touched) {
         GleapSdk.startNetworkLogging();
       }
       notifyCallback('configLoaded', configJSON);
-    } catch (exp) { }
+    } catch (exp) {}
   });
 
   gleapEmitter.addListener('feedbackSent', (data) => {
     try {
       const dataJSON = data instanceof Object ? data : JSON.parse(data);
       notifyCallback('feedbackSent', dataJSON);
-    } catch (exp) { }
+    } catch (exp) {}
   });
 
   gleapEmitter.addListener('feedbackFlowStarted', (feedbackAction) => {
@@ -190,7 +216,7 @@ if (GleapSdk && !GleapSdk.touched) {
           name,
         });
       }
-    } catch (exp) { }
+    } catch (exp) {}
   });
 
   GleapSdk.removeAllAttachments();

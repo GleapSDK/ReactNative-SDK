@@ -1,48 +1,33 @@
 import * as React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Gleap from 'react-native-gleapsdk';
-import SampleData from './SampleData';
 
 export default function App() {
   React.useEffect(() => {
-    Gleap.attachCustomData({ key: 'YOU' });
-    Gleap.setCustomData('a', 'B');
-    Gleap.setCustomData('b', 'c');
-    Gleap.removeCustomDataForKey('b');
-    Gleap.logEvent('ARE', { key: 'MOP' });
-    Gleap.setLanguage('AR_IQ');
-    Gleap.logEvent('ARE', { key: 'MOP' });
-    Gleap.logEvent('ARE', { key: 'MOP' });
-    Gleap.logEvent('ARE', { key: 'MOP' });
-    Gleap.addAttachment(SampleData.img, 'test.jpg');
-
-    Gleap.log("This is a test log.");
-    
-    Gleap.logWithLogLevel("This is a test log WARNING.", "WARNING");
-    Gleap.logWithLogLevel("This is a test log ERROR.", "ERROR");
-    Gleap.logWithLogLevel("This is a test log Info.", "INFO");
-
-    Gleap.identifyWithUserHash(
-      'USER_ID',
-      {
-        name: 'Franzi',
-        email: 'lukas@boehlerbrothers.com',
-        value: 123,
-        phone: '+49 123456789',
+    Gleap.identify('asdfasdf999', {
+      name: 'Franzi',
+      email: 'lukas@boehlerbrothers.com',
+      value: 123,
+      phone: '+49 123456789',
+      customData: {
+        fancykey: 'Lukas ist cool, sent by android',
+        aNumber: 1938,
+        newKey: 'new value',
       },
-      'USER_TOKEN'
-    );
-
-    Gleap.registerCustomAction((data) => {
-      console.log(data);
     });
+
+    Gleap.trackPage('Home 2');
   }, []);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() => {
-          Gleap.open();
+        onPress={async () => {
+          // console.log('getIdentity', await Gleap.getIdentity());
+          // console.log('isUserIdentified', await Gleap.isUserIdentified());
+          // console.log('isOpened', await Gleap.isOpened());
+          // Gleap.openHelpCenter(false);
+          Gleap.trackPage('NEW PAGE NAME');
         }}
       >
         <Image

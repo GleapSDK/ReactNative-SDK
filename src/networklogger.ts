@@ -7,7 +7,7 @@ class GleapNetworkIntercepter {
   updatedCallback: any = null;
 
   setUpdatedCallback(updatedCallback: any) {
-    this.updatedCallback = updatedCallback; 
+    this.updatedCallback = updatedCallback;
   }
 
   getRequests() {
@@ -68,7 +68,7 @@ class GleapNetworkIntercepter {
 
   prepareContent(text: string) {
     if (!this.getTextContentSizeOk(text)) {
-      return "<content_too_large>";
+      return '<content_too_large>';
     }
 
     return text;
@@ -76,14 +76,14 @@ class GleapNetworkIntercepter {
 
   cleanupPayload(payload: any) {
     if (payload === undefined || payload === null) {
-      return "{}";
+      return '{}';
     }
 
     try {
       if (ArrayBuffer.isView(payload)) {
         return `{ type: "binary", length: ${payload.byteLength} }`;
       }
-    } catch (exp) { }
+    } catch (exp) {}
 
     return payload;
   }
@@ -269,12 +269,12 @@ class GleapNetworkIntercepter {
     var self = this;
 
     // @ts-ignore
-    if (XMLHttpRequest.prototype['gleapTouched']) {
+    if (XMLHttpRequest.prototype.gleapTouched) {
       return;
     }
 
     // @ts-ignore
-    XMLHttpRequest.prototype['gleapTouched'] = true;
+    XMLHttpRequest.prototype.gleapTouched = true;
 
     // XMLHttpRequest
     const open = XMLHttpRequest.prototype.open;

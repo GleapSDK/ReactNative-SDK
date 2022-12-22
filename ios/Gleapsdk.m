@@ -244,6 +244,55 @@ RCT_EXPORT_METHOD(open)
     });
 }
 
+RCT_EXPORT_METHOD(openNews: (BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openNews: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openNewsArticle: (NSString *)articleId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openNewsArticle: articleId andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openHelpCenterCollection: (NSString *)collectionId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openHelpCenterCollection: collectionId andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openHelpCenterArticle: (NSString *)articleId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openHelpCenterArticle: articleId andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(searchHelpCenter: (NSString *)term andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap searchHelpCenter: term andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openHelpCenter: (BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openHelpCenter: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openFeatureRequests: (BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openFeatureRequests: showBackButton];
+    });
+}
+
 RCT_EXPORT_METHOD(close)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -265,6 +314,29 @@ RCT_EXPORT_METHOD(clearIdentity)
     });
 }
 
+RCT_EXPORT_METHOD(getIdentity:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary * userIdentity = [Gleap getIdentity];
+        resolve(userIdentity);
+    });
+}
+
+RCT_EXPORT_METHOD(isOpened:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        resolve(@([Gleap isOpened]));
+    });
+}
+
+RCT_EXPORT_METHOD(isUserIdentified:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        BOOL isUserIdentified = [Gleap isUserIdentified];
+        resolve(@(isUserIdentified));
+    });
+}
+
 RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (NSDictionary *)userProperties andUserHash:(NSString *)userHash)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -280,6 +352,9 @@ RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (N
         }
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
+            userProperty.customData = [userProperties objectForKey: @"customData"];
         }
         [Gleap identifyUserWith: userId andData: userProperty andUserHash: userHash];
     });
@@ -300,7 +375,10 @@ RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary 
         }
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
-        }        
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
+            userProperty.customData = [userProperties objectForKey: @"customData"];
+        }
         [Gleap identifyUserWith: userId andData: userProperty];
     });
 }
@@ -354,10 +432,26 @@ RCT_EXPORT_METHOD(setFrameUrl: (NSString *)frameUrl)
     });
 }
 
-RCT_EXPORT_METHOD(logEvent:(NSString *)name andData:(NSDictionary *)data)
+RCT_EXPORT_METHOD(showFeedbackButton: (BOOL)show)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [Gleap logEvent: name withData: data];
+        [Gleap showFeedbackButton: show];
+    });
+}
+
+RCT_EXPORT_METHOD(trackPage:(NSString *)pageName)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap trackEvent: @"pageView" withData: @{
+            @"page": pageName
+        }];
+    });
+}
+
+RCT_EXPORT_METHOD(trackEvent:(NSString *)name andData:(NSDictionary *)data)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap trackEvent: name withData: data];
     });
 }
 
