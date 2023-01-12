@@ -64,13 +64,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         return context.getCurrentActivity();
       }
     });
-
-    try {
-      JSONObject body = new JSONObject();
-      body.put("page", "MainActivity");
-      Gleap.getInstance().trackEvent("pageView", body);
-    } catch (Exception ex) {
-    }
   }
 
 
