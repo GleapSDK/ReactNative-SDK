@@ -3,12 +3,10 @@ package com.reactnativegleapsdk;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Handler;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.facebook.react.ReactApplication;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -52,13 +50,14 @@ import io.gleap.callbacks.WidgetClosedCallback;
 import io.gleap.callbacks.WidgetOpenedCallback;
 
 @ReactModule(name = GleapsdkModule.NAME)
-public class GleapsdkModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class GleapsdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "Gleapsdk";
   private boolean isSilentBugReport = false;
   private boolean invalidated = false;
 
   public GleapsdkModule(ReactApplicationContext context) {
     super(context);
+
     Gleap.getInstance().setGetActivityCallback(new GetActivityCallback() {
       @Override
       public Activity getActivity() {
@@ -73,6 +72,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     } catch (Exception ex) {
     }
   }
+
 
 
   @Override
@@ -670,7 +670,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
 
   /**
    * Frame url
-   * 330,.
    *
    * @param frameUrl Url to the dedicated server.
    */
@@ -842,7 +841,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     } catch (Exception e) {
       e.printStackTrace();
     }
-
   }
 
   /**
@@ -1001,7 +999,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
 
   private boolean checkAllowedEndings(String fileName) {
     String[] fileType = fileName.split("\\.");
-    String[] allowedTypes = {"jpeg", "svg", "png", "mp4", "webp", "xml", "plain", "xml", "json"};
+    String[] allowedTypes = {"jpg", "jpeg", "svg", "png", "mp4", "webp", "xml", "plain", "xml", "json"};
     if (fileType.length <= 1) {
       return false;
     }
@@ -1048,18 +1046,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule implements Lifecy
     } catch (NoUiThreadException e) {
       System.err.println(e.getMessage());
     }
-  }
-
-  @Override
-  public void onHostResume() {
-  }
-
-  @Override
-  public void onHostPause() {
-  }
-
-  @Override
-  public void onHostDestroy() {
   }
 
   @Override
