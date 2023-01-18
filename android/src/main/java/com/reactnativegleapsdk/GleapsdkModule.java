@@ -48,6 +48,8 @@ import io.gleap.callbacks.FeedbackSendingFailedCallback;
 import io.gleap.callbacks.FeedbackSentCallback;
 import io.gleap.callbacks.WidgetClosedCallback;
 import io.gleap.callbacks.WidgetOpenedCallback;
+import io.gleap.callbacks.RegisterPushMessageGroupCallback;
+import io.gleap.callbacks.UnRegisterPushMessageGroupCallback;
 
 @ReactModule(name = GleapsdkModule.NAME)
 public class GleapsdkModule extends ReactContextBaseJavaModule {
@@ -164,6 +166,22 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   public void invoke(String message) {
                     getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                       .emit("feedbackFlowStarted", message);
+                  }
+                });
+
+                Gleap.getInstance().setRegisterPushMessageGroupCallback(new RegisterPushMessageGroupCallback() {
+                  @Override
+                  public void invoke(String pushMessageGroup) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("registerPushMessageGroup", pushMessageGroup);
+                  }
+                });
+
+                Gleap.getInstance().setUnRegisterPushMessageGroupCallback(new UnRegisterPushMessageGroupCallback() {
+                  @Override
+                  public void invoke(String pushMessageGroup) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("unregisterPushMessageGroup", pushMessageGroup);
                   }
                 });
               }

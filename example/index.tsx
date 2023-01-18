@@ -28,4 +28,14 @@ Gleap.registerListener('feedbackSendingFailed', (data) => {
   console.log(data);
 });
 
+Gleap.registerListener('registerPushMessageGroup', (data) => {
+  console.log('registerPushMessageGroup');
+  console.log(data);
+});
+
+Gleap.registerListener('unregisterPushMessageGroup', (data) => {
+  console.log('unregisterPushMessageGroup');
+  console.log(data);
+});
+
 AppRegistry.registerComponent(appName, () => App);

@@ -27,7 +27,6 @@ export default function App() {
           // console.log('isUserIdentified', await Gleap.isUserIdentified());
           // console.log('isOpened', await Gleap.isOpened());
           // Gleap.openHelpCenter(false);
-          Gleap.trackPage('NEW PAGE NAME');
         }}
       >
         <Image

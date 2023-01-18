@@ -196,6 +196,14 @@ if (GleapSdk && !GleapSdk.touched) {
     notifyCallback('widgetClosed');
   });
 
+  gleapEmitter.addListener('registerPushMessageGroup', (pushMessageGroup) => {
+    notifyCallback('registerPushMessageGroup', pushMessageGroup);
+  });
+
+  gleapEmitter.addListener('unregisterPushMessageGroup', (pushMessageGroup) => {
+    notifyCallback('unregisterPushMessageGroup', pushMessageGroup);
+  });
+
   function isJsonString(str: string) {
     try {
       JSON.parse(str);

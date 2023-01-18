@@ -106,6 +106,18 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
+- (void)registerPushMessageGroup:(NSString *)pushMessageGroup {
+    if (_hasListeners) {
+        [self sendEventWithName:@"registerPushMessageGroup" body: pushMessageGroup];
+    }
+}
+
+- (void)unregisterPushMessageGroup:(NSString *)pushMessageGroup {
+    if (_hasListeners) {
+        [self sendEventWithName:@"unregisterPushMessageGroup" body: pushMessageGroup];
+    }
+}
+
 - (void)feedbackSent:(NSDictionary *)data {
     if (_hasListeners) {
         [self sendEventWithName:@"feedbackSent" body: data];
@@ -137,7 +149,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed"];
+    return @[@"feedbackSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
 }
 
 RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)
