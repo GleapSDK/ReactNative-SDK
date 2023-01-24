@@ -915,7 +915,19 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     Gleap.getInstance().log(msg, ll);
   }
 
-
+  @ReactMethod
+  public void showSurvey(String surveyId, String format) {
+    GleapSurveyFormat surveyFormat;
+    switch (logLevel) {
+      case "survey_full":
+        surveyFormat = GleapSurveyFormat.SURVEY_FULL;
+        break;
+      default:
+        surveyFormat = GleapSurveyFormat.SURVEY;
+    }
+    Gleap.getInstance().showSurvey(surveyId, surveyFormat);
+  }
+  
   @ReactMethod
   public void openNews(Boolean showBackButton) {
     try {

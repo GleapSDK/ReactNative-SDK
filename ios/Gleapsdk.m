@@ -213,6 +213,18 @@ RCT_EXPORT_METHOD(startFeedbackFlow:(NSString *)feedbackFlow andShowBackButton:(
     });
 }
 
+RCT_EXPORT_METHOD(showSurvey:(NSString *)surveyId andFormat:(NSString *)format)
+{
+    GleapSurveyFormat surveyFormat = SURVEY;
+    if (format != nil && [format isEqualToString: @"survey_full"]) {
+        logLevelType = SURVEY_FULL;
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap showSurvey: surveyId withLogLevel: surveyFormat];
+    });
+}
+
 RCT_EXPORT_METHOD(logWithLogLevel:(NSString *)message andLogLevel:(NSString *)logLevel)
 {
     GleapLogLevel logLevelType = INFO;

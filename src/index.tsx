@@ -68,6 +68,7 @@ type GleapSdkType = {
   enableDebugConsoleLog(): void;
   disableConsoleLog(): void;
   trackPage(pageName: String): void;
+  showSurvey(surveyId: String, format: 'survey' | 'survey_full'): void;
   log(message: string): void;
   logWithLogLevel(
     message: string,
