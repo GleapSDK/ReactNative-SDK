@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.gleap.APPLICATIONTYPE;
+import io.gleap.SurveyType;
 import io.gleap.callbacks.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
@@ -917,17 +918,17 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void showSurvey(String surveyId, String format) {
-    GleapSurveyFormat surveyFormat;
-    switch (logLevel) {
+    SurveyType surveyFormat;
+    switch (format) {
       case "survey_full":
-        surveyFormat = GleapSurveyFormat.SURVEY_FULL;
+        surveyFormat = SurveyType.SURVEY_FULL;
         break;
       default:
-        surveyFormat = GleapSurveyFormat.SURVEY;
+        surveyFormat = SurveyType.SURVEY;
     }
     Gleap.getInstance().showSurvey(surveyId, surveyFormat);
   }
-  
+
   @ReactMethod
   public void openNews(Boolean showBackButton) {
     try {

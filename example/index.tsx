@@ -1,12 +1,16 @@
 import { AppRegistry } from 'react-native';
-import App from './src/App';
 import Gleap from 'react-native-gleapsdk';
 import { name as appName } from './app.json';
+import App from './src/App';
 
 Gleap.enableDebugConsoleLog();
 // Gleap.setActivationMethods(['SCREENSHOT']);
-Gleap.initialize('KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt');
+Gleap.initialize('DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc');
 Gleap.showFeedbackButton(true);
+
+setTimeout(() => {
+  Gleap.showSurvey('1g9pym', 'survey');
+}, 3000);
 
 Gleap.registerListener('customActionTriggered', (data) => {
   console.log('customActionTriggered');
