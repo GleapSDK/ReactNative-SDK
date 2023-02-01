@@ -8,9 +8,7 @@ Gleap.enableDebugConsoleLog();
 Gleap.initialize('KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt');
 Gleap.showFeedbackButton(true);
 
-setTimeout(() => {
-  // Gleap.showSurvey('1g9pym', 'survey');
-}, 3000);
+Gleap.setTags(['tag1', 'tag2', 'tag3']);
 
 Gleap.registerListener('customActionTriggered', (data) => {
   console.log('customActionTriggered');
