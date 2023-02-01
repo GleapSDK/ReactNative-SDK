@@ -5,11 +5,11 @@ import App from './src/App';
 
 Gleap.enableDebugConsoleLog();
 // Gleap.setActivationMethods(['SCREENSHOT']);
-Gleap.initialize('DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc');
+Gleap.initialize('KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt');
 Gleap.showFeedbackButton(true);
 
 setTimeout(() => {
-  Gleap.showSurvey('1g9pym', 'survey');
+  // Gleap.showSurvey('1g9pym', 'survey');
 }, 3000);
 
 Gleap.registerListener('customActionTriggered', (data) => {

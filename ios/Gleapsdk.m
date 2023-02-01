@@ -189,6 +189,13 @@ RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
     });
 }
 
+RCT_EXPORT_METHOD(setTags:(NSArray *)tags)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setTags: tags];
+    });
+}
+
 RCT_EXPORT_METHOD(setActivationMethods:(NSArray *)activationMethods)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

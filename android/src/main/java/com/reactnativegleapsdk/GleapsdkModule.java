@@ -787,6 +787,24 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
+   * Set tags to send with feedback items.
+   *
+   * @param tags Tags to use send with feedback items.
+   */
+  @ReactMethod
+  public void setTags(ReadableArray tags) {
+    try {
+      String[] tagsArray = new String[tags.size()];
+      for (int i = 0; i < tags.size(); i++) {
+        tagsArray[i] = tags.getString(i);
+      }
+      Gleap.getInstance().setTags(tagsArray);
+    } catch (Exception ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
    * Logs a custom event
    *
    * @param name Name of the event

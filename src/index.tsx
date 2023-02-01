@@ -67,6 +67,7 @@ type GleapSdkType = {
   setLanguage(language: string): void;
   enableDebugConsoleLog(): void;
   disableConsoleLog(): void;
+  setTags(tags: string[]): void;
   trackPage(pageName: String): void;
   showSurvey(surveyId: String, format: 'survey' | 'survey_full'): void;
   log(message: string): void;
