@@ -63,6 +63,7 @@ type GleapSdkType = {
   setCustomData(key: string, value: string): void;
   removeCustomDataForKey(key: string): void;
   clearCustomData(): void;
+  setDisableInAppNotifications(disableInAppNotifications: boolean): void;
   registerListener(eventType: string, callback: (data?: any) => void): void;
   setLanguage(language: string): void;
   enableDebugConsoleLog(): void;

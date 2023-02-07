@@ -961,6 +961,19 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     }
   }
 
+  @ReactMethod
+  public void setDisableInAppNotifications(Boolean disableInAppNotifications) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().setDisableInAppNotifications(disableInAppNotifications);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
 
   @ReactMethod
   public void openNewsArticle(String articleId, Boolean showBackButton) {

@@ -275,6 +275,13 @@ RCT_EXPORT_METHOD(open)
     });
 }
 
+RCT_EXPORT_METHOD(setDisableInAppNotifications: (BOOL)disableInAppNotifications)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setDisableInAppNotifications: disableInAppNotifications];
+    });
+}
+
 RCT_EXPORT_METHOD(openNews: (BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
