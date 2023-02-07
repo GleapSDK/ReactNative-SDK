@@ -8,6 +8,8 @@ Gleap.enableDebugConsoleLog();
 Gleap.initialize('KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt');
 Gleap.showFeedbackButton(true);
 
+Gleap.setDisableInAppNotifications(true);
+
 Gleap.setTags(['tag1', 'tag2', 'tag3']);
 
 Gleap.registerListener('customActionTriggered', (data) => {
