@@ -47,7 +47,7 @@ type GleapSdkType = {
   openHelpCenterArticle(articleId: string, showBackButton: boolean): void;
   searchHelpCenter(term: string, showBackButton: boolean): void;
   close(): void;
-  isOpened(): boolean;
+  isOpened(): Promise<boolean>;
   identify(userId: string, userProperties: GleapUserProperty): void;
   identifyWithUserHash(
     userId: string,
