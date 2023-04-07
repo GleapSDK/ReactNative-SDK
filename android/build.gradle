@@ -22,8 +22,6 @@ android {
     defaultConfig {
         minSdkVersion safeExtGet('Gleapsdk_minSdkVersion', 21)
         targetSdkVersion safeExtGet('Gleapsdk_targetSdkVersion', 33)
-        versionCode 1
-        versionName "1.0"
 
     }
 
