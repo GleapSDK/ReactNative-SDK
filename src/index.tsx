@@ -20,6 +20,7 @@ type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
 type GleapSdkType = {
   initialize(token: string): void;
   startFeedbackFlow(feedbackFlow: string, showBackButton: boolean): void;
+  startBot(botId: string, showBackButton: boolean): void;
   sendSilentCrashReport(
     description: string,
     severity: 'LOW' | 'MEDIUM' | 'HIGH'

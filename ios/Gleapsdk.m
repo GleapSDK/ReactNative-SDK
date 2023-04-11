@@ -213,6 +213,13 @@ RCT_EXPORT_METHOD(setActivationMethods:(NSArray *)activationMethods)
     });
 }
 
+RCT_EXPORT_METHOD(startBot:(NSString *)botId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap startBot: botId showBackButton: showBackButton];
+    });
+}
+
 RCT_EXPORT_METHOD(startFeedbackFlow:(NSString *)feedbackFlow andShowBackButton:(BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

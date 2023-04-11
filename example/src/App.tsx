@@ -27,6 +27,7 @@ export default function App() {
           // console.log('isUserIdentified', await Gleap.isUserIdentified());
           // console.log('isOpened', await Gleap.isOpened());
           // Gleap.openHelpCenter(false);
+          Gleap.startBot('64350c6b39c89ea4650c36ae', true);
         }}
       >
         <Image

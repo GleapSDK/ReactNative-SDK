@@ -962,6 +962,20 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void startBot(String botId, Boolean showBackButton) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().startBot(botId, showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
   public void setDisableInAppNotifications(Boolean disableInAppNotifications) {
     try {
       getActivitySafe().runOnUiThread(
