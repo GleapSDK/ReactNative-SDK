@@ -51,7 +51,7 @@ repositories {
 
 dependencies {
   implementation "com.facebook.react:react-native:+"
-  implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '10.0.1'
+  implementation group: 'io.gleap', name: 'gleap-android-sdk', version: '10.0.3'
 
 
   if(rootProject && rootProject.ext) {
