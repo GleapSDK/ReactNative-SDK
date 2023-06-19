@@ -581,7 +581,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           public void run() {
             try {
               JSONObject body = new JSONObject();
-              body.put("page", "MainActivity" + Math.random() * 100);
+              body.put("page", pageName);
               Gleap.getInstance().trackEvent("pageView", body);
             } catch (Exception ignore) {
             }
