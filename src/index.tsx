@@ -177,6 +177,12 @@ if (GleapSdk && !GleapSdk.touched) {
     } catch (exp) {}
   });
 
+  gleapEmitter.addListener('initialized', () => {
+    try {
+      notifyCallback('initialized');
+    } catch (exp) {}
+  });
+
   gleapEmitter.addListener('feedbackSent', (data) => {
     try {
       const dataJSON = data instanceof Object ? data : JSON.parse(data);

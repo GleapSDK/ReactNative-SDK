@@ -7,6 +7,6 @@ import App from './App';
 import {name as appName} from './app.json';
 import Gleap from 'react-native-gleapsdk';
 
-Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
+Gleap.initialize('hciNpT8z64tsHATINYZjWBvbirVWCKWt');
 
 AppRegistry.registerComponent(appName, () => App);

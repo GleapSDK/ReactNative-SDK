@@ -43,6 +43,7 @@ import io.gleap.PrefillHelper;
 import io.gleap.RequestType;
 import io.gleap.UserSessionController;
 import io.gleap.callbacks.ConfigLoadedCallback;
+import io.gleap.callbacks.InitializedCallback;
 import io.gleap.callbacks.CustomActionCallback;
 import io.gleap.callbacks.FeedbackFlowStartedCallback;
 import io.gleap.callbacks.FeedbackSendingFailedCallback;
@@ -125,6 +126,17 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                     if (!invalidated) {
                       getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit("configLoaded", jsonObject.toString());
+                    }
+
+                  }
+                });
+
+                Gleap.getInstance().setInitializedCallback(new InitializedCallback() {
+                  @Override
+                  public void initialized() {
+                    if (!invalidated) {
+                      getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("initialized", null);
                     }
 
                   }

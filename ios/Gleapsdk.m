@@ -81,6 +81,12 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
+- (void)initialized {
+    if (_hasListeners) {
+        [self sendEventWithName:@"initialized" body: @{}];
+    }
+}
+
 - (void)motionEnded:(NSNotification *)notification
 {
     if ([Gleap isActivationMethodActive: SHAKE]) {
@@ -149,7 +155,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"feedbackSendingFailed", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
+    return @[@"feedbackSent", @"feedbackSendingFailed", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
 }
 
 RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)
