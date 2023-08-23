@@ -165,12 +165,14 @@ class GleapNetworkIntercepter {
           });
       },
       onFetchFailed: (_err: any, gleapRequestId: any) => {
-        if (this.stopped) {
+        if (this.stopped || !gleapRequestId) {
           return;
         }
 
-        this.requests[gleapRequestId].success = false;
-        this.calcRequestTime(gleapRequestId);
+        if (this.requests && this.requests[gleapRequestId]) {
+          this.requests[gleapRequestId].success = false;
+          this.calcRequestTime(gleapRequestId);
+        }
         this.cleanRequests();
       },
       onOpen: (request: any, args: string | any[]) => {
