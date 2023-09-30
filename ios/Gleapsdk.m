@@ -39,6 +39,9 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
         [self initSDK];
         [Gleap setAutoActivationMethodsDisabled];
         [Gleap initializeWithToken: token];
+        [Gleap trackEvent: @"pageView" withData: @{
+            @"page": @"MainPage"
+        }];
     });
 }
 

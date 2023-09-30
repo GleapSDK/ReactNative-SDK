@@ -104,6 +104,12 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                 Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
                 Gleap.initialize(sdkKey, activity.getApplication());
 
+                try {
+                  JSONObject body = new JSONObject();
+                  body.put("page", "MainPage");
+                  Gleap.getInstance().trackEvent("pageView", body);
+                } catch (Exception ignore) {}
+
                 Gleap.getInstance().setWidgetOpenedCallback(new WidgetOpenedCallback() {
                   @Override
                   public void invoke() {
