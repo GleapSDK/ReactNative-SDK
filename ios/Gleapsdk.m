@@ -298,6 +298,27 @@ RCT_EXPORT_METHOD(setDisableInAppNotifications: (BOOL)disableInAppNotifications)
     });
 }
 
+RCT_EXPORT_METHOD(openChecklists: (BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openChecklists: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(openChecklist: (NSString *)checklistId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openChecklist: checklistId andShowBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(startChecklist: (NSString *)outboundId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap startChecklist: outboundId andShowBackButton: showBackButton];
+    });
+}
+
 RCT_EXPORT_METHOD(openNews: (BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

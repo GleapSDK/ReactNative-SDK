@@ -13,6 +13,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TouchableHighlight,
   useColorScheme,
   View,
 } from 'react-native';
@@ -23,6 +24,7 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import Gleap from 'react-native-gleapsdk';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -78,6 +80,21 @@ function App(): JSX.Element {
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
+            <TouchableHighlight onPress={() => {
+              Gleap.openChecklists(true);
+            }}>
+              <Text>Open checklists.</Text>
+            </TouchableHighlight>
+            <TouchableHighlight onPress={() => {
+              Gleap.startChecklist("65314024e287e7aba7c7810c", true);
+            }}>
+              <Text>Start checklist.</Text>
+            </TouchableHighlight>
+            <TouchableHighlight onPress={() => {
+              Gleap.clearIdentity();
+            }}>
+              <Text>CLEAR!</Text>
+            </TouchableHighlight>
           </Section>
           <Section title="See Your Changes">
             <ReloadInstructions />

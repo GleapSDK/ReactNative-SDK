@@ -42,6 +42,9 @@ type GleapSdkType = {
   open(): void;
   openNews(showBackButton: boolean): void;
   openNewsArticle(articleId: string, showBackButton: boolean): void;
+  openChecklists(showBackButton: boolean): void;
+  openChecklist(checklistId: string, showBackButton: boolean): void;
+  startChecklist(outboundId: string, showBackButton: boolean): void;
   openFeatureRequests(showBackButton: boolean): void;
   openHelpCenter(showBackButton: boolean): void;
   openHelpCenterCollection(collectionId: string, showBackButton: boolean): void;
