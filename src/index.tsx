@@ -12,6 +12,9 @@ export type GleapUserProperty = {
   name?: string;
   phone?: string;
   value?: number;
+  plan?: string;
+  companyName?: string;
+  companyId?: string;
   customData?: { [key: string]: string | number };
 };
 

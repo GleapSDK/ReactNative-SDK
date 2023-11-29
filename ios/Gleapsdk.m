@@ -428,6 +428,15 @@ RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (N
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
         }
+        if (userProperties != nil && [userProperties objectForKey: @"plan"] != nil) {
+            userProperty.plan = [userProperties objectForKey: @"plan"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"companyName"] != nil) {
+            userProperty.companyName = [userProperties objectForKey: @"companyName"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"companyId"] != nil) {
+            userProperty.companyId = [userProperties objectForKey: @"companyId"];
+        }
         if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
             userProperty.customData = [userProperties objectForKey: @"customData"];
         }
@@ -450,6 +459,15 @@ RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary 
         }
         if (userProperties != nil && [userProperties objectForKey: @"value"] != nil) {
             userProperty.value = [userProperties objectForKey: @"value"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"plan"] != nil) {
+            userProperty.plan = [userProperties objectForKey: @"plan"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"companyName"] != nil) {
+            userProperty.companyName = [userProperties objectForKey: @"companyName"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"companyId"] != nil) {
+            userProperty.companyId = [userProperties objectForKey: @"companyId"];
         }
         if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
             userProperty.customData = [userProperties objectForKey: @"customData"];

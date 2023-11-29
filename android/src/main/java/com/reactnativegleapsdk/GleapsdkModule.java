@@ -341,10 +341,13 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
                 if (userProps != null) {
                   map.putString("userId", gleapUser.getUserId());
-                  map.putString("phone", userProps.getPhoneNumber());
+                  map.putString("phone", userProps.getPhone());
                   map.putString("email", userProps.getEmail());
                   map.putString("name", userProps.getName());
                   map.putDouble("value", userProps.getValue());
+                  map.putString("plan", userProps.getPlan());
+                  map.putString("companyName", userProps.getCompanyName());
+                  map.putString("companyId", userProps.getCompanyId());
                 }
 
                 promise.resolve(map);
@@ -572,6 +575,15 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
+              if (jsonObject.has("plan")) {
+                gleapUserSession.setPlan(jsonObject.getString("plan"));
+              }
+              if (jsonObject.has("companyName")) {
+                gleapUserSession.setCompanyName(jsonObject.getString("companyName"));
+              }
+              if (jsonObject.has("companyId")) {
+                gleapUserSession.setCompanyId(jsonObject.getString("companyId"));
+              }
               if (jsonObject.has("customData")) {
                 gleapUserSession.setCustomData(jsonObject.getJSONObject("customData"));
               }
@@ -629,6 +641,15 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               }
               if (jsonObject.has("phone")) {
                 gleapUserSession.setPhoneNumber(jsonObject.getString("phone"));
+              }
+              if (jsonObject.has("plan")) {
+                gleapUserSession.setPlan(jsonObject.getString("plan"));
+              }
+              if (jsonObject.has("companyName")) {
+                gleapUserSession.setCompanyName(jsonObject.getString("companyName"));
+              }
+              if (jsonObject.has("companyId")) {
+                gleapUserSession.setCompanyId(jsonObject.getString("companyId"));
               }
               if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
