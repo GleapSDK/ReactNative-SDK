@@ -570,7 +570,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                 gleapUserSession.setEmail(jsonObject.getString("email"));
               }
               if (jsonObject.has("phone")) {
-                gleapUserSession.setPhoneNumber(jsonObject.getString("phone"));
+                gleapUserSession.setPhone(jsonObject.getString("phone"));
               }
               if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
@@ -640,7 +640,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                 gleapUserSession.setEmail(jsonObject.getString("email"));
               }
               if (jsonObject.has("phone")) {
-                gleapUserSession.setPhoneNumber(jsonObject.getString("phone"));
+                gleapUserSession.setPhone(jsonObject.getString("phone"));
               }
               if (jsonObject.has("plan")) {
                 gleapUserSession.setPlan(jsonObject.getString("plan"));
