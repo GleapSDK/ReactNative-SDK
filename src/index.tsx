@@ -42,6 +42,8 @@ type GleapSdkType = {
       replays?: Boolean;
     }
   ): void;
+  startConversation(showBackButton: boolean): void;
+  startClassicForm(formId: string, showBackButton: boolean): void;
   open(): void;
   openNews(showBackButton: boolean): void;
   openNewsArticle(articleId: string, showBackButton: boolean): void;
@@ -100,13 +102,13 @@ type GleapSdkType = {
 const GleapSdk = NativeModules.Gleapsdk
   ? NativeModules.Gleapsdk
   : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+    {},
+    {
+      get() {
+        throw new Error(LINKING_ERROR);
+      },
+    }
+  );
 
 if (GleapSdk && !GleapSdk.touched) {
   const networkLogger = new GleapNetworkIntercepter();
@@ -180,20 +182,20 @@ if (GleapSdk && !GleapSdk.touched) {
         GleapSdk.startNetworkLogging();
       }
       notifyCallback('configLoaded', configJSON);
-    } catch (exp) {}
+    } catch (exp) { }
   });
 
   gleapEmitter.addListener('initialized', () => {
     try {
       notifyCallback('initialized');
-    } catch (exp) {}
+    } catch (exp) { }
   });
 
   gleapEmitter.addListener('feedbackSent', (data) => {
     try {
       const dataJSON = data instanceof Object ? data : JSON.parse(data);
       notifyCallback('feedbackSent', dataJSON);
-    } catch (exp) {}
+    } catch (exp) { }
   });
 
   gleapEmitter.addListener('feedbackFlowStarted', (feedbackAction) => {
@@ -202,6 +204,10 @@ if (GleapSdk && !GleapSdk.touched) {
 
   gleapEmitter.addListener('feedbackSendingFailed', () => {
     notifyCallback('feedbackSendingFailed');
+  });
+
+  gleapEmitter.addListener('notificationCountUpdated', () => {
+    notifyCallback('notificationCountUpdated');
   });
 
   gleapEmitter.addListener('widgetOpened', () => {
@@ -240,7 +246,7 @@ if (GleapSdk && !GleapSdk.touched) {
           name,
         });
       }
-    } catch (exp) {}
+    } catch (exp) { }
   });
 
   GleapSdk.removeAllAttachments();

@@ -86,12 +86,12 @@ function App(): JSX.Element {
               <Text>Open checklists.</Text>
             </TouchableHighlight>
             <TouchableHighlight onPress={() => {
-              Gleap.startChecklist("65314024e287e7aba7c7810c", true);
+              Gleap.startClassicForm("bugreporting", true);
             }}>
-              <Text>Start checklist.</Text>
+              <Text>Start bug reporting.</Text>
             </TouchableHighlight>
             <TouchableHighlight onPress={() => {
-              Gleap.clearIdentity();
+              Gleap.startConversation(true);
             }}>
               <Text>CLEAR!</Text>
             </TouchableHighlight>

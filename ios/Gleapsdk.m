@@ -97,6 +97,14 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
+- (void)notificationCountUpdated:(NSInteger)count {
+    if (_hasListeners) {
+        [self sendEventWithName:@"notificationCountUpdated" body:@{
+            @"count": @(count)
+        }];
+    }
+}
+
 - (void)feedbackSendingFailed {
     if (_hasListeners) {
         [self sendEventWithName:@"feedbackSendingFailed" body:@{}];
@@ -158,7 +166,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"feedbackSendingFailed", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
+    return @[@"feedbackSent", @"feedbackSendingFailed", @"notificationCountUpdated", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
 }
 
 RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)
@@ -229,10 +237,24 @@ RCT_EXPORT_METHOD(startBot:(NSString *)botId andShowBackButton:(BOOL)showBackBut
     });
 }
 
+RCT_EXPORT_METHOD(startConversation:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap startConversation: showBackButton];
+    });
+}
+
 RCT_EXPORT_METHOD(startFeedbackFlow:(NSString *)feedbackFlow andShowBackButton:(BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [Gleap startFeedbackFlow: feedbackFlow showBackButton: showBackButton];
+    });
+}
+
+RCT_EXPORT_METHOD(startClassicForm:(NSString *)formId andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap startClassicForm: formId showBackButton: showBackButton];
     });
 }
 

@@ -52,6 +52,7 @@ import io.gleap.callbacks.WidgetClosedCallback;
 import io.gleap.callbacks.WidgetOpenedCallback;
 import io.gleap.callbacks.RegisterPushMessageGroupCallback;
 import io.gleap.callbacks.UnRegisterPushMessageGroupCallback;
+import io.gleap.callbacks.NotificationUnreadCountUpdatedCallback;
 
 @ReactModule(name = GleapsdkModule.NAME)
 public class GleapsdkModule extends ReactContextBaseJavaModule {
@@ -161,6 +162,14 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   public void invoke(String message) {
                     getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                       .emit("feedbackSendingFailed", message);
+                  }
+                });
+
+                Gleap.getInstance().setNotificationUnreadCountUpdatedCallback(new NotificationUnreadCountUpdatedCallback() {
+                  @Override
+                  public void invoke(int count) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("notificationCountUpdated", count);
                   }
                 });
 
@@ -430,6 +439,45 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           public void run() {
             try {
               Gleap.getInstance().startFeedbackFlow(feedbackFlow, showBackButton);
+              Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
+                @Override
+                public void invoke(String message) {
+                  new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                      @Override
+                      public void run() {
+                        if (!isSilentBugReport) {
+                          showDevMenu();
+                        } else {
+                          isSilentBugReport = false;
+                        }
+                      }
+                    },
+                    500);
+                }
+              });
+            } catch (Exception e) {
+              System.out.println(e);
+            }
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+  /**
+   * Start bug report manually by calling this function.
+   */
+  @ReactMethod
+  public void startClassicForm(String formId, boolean showBackButton) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              Gleap.getInstance().startClassicForm(formId, showBackButton);
               Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
                 @Override
                 public void invoke(String message) {
@@ -984,6 +1032,20 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         surveyFormat = SurveyType.SURVEY;
     }
     Gleap.getInstance().showSurvey(surveyId, surveyFormat);
+  }
+
+  @ReactMethod
+  public void startConversation(Boolean showBackButton) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().startConversation(showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
   }
 
   @ReactMethod
