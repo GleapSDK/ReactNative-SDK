@@ -206,8 +206,8 @@ if (GleapSdk && !GleapSdk.touched) {
     notifyCallback('feedbackSendingFailed');
   });
 
-  gleapEmitter.addListener('notificationCountUpdated', () => {
-    notifyCallback('notificationCountUpdated');
+  gleapEmitter.addListener('notificationCountUpdated', (count) => {
+    notifyCallback('notificationCountUpdated', count);
   });
 
   gleapEmitter.addListener('widgetOpened', () => {

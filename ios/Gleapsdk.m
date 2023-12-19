@@ -99,9 +99,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 
 - (void)notificationCountUpdated:(NSInteger)count {
     if (_hasListeners) {
-        [self sendEventWithName:@"notificationCountUpdated" body:@{
-            @"count": @(count)
-        }];
+        [self sendEventWithName:@"notificationCountUpdated" body: @(count)];
     }
 }
 
