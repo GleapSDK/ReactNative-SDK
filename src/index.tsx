@@ -63,9 +63,12 @@ type GleapSdkType = {
     userProperties: GleapUserProperty,
     userHash: string
   ): void;
+  updateContact(userProperties: GleapUserProperty): void;
   showFeedbackButton(show: boolean): void;
   clearIdentity(): void;
   preFillForm(formData: { [key: string]: string }): void;
+  setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;
+  setNetworkLogPropsToIgnore(networkLogPropsToIgnore: string[]): void;
   setApiUrl(apiUrl: string): void;
   setFrameUrl(frameUrl: string): void;
   attachCustomData(customData: any): void;

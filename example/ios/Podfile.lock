@@ -72,7 +72,7 @@ PODS:
     - FlipperKit/Core
     - FlipperKit/FlipperKitNetworkPlugin
   - fmt (6.2.1)
-  - Gleap (13.1.0)
+  - Gleap (13.2.1)
   - glog (0.3.5)
   - hermes-engine (0.71.11):
     - hermes-engine/Pre-built (= 0.71.11)
@@ -330,8 +330,8 @@ PODS:
   - React-jsinspector (0.71.11)
   - React-logger (0.71.11):
     - glog
-  - react-native-gleapsdk (13.1.0):
-    - Gleap (= 13.1.0)
+  - react-native-gleapsdk (13.2.2):
+    - Gleap (= 13.2.1)
     - React-Core
   - React-perflogger (0.71.11)
   - React-RCTActionSheet (0.71.11):
@@ -591,7 +591,7 @@ SPEC CHECKSUMS:
   Flipper-RSocket: d9d9ade67cbecf6ac10730304bf5607266dd2541
   FlipperKit: cbdee19bdd4e7f05472a66ce290f1b729ba3cb86
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  Gleap: 954c2d1dc5726c8ea13f8da5b848eb521ae416f7
+  Gleap: 7eedb0cda1ae75be8ee48d85387908ed80fedc15
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: 34c863b446d0135b85a6536fa5fd89f48196f848
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
@@ -610,7 +610,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 18b5b33c5f2687a784a61bc8176611b73524ae77
   React-jsinspector: b6ed4cb3ffa27a041cd440300503dc512b761450
   React-logger: 186dd536128ae5924bc38ed70932c00aa740cd5b
-  react-native-gleapsdk: 90cdced3e49d16db8e44e03004b6333ff6ae56ba
+  react-native-gleapsdk: a032cb09aa167686b01587c830bc8a7b404bae01
   React-perflogger: e706562ab7eb8eb590aa83a224d26fa13963d7f2
   React-RCTActionSheet: 57d4bd98122f557479a3359ad5dad8e109e20c5a
   React-RCTAnimation: ccf3ef00101ea74bda73a045d79a658b36728a60

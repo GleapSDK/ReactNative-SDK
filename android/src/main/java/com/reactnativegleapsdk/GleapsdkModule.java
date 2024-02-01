@@ -31,17 +31,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.gleap.APPLICATIONTYPE;
+import io.gleap.GleapSessionProperties;
 import io.gleap.SurveyType;
 import io.gleap.callbacks.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
 import io.gleap.GleapLogLevel;
-import io.gleap.GleapUserProperties;
-import io.gleap.GleapUser;
 import io.gleap.Networklog;
 import io.gleap.PrefillHelper;
 import io.gleap.RequestType;
-import io.gleap.UserSessionController;
 import io.gleap.callbacks.ConfigLoadedCallback;
 import io.gleap.callbacks.InitializedCallback;
 import io.gleap.callbacks.CustomActionCallback;
@@ -342,22 +340,18 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           @Override
           public void run() {
             try {
-              GleapUser gleapUser = Gleap.getInstance().getIdentity();
+              GleapSessionProperties gleapUser = Gleap.getInstance().getIdentity();
               if (gleapUser != null) {
-                GleapUserProperties userProps = gleapUser.getGleapUserProperties();
-
                 WritableMap map = new WritableNativeMap();
 
-                if (userProps != null) {
-                  map.putString("userId", gleapUser.getUserId());
-                  map.putString("phone", userProps.getPhone());
-                  map.putString("email", userProps.getEmail());
-                  map.putString("name", userProps.getName());
-                  map.putDouble("value", userProps.getValue());
-                  map.putString("plan", userProps.getPlan());
-                  map.putString("companyName", userProps.getCompanyName());
-                  map.putString("companyId", userProps.getCompanyId());
-                }
+                map.putString("userId", gleapUser.getUserId());
+                map.putString("phone", gleapUser.getPhone());
+                map.putString("email", gleapUser.getEmail());
+                map.putString("name", gleapUser.getName());
+                map.putDouble("value", gleapUser.getValue());
+                map.putString("plan", gleapUser.getPlan());
+                map.putString("companyName", gleapUser.getCompanyName());
+                map.putString("companyId", gleapUser.getCompanyId());
 
                 promise.resolve(map);
               } else {
@@ -589,7 +583,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     }
   }
 
-
   @ReactMethod
   public void setLanguage(String language) {
     Gleap.getInstance().setLanguage(language);
@@ -601,6 +594,56 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void updateContact(ReadableMap data) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            JSONObject jsonObject = null;
+            GleapSessionProperties gleapUserSession = new GleapSessionProperties();
+            try {
+              jsonObject = GleapUtil.convertMapToJson(data);
+              if (jsonObject.has("name")) {
+                gleapUserSession.setName(jsonObject.getString("name"));
+              }
+              if (jsonObject.has("email")) {
+                gleapUserSession.setEmail(jsonObject.getString("email"));
+              }
+              if (jsonObject.has("phone")) {
+                gleapUserSession.setPhone(jsonObject.getString("phone"));
+              }
+              if (jsonObject.has("value")) {
+                gleapUserSession.setValue(jsonObject.getDouble("value"));
+              }
+              if (jsonObject.has("plan")) {
+                gleapUserSession.setPlan(jsonObject.getString("plan"));
+              }
+              if (jsonObject.has("companyName")) {
+                gleapUserSession.setCompanyName(jsonObject.getString("companyName"));
+              }
+              if (jsonObject.has("companyId")) {
+                gleapUserSession.setCompanyId(jsonObject.getString("companyId"));
+              }
+              if (jsonObject.has("customData")) {
+                gleapUserSession.setCustomData(jsonObject.getJSONObject("customData"));
+              }
+            } catch (JSONException e) {
+              e.printStackTrace();
+            }
+
+            if (Gleap.getInstance() == null) {
+              return;
+            }
+            Gleap.getInstance().updateContact(gleapUserSession);
+          }
+        });
+    } catch (NoUiThreadException e) {
+      System.err.println(e.getMessage());
+    }
+  }
+
+  @ReactMethod
   public void identify(String userid, ReadableMap data) {
     try {
       getActivitySafe().runOnUiThread(
@@ -608,7 +651,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           @Override
           public void run() {
             JSONObject jsonObject = null;
-            GleapUserProperties gleapUserSession = new GleapUserProperties();
+            GleapSessionProperties gleapUserSession = new GleapSessionProperties();
             try {
               jsonObject = GleapUtil.convertMapToJson(data);
               if (jsonObject.has("name")) {
@@ -678,7 +721,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           @Override
           public void run() {
             JSONObject jsonObject = null;
-            GleapUserProperties gleapUserSession = new GleapUserProperties();
+            GleapSessionProperties gleapUserSession = new GleapSessionProperties();
             try {
               jsonObject = GleapUtil.convertMapToJson(data);
               if (jsonObject.has("name")) {
@@ -714,9 +757,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               return;
             }
 
-            if (UserSessionController.getInstance() != null) {
-              Gleap.getInstance().identifyUser(userid, gleapUserSession);
-            }
+            Gleap.getInstance().identifyUser(userid, gleapUserSession);
           }
         });
     } catch (NoUiThreadException e) {
@@ -868,6 +909,42 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
       Gleap.getInstance().attachNetworkLogs(networklogs);
 
+    } catch (Exception ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
+   * Manually sets the network log blacklist.
+   *
+   * @param networkLogBlacklist Array of urls to blacklist from network logs.
+   */
+  @ReactMethod
+  public void setNetworkLogsBlacklist(ReadableArray networkLogBlacklist) {
+    try {
+      String[] networkLogBlacklistArray = new String[networkLogBlacklist.size()];
+      for (int i = 0; i < networkLogBlacklist.size(); i++) {
+        networkLogBlacklistArray[i] = networkLogBlacklist.getString(i);
+      }
+      Gleap.getInstance().setNetworkLogsBlacklist(networkLogBlacklistArray);
+    } catch (Exception ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
+   * Manually sets the network log props to ignore.
+   *
+   * @param networkLogPropsToIgnore Array of props to ignore from network logs.
+   */
+  @ReactMethod
+  public void setNetworkLogPropsToIgnore(ReadableArray networkLogPropsToIgnore) {
+    try {
+      String[] networkLogPropsToIgnoreArray = new String[networkLogPropsToIgnore.size()];
+      for (int i = 0; i < networkLogPropsToIgnore.size(); i++) {
+        networkLogPropsToIgnoreArray[i] = networkLogPropsToIgnore.getString(i);
+      }
+      Gleap.getInstance().setNetworkLogPropsToIgnore(networkLogPropsToIgnoreArray);
     } catch (Exception ex) {
       System.out.println(ex);
     }
