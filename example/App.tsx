@@ -81,17 +81,28 @@ function App(): JSX.Element {
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
             <TouchableHighlight onPress={() => {
-              Gleap.openChecklists(true);
+              Gleap.identify("testuser222222", {
+                name: "Lukas",
+                email: "lukas2222@gleap.io",
+                customData: {
+                  test1: "test1"
+                }
+              })
             }}>
-              <Text>Open checklists.</Text>
+              <Text>IDENTY.</Text>
             </TouchableHighlight>
             <TouchableHighlight onPress={() => {
-              Gleap.startClassicForm("bugreporting", true);
+              Gleap.updateContact({
+                name: "MAX!",
+                customData: {
+                  test2: "test2222"
+                }
+              })
             }}>
-              <Text>Start bug reporting.</Text>
+              <Text>UPDATE.</Text>
             </TouchableHighlight>
             <TouchableHighlight onPress={() => {
-              Gleap.startConversation(true);
+              Gleap.clearIdentity();
             }}>
               <Text>CLEAR!</Text>
             </TouchableHighlight>
