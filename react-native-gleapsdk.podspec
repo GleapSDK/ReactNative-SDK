@@ -16,5 +16,5 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm}"
 
   s.dependency "React-Core"
-  s.dependency "Gleap", "13.2.2"
+  s.dependency "Gleap", "13.2.3"
 end
