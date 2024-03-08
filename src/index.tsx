@@ -100,6 +100,19 @@ type GleapSdkType = {
   ): void;
   getIdentity(): Promise<any>;
   isUserIdentified(): Promise<boolean>;
+  setTicketAttribute(key: string, value: string): void;
+  setAiTools(tools: {
+    name: string;
+    description: string;
+    response: string;
+    parameters: {
+      name: string;
+      description: string;
+      type: "string" | "number" | "boolean";
+      required: boolean;
+      enums?: string[];
+    }[];
+  }[]): void;
 };
 
 const GleapSdk = NativeModules.Gleapsdk
@@ -191,6 +204,13 @@ if (GleapSdk && !GleapSdk.touched) {
   gleapEmitter.addListener('initialized', () => {
     try {
       notifyCallback('initialized');
+    } catch (exp) { }
+  });
+
+  gleapEmitter.addListener('toolExecution', (data) => {
+    try {
+      const dataJSON = data instanceof Object ? data : JSON.parse(data);
+      notifyCallback('toolExecution', dataJSON);
     } catch (exp) { }
   });
 

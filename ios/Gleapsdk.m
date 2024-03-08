@@ -133,6 +133,12 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
+- (void)onToolExecution:(NSDictionary *)toolExecution {
+    if (_hasListeners) {
+        [self sendEventWithName:@"toolExecution" body: toolExecution];
+    }
+}
+
 - (void)feedbackSent:(NSDictionary *)data {
     if (_hasListeners) {
         [self sendEventWithName:@"feedbackSent" body: data];
@@ -164,7 +170,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"feedbackSendingFailed", @"notificationCountUpdated", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
+    return @[@"feedbackSent", @"toolExecution", @"feedbackSendingFailed", @"notificationCountUpdated", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
 }
 
 RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)
@@ -556,7 +562,70 @@ RCT_EXPORT_METHOD(attachCustomData:(NSDictionary *)customData)
     });
 }
 
-RCT_EXPORT_METHOD(setCustomData:(NSString *)key andData:(NSString *)value)
+RCT_EXPORT_METHOD(setTicketAttribute:(NSString *)key andValue:(NSString *)value)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setTicketAttributeWithKey: key value: value];
+    });
+}
+
+RCT_EXPORT_METHOD(setAiTools:(NSArray *)toolsArray) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @try {
+            NSMutableArray *aiTools = [[NSMutableArray alloc] init];
+
+            for (NSDictionary *toolDict in toolsArray) {
+                // Safely unwrap tool dictionary properties
+                NSString *name = toolDict[@"name"];
+                NSString *toolDescription = toolDict[@"description"];
+                NSString *response = toolDict[@"response"];
+                NSArray *parametersArray = toolDict[@"parameters"];
+                
+                if (name && toolDescription && response && parametersArray) {
+                    NSMutableArray *parameters = [[NSMutableArray alloc] init];
+
+                    for (NSDictionary *paramDict in parametersArray) {
+                        // Safely unwrap parameter dictionary properties
+                        NSString *paramName = paramDict[@"name"];
+                        NSString *paramDescription = paramDict[@"description"];
+                        NSString *type = paramDict[@"type"];
+                        NSNumber *required = paramDict[@"required"];
+                        NSArray *enums = paramDict[@"enum"];
+                        if (enums == nil) {
+                            enums = [[NSArray alloc] init];
+                        }
+
+                        // Check for required properties in parameter dictionary
+                        if (paramName && paramDescription && type && required) {
+                            GleapAiToolParameter *parameter = [[GleapAiToolParameter alloc]
+                                initWithName:paramName
+                                parameterDescription:paramDescription
+                                type:type
+                                required:[required boolValue]
+                                enums:enums];
+                            
+                            [parameters addObject:parameter];
+                        }
+                    }
+
+                    GleapAiTool *aiTool = [[GleapAiTool alloc]
+                        initWithName:name
+                        toolDescription:toolDescription
+                        response:response
+                        parameters:parameters];
+
+                    [aiTools addObject:aiTool];
+                }
+            }
+
+            [Gleap setAiTools:aiTools];
+        } @catch (NSException *exception) {
+            
+        }
+    });
+}
+
+RCT_EXPORT_METHOD(setCustomData:(NSString *)key andValue:(NSString *)value)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [Gleap setCustomData: value forKey: key];

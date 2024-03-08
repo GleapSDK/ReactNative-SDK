@@ -31,8 +31,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.gleap.APPLICATIONTYPE;
+import io.gleap.GleapAiTool;
+import io.gleap.GleapAiToolParameter;
 import io.gleap.GleapSessionProperties;
 import io.gleap.SurveyType;
+import io.gleap.callbacks.AiToolExecutedCallback;
 import io.gleap.callbacks.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
@@ -114,6 +117,14 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   public void invoke() {
                     getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                       .emit("widgetOpened", null);
+                  }
+                });
+
+                Gleap.getInstance().setAiToolExecutedCallback(new AiToolExecutedCallback() {
+                  @Override
+                  public void aiToolExecuted(JSONObject jsonObject) {
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                      .emit("toolExecution", jsonObject);
                   }
                 });
 
@@ -839,6 +850,88 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void setCustomData(String key, String value) {
     Gleap.getInstance().setCustomData(key, value);
+  }
+
+  /**
+   * Set the ai tools.
+   * @param tools
+   */
+  @ReactMethod
+  public void setAiTools(ReadableArray tools) {
+    try {
+      if (Gleap.getInstance() == null) {
+        return;
+      }
+
+      ArrayList<GleapAiTool> gleapAiTools = new ArrayList<>();
+
+      // Loop through the tools array
+      for (int i = 0; i < tools.size(); i++) {
+        ReadableMap tool = tools.getMap(i);
+        if (tool == null) continue;
+
+        String name = tool.getString("name");
+        String description = tool.getString("description");
+        String response = tool.getString("response");
+        ReadableArray parametersArray = tool.getArray("parameters");
+        ArrayList<GleapAiToolParameter> gleapParameters = new ArrayList<>();
+
+        if (parametersArray != null) {
+          // Loop through the parameters array
+          for (int j = 0; j < parametersArray.size(); j++) {
+            ReadableMap parameter = parametersArray.getMap(j);
+            if (parameter == null) continue;
+
+            String paramName = parameter.getString("name");
+            String paramDescription = parameter.getString("description");
+            String type = parameter.getString("type");
+            boolean required = parameter.getBoolean("required");
+            String[] enums = null;
+            if (parameter.hasKey("enum") && !parameter.isNull("enum")) {
+              ReadableArray enumsArray = parameter.getArray("enum");
+              enums = new String[enumsArray.size()];
+              for (int k = 0; k < enumsArray.size(); k++) {
+                enums[k] = enumsArray.getString(k);
+              }
+            }
+
+            // Create a new parameter and add it to the list
+            GleapAiToolParameter gleapParameter = new GleapAiToolParameter(
+              paramName, paramDescription, type, required, enums);
+            gleapParameters.add(gleapParameter);
+          }
+        }
+
+        // Create the AI tool with parameters
+        GleapAiToolParameter[] paramsArray = new GleapAiToolParameter[gleapParameters.size()];
+        paramsArray = gleapParameters.toArray(paramsArray);
+        GleapAiTool gleapAiTool = new GleapAiTool(
+          name, description, response, paramsArray);
+
+        // Add the AI tool to the list
+        gleapAiTools.add(gleapAiTool);
+      }
+
+      // Convert the list to an array and set the AI tools
+      GleapAiTool[] toolsArray = new GleapAiTool[gleapAiTools.size()];
+      toolsArray = gleapAiTools.toArray(toolsArray);
+      Gleap.getInstance().setAiTools(toolsArray);
+
+    } catch (Exception e) {
+      System.out.println("Error setting AI tools: " + e);
+    }
+  }
+
+  /**
+   * Set the value for a ticket attribute with key.
+   *
+   * @param value The value you want to add
+   * @param key   The key of the attribute
+   * @author Gleap
+   */
+  @ReactMethod
+  public void setTicketAttribute(String key, String value) {
+    Gleap.getInstance().setTicketAttribute(key, value);
   }
 
   /**
