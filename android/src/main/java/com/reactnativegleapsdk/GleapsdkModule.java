@@ -829,6 +829,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         String name = tool.getString("name");
         String description = tool.getString("description");
         String response = tool.getString("response");
+        String executionType = tool.getString("executionType");
         ReadableArray parametersArray = tool.getArray("parameters");
         ArrayList<GleapAiToolParameter> gleapParameters = new ArrayList<>();
 
@@ -862,7 +863,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         GleapAiToolParameter[] paramsArray = new GleapAiToolParameter[gleapParameters.size()];
         paramsArray = gleapParameters.toArray(paramsArray);
         GleapAiTool gleapAiTool = new GleapAiTool(
-          name, description, response, paramsArray);
+          name, description, response, executionType, paramsArray);
 
         // Add the AI tool to the list
         gleapAiTools.add(gleapAiTool);
