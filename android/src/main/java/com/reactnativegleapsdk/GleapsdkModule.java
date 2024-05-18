@@ -281,50 +281,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     }
   }
 
-  /**
-   * Show the news section.
-   */
-  @ReactMethod
-  public void openNews() {
-    try {
-      getActivitySafe().runOnUiThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              Gleap.getInstance().openNews();
-            } catch (Exception e) {
-              System.out.println(e);
-            }
-          }
-        });
-    } catch (NoUiThreadException e) {
-      System.err.println(e.getMessage());
-    }
-  }
-
-  /**
-   * Show the feature requests section.
-   */
-  @ReactMethod
-  public void openFeatureRequests() {
-    try {
-      getActivitySafe().runOnUiThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              Gleap.getInstance().openFeatureRequests();
-            } catch (Exception e) {
-              System.out.println(e);
-            }
-          }
-        });
-    } catch (NoUiThreadException e) {
-      System.err.println(e.getMessage());
-    }
-  }
-
   @ReactMethod
   public void isUserIdentified(final Promise promise) {
     try {
@@ -1060,18 +1016,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
       System.out.println(ex);
     }
   }
-
-  /**
-   * Logs a custom event
-   *
-   * @param name Name of the event
-   * @author Gleap
-   */
-  @ReactMethod
-  void trackEvent(String name) {
-    Gleap.getInstance().trackEvent(name);
-  }
-
+  
   /**
    * Logs a custom event with data
    *
