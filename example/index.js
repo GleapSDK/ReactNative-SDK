@@ -37,7 +37,7 @@ Gleap.setAiTools(tools);
 
 Gleap.setTicketAttribute("note", "This is a test value.");
 
-Gleap.initialize('rnKAHkPdeQBsRlZ1zh4AfbszdqqxASY0');
+Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
 
 Gleap.registerListener('toolExecution', (data) => {
     console.log("data", data);

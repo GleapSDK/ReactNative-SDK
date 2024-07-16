@@ -316,6 +316,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                 map.putString("email", gleapUser.getEmail());
                 map.putString("name", gleapUser.getName());
                 map.putDouble("value", gleapUser.getValue());
+                map.putDouble("sla", gleapUser.getSla());
                 map.putString("plan", gleapUser.getPlan());
                 map.putString("companyName", gleapUser.getCompanyName());
                 map.putString("companyId", gleapUser.getCompanyId());
@@ -583,6 +584,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
               }
+              if (jsonObject.has("sla")) {
+                gleapUserSession.setSla(jsonObject.getDouble("sla"));
+              }
               if (jsonObject.has("plan")) {
                 gleapUserSession.setPlan(jsonObject.getString("plan"));
               }
@@ -632,6 +636,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               }
               if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
+              }
+              if (jsonObject.has("sla")) {
+                gleapUserSession.setSla(jsonObject.getDouble("sla"));
               }
               if (jsonObject.has("plan")) {
                 gleapUserSession.setPlan(jsonObject.getString("plan"));
@@ -711,6 +718,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               }
               if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
+              }
+              if (jsonObject.has("sla")) {
+                gleapUserSession.setSla(jsonObject.getDouble("sla"));
               }
               if (jsonObject.has("customData")) {
                 gleapUserSession.setCustomData(jsonObject.getJSONObject("customData"));
@@ -1017,7 +1027,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
       System.out.println(ex);
     }
   }
-  
+
   /**
    * Logs a custom event with data
    *

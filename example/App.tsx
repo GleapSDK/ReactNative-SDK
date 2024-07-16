@@ -81,9 +81,10 @@ function App(): JSX.Element {
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
             <TouchableHighlight onPress={() => {
-              Gleap.identify("testuser222222", {
+              Gleap.identify("testuser2222221", {
                 name: "Lukas",
                 email: "lukas2222@gleap.io",
+                sla: 199,
                 customData: {
                   test1: "test1"
                 }
