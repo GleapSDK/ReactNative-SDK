@@ -255,6 +255,13 @@ RCT_EXPORT_METHOD(startBot:(NSString *)botId andShowBackButton:(BOOL)showBackBut
     });
 }
 
+RCT_EXPORT_METHOD(openConversations:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openConversations: showBackButton];
+    });
+}
+
 RCT_EXPORT_METHOD(startConversation:(BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
