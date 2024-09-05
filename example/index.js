@@ -37,10 +37,18 @@ Gleap.setAiTools(tools);
 
 Gleap.setTicketAttribute("note", "This is a test value.");
 
-Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
+Gleap.initialize('qL1QaYaBwCZ7rweHFTT9zROoBkZNhM8w');
 
 Gleap.registerListener('toolExecution', (data) => {
     console.log("data", data);
+});
+
+Gleap.registerListener('outboundSent', (data) => {
+    console.log("outboundSent", data);
+});
+
+Gleap.registerListener('feedbackSent', (data) => {
+    console.log("feedbackSent", data);
 });
 
 AppRegistry.registerComponent(appName, () => App);

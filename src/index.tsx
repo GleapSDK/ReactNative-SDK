@@ -226,6 +226,13 @@ if (GleapSdk && !GleapSdk.touched) {
     } catch (exp) {}
   });
 
+  gleapEmitter.addListener('outboundSent', (data) => {
+    try {
+      const dataJSON = data instanceof Object ? data : JSON.parse(data);
+      notifyCallback('outboundSent', dataJSON);
+    } catch (exp) {}
+  });
+
   gleapEmitter.addListener('feedbackFlowStarted', (feedbackAction) => {
     notifyCallback('feedbackFlowStarted', feedbackAction);
   });

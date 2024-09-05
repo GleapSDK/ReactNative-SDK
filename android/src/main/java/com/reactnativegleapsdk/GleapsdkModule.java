@@ -49,6 +49,7 @@ import io.gleap.callbacks.CustomActionCallback;
 import io.gleap.callbacks.FeedbackFlowStartedCallback;
 import io.gleap.callbacks.FeedbackSendingFailedCallback;
 import io.gleap.callbacks.FeedbackSentCallback;
+import io.gleap.callbacks.OutboundSentCallback;
 import io.gleap.callbacks.WidgetClosedCallback;
 import io.gleap.callbacks.WidgetOpenedCallback;
 import io.gleap.callbacks.RegisterPushMessageGroupCallback;
@@ -158,11 +159,23 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   }
                 });
 
+                Gleap.getInstance().setOutboundSentCallback(new OutboundSentCallback() {
+                  @Override
+                  public void invoke(JSONObject jsonObject) {
+                    try {
+                      getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("outboundSent", jsonObject.toString());
+                    } catch (Exception exp) {}
+                  }
+                });
+
                 Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
                   @Override
-                  public void invoke(String message) {
-                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                      .emit("feedbackSent", message);
+                  public void invoke(JSONObject jsonObject) {
+                    try {
+                      getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("feedbackSent", jsonObject.toString());
+                    } catch (Exception exp) {}
                   }
                 });
 
@@ -254,23 +267,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           public void run() {
             try {
               Gleap.getInstance().open();
-              Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
-                @Override
-                public void invoke(String message) {
-                  new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                      @Override
-                      public void run() {
-                        if (!isSilentBugReport) {
-                          showDevMenu();
-                        } else {
-                          isSilentBugReport = false;
-                        }
-                      }
-                    },
-                    500);
-                }
-              });
             } catch (Exception e) {
               System.out.println(e);
             }
@@ -401,23 +397,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           public void run() {
             try {
               Gleap.getInstance().startFeedbackFlow(feedbackFlow, showBackButton);
-              Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
-                @Override
-                public void invoke(String message) {
-                  new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                      @Override
-                      public void run() {
-                        if (!isSilentBugReport) {
-                          showDevMenu();
-                        } else {
-                          isSilentBugReport = false;
-                        }
-                      }
-                    },
-                    500);
-                }
-              });
             } catch (Exception e) {
               System.out.println(e);
             }
@@ -440,23 +419,6 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           public void run() {
             try {
               Gleap.getInstance().startClassicForm(formId, showBackButton);
-              Gleap.getInstance().setFeedbackSentCallback(new FeedbackSentCallback() {
-                @Override
-                public void invoke(String message) {
-                  new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                      @Override
-                      public void run() {
-                        if (!isSilentBugReport) {
-                          showDevMenu();
-                        } else {
-                          isSilentBugReport = false;
-                        }
-                      }
-                    },
-                    500);
-                }
-              });
             } catch (Exception e) {
               System.out.println(e);
             }
