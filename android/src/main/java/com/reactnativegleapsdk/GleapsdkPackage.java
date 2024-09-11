@@ -1,21 +1,17 @@
 package com.reactnativegleapsdk;
 
 import androidx.annotation.NonNull;
-
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
+import com.facebook.react.TurboReactPackage;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-// Import necessary TurboModule classes for the new architecture
-import com.facebook.react.turbomodule.core.interfaces.TurboModule;
-import com.facebook.react.module.model.ReactModuleInfo;
-import com.facebook.react.module.model.ReactModuleInfoProvider;
-import com.facebook.react.TurboReactPackage;
 
 public class GleapsdkPackage extends TurboReactPackage {
 
@@ -30,14 +26,14 @@ public class GleapsdkPackage extends TurboReactPackage {
     @NonNull
     @Override
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+        return Collections.emptyList();  // If you don't have view managers, this is correct
     }
 
-    // For TurboModules support
+    // TurboModules support
     @Override
     public NativeModule getModule(String name, ReactApplicationContext reactContext) {
-        if (name.equals(GleapsdkModule.NAME)) {
-            return new GleapsdkModule(reactContext);
+        if (GleapsdkModule.NAME.equals(name)) {
+            return new GleapsdkModule(reactContext);  // Automatically handled for both architectures
         }
         return null;
     }
@@ -46,15 +42,14 @@ public class GleapsdkPackage extends TurboReactPackage {
     public ReactModuleInfoProvider getReactModuleInfoProvider() {
         return () -> {
             final ReactModuleInfo gleapModuleInfo = new ReactModuleInfo(
-                GleapsdkModule.NAME,
-                "GleapsdkModule",
-                false, // canOverrideExistingModule
-                true,  // needsEagerInit
-                true,  // hasConstants
-                false, // isCxxModule
-                true   // isTurboModule
+                GleapsdkModule.NAME,           // Module name
+                "GleapsdkModule",              // Java class name
+                false,                         // canOverrideExistingModule
+                false,                         // needsEagerInit (set to false unless necessary)
+                true,                          // hasConstants
+                false,                         // isCxxModule
+                true                           // isTurboModule
             );
-
             return Collections.singletonMap(GleapsdkModule.NAME, gleapModuleInfo);
         };
     }

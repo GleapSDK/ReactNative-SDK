@@ -55,9 +55,10 @@ import io.gleap.callbacks.WidgetOpenedCallback;
 import io.gleap.callbacks.RegisterPushMessageGroupCallback;
 import io.gleap.callbacks.UnRegisterPushMessageGroupCallback;
 import io.gleap.callbacks.NotificationUnreadCountUpdatedCallback;
+import com.reactnativegleapsdk.NativeGleapsdkSpec;
 
 @ReactModule(name = GleapsdkModule.NAME)
-public class GleapsdkModule extends ReactContextBaseJavaModule {
+public class GleapsdkModule extends NativeGleapsdkSpec {
   public static final String NAME = "Gleapsdk";
   private boolean isSilentBugReport = false;
   private boolean invalidated = false;
