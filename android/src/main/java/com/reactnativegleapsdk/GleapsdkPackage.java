@@ -1,40 +1,43 @@
+package com.reactnativegleapsdk;
+
+import androidx.annotation.NonNull;
+
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
-import com.facebook.react.turbomodule.core.interfaces.TurboModule;
-import com.facebook.react.module.model.ReactModuleInfo;
-import com.facebook.react.module.model.ReactModuleInfoProvider;
-import com.facebook.react.TurboReactPackage;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GleapsdkPackage extends TurboReactPackage {  // TurboReactPackage for new architecture
+// Import necessary TurboModule classes for the new architecture
+import com.facebook.react.turbomodule.core.interfaces.TurboModule;
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
+import com.facebook.react.TurboReactPackage;
 
+public class GleapsdkPackage extends TurboReactPackage {
+
+    @NonNull
     @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
+    public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
         modules.add(new GleapsdkModule(reactContext));
         return modules;
     }
 
+    @NonNull
     @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
+    public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
         return Collections.emptyList();
     }
 
-    // Check for TurboModule support and fallback to old architecture
+    // For TurboModules support
     @Override
     public NativeModule getModule(String name, ReactApplicationContext reactContext) {
         if (name.equals(GleapsdkModule.NAME)) {
-            // Check if TurboModules are enabled
-            if (TurboModuleRegistry.getModule(name, reactContext) != null) {
-                return TurboModuleRegistry.getModule(name, reactContext);  // For TurboModules
-            } else {
-                return new GleapsdkModule(reactContext);  // For traditional NativeModules
-            }
+            return new GleapsdkModule(reactContext);
         }
         return null;
     }
@@ -45,11 +48,11 @@ public class GleapsdkPackage extends TurboReactPackage {  // TurboReactPackage f
             final ReactModuleInfo gleapModuleInfo = new ReactModuleInfo(
                 GleapsdkModule.NAME,
                 "GleapsdkModule",
-                false,  // canOverrideExistingModule
-                true,   // needsEagerInit
-                true,   // hasConstants
-                false,  // isCxxModule
-                true    // isTurboModule
+                false, // canOverrideExistingModule
+                true,  // needsEagerInit
+                true,  // hasConstants
+                false, // isCxxModule
+                true   // isTurboModule
             );
 
             return Collections.singletonMap(GleapsdkModule.NAME, gleapModuleInfo);
