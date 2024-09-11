@@ -1,4 +1,10 @@
-import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
+import {
+  NativeModules,
+  TurboModuleRegistry,
+  NativeEventEmitter,
+  Platform,
+  TurboModule,
+} from 'react-native';
 import GleapNetworkIntercepter from './networklogger';
 
 const LINKING_ERROR =
@@ -21,7 +27,7 @@ export type GleapUserProperty = {
 
 type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
 
-type GleapSdkType = {
+interface GleapSdkType extends TurboModule {
   initialize(token: string): void;
   startFeedbackFlow(feedbackFlow: string, showBackButton: boolean): void;
   startBot(botId: string, showBackButton: boolean): void;
@@ -118,9 +124,12 @@ type GleapSdkType = {
       }[];
     }[]
   ): void;
-};
+}
 
-const GleapSdk = NativeModules.Gleapsdk
+// Attempt to use TurboModules if available, else fall back to NativeModules
+const GleapSdk = TurboModuleRegistry.get<GleapSdkType>('Gleapsdk')
+  ? TurboModuleRegistry.get<GleapSdkType>('Gleapsdk')
+  : NativeModules.Gleapsdk
   ? NativeModules.Gleapsdk
   : new Proxy(
       {},
@@ -194,7 +203,7 @@ if (GleapSdk && !GleapSdk.touched) {
     }
   };
 
-  const gleapEmitter = new NativeEventEmitter(NativeModules.Gleapsdk);
+  const gleapEmitter = new NativeEventEmitter(GleapSdk);
 
   gleapEmitter.addListener('configLoaded', (config: any) => {
     try {

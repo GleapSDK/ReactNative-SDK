@@ -11,7 +11,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GleapsdkPackage implements ReactPackage {
+// Import necessary TurboModule classes for the new architecture
+import com.facebook.react.turbomodule.core.interfaces.TurboModule;
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
+import com.facebook.react.TurboReactPackage;
+
+public class GleapsdkPackage extends TurboReactPackage {
+
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
@@ -24,5 +31,31 @@ public class GleapsdkPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
         return Collections.emptyList();
+    }
+
+    // For TurboModules support
+    @Override
+    public NativeModule getModule(String name, ReactApplicationContext reactContext) {
+        if (name.equals(GleapsdkModule.NAME)) {
+            return new GleapsdkModule(reactContext);
+        }
+        return null;
+    }
+
+    @Override
+    public ReactModuleInfoProvider getReactModuleInfoProvider() {
+        return () -> {
+            final ReactModuleInfo gleapModuleInfo = new ReactModuleInfo(
+                GleapsdkModule.NAME,
+                "GleapsdkModule",
+                false, // canOverrideExistingModule
+                true,  // needsEagerInit
+                true,  // hasConstants
+                false, // isCxxModule
+                true   // isTurboModule
+            );
+
+            return Collections.singletonMap(GleapsdkModule.NAME, gleapModuleInfo);
+        };
     }
 }
