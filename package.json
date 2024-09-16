@@ -31,6 +31,19 @@
     "pods": "cd example && pod-install --quiet",
     "bootstrap": "yarn example && yarn && yarn pods"
   },
+  "codegenConfig": {
+    "name": "react-native-gleapsdk",
+    "type": "all",
+    "jsSrcsDir": ".",
+    "outputDir": {
+      "ios": "ios/generated",
+      "android": "android/generated"
+    },
+    "includesGeneratedCode": true,
+    "android": {
+      "javaPackageName": "com.facebook.fbreact.specs"
+    }
+  },
   "keywords": [
     "react-native",
     "ios",
