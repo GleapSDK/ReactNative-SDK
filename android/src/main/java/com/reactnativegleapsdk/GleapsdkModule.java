@@ -1078,16 +1078,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void registerConfigLoadedAction(ConfigLoadedCallback configLoadedCallback) {
-    Gleap.getInstance().setConfigLoadedCallback(configLoadedCallback);
-  }
-
-  @ReactMethod
   public void disableConsoleLog() {
     Gleap.getInstance().disableConsoleLog();
   }
-
-
+  
   @ReactMethod
   public void log(String msg) {
     Gleap.getInstance().log(msg);
