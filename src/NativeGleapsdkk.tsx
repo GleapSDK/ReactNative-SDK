@@ -7,7 +7,6 @@ import {
 import GleapNetworkIntercepter from './networklogger';
 import type { TurboModule } from 'react-native/Libraries/TurboModule/RCTExport';
 
-
 const LINKING_ERROR =
   `The package 'react-native-gleapsdk' doesn't seem to be linked. Make sure: \n\n` +
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
@@ -128,7 +127,7 @@ export interface Spec extends TurboModule {
 }
 
 // Attempt to use TurboModules if available, else fall back to NativeModules
-const GleapSdk = TurboModuleRegistry.get<Spec>('Gleapsdk')
+const Gleap = TurboModuleRegistry.get<Spec>('Gleapsdk')
   ? TurboModuleRegistry.get<Spec>('Gleapsdk')
   : NativeModules.Gleapsdk
   ? NativeModules.Gleapsdk
@@ -141,11 +140,11 @@ const GleapSdk = TurboModuleRegistry.get<Spec>('Gleapsdk')
       }
     );
 
-if (GleapSdk && !GleapSdk.touched) {
+if (Gleap && !Gleap.touched) {
   const networkLogger = new GleapNetworkIntercepter();
 
   // Push the network log to the native SDK.
-  GleapSdk.startNetworkLogging = () => {
+  Gleap.startNetworkLogging = () => {
     // Set the callback.
     networkLogger.setUpdatedCallback(() => {
       if (!networkLogger) {
@@ -154,15 +153,11 @@ if (GleapSdk && !GleapSdk.touched) {
 
       const requests = networkLogger.getRequests();
 
-      if (
-        requests &&
-        GleapSdk &&
-        typeof GleapSdk.attachNetworkLog !== 'undefined'
-      ) {
+      if (requests && Gleap && typeof Gleap.attachNetworkLog !== 'undefined') {
         if (Platform.OS === 'android') {
-          GleapSdk.attachNetworkLog(JSON.stringify(requests));
+          Gleap.attachNetworkLog(JSON.stringify(requests));
         } else {
-          GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
+          Gleap.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
         }
       }
     });
@@ -171,27 +166,27 @@ if (GleapSdk && !GleapSdk.touched) {
     networkLogger.start();
   };
 
-  GleapSdk.stopNetworkLogging = () => {
+  Gleap.stopNetworkLogging = () => {
     networkLogger.setStopped(true);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  GleapSdk.logEvent = (name: string, data: any) => {
+  Gleap.logEvent = (name: string, data: any) => {
     console.log('logEvent is deprecated. Use trackEvent instead.');
-    GleapSdk.trackEvent(name, data);
+    Gleap.trackEvent(name, data);
   };
 
   var callbacks: any = {};
 
-  GleapSdk.registerListener = (eventType: string, callback: any) => {
+  Gleap.registerListener = (eventType: string, callback: any) => {
     if (!callbacks[eventType]) {
       callbacks[eventType] = [];
     }
     callbacks[eventType].push(callback);
   };
 
-  GleapSdk.registerCustomAction = (customActionCallback: any) => {
-    GleapSdk.registerListener('customActionTriggered', customActionCallback);
+  Gleap.registerCustomAction = (customActionCallback: any) => {
+    Gleap.registerListener('customActionTriggered', customActionCallback);
   };
 
   const notifyCallback = function (eventType: string, data?: any) {
@@ -204,13 +199,13 @@ if (GleapSdk && !GleapSdk.touched) {
     }
   };
 
-  const gleapEmitter = new NativeEventEmitter(GleapSdk);
+  const gleapEmitter = new NativeEventEmitter(Gleap);
 
   gleapEmitter.addListener('configLoaded', (config: any) => {
     try {
       const configJSON = config instanceof Object ? config : JSON.parse(config);
       if (configJSON.enableNetworkLogs) {
-        GleapSdk.startNetworkLogging();
+        Gleap.startNetworkLogging();
       }
       notifyCallback('configLoaded', configJSON);
     } catch (exp) {}
@@ -294,8 +289,8 @@ if (GleapSdk && !GleapSdk.touched) {
     } catch (exp) {}
   });
 
-  GleapSdk.removeAllAttachments();
-  GleapSdk.touched = true;
+  Gleap.removeAllAttachments();
+  Gleap.touched = true;
 }
 
-export default GleapSdk;
+export default Gleap;
