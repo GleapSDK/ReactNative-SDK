@@ -1,5 +1,5 @@
-import NativeGleapSdk from './NativeGleapSdk';
+import NativeGleapsdk from './NativeGleapsdk';
 
-export * from './NativeGleapSdk';
+export * from './NativeGleapsdk';
 
-export default NativeGleapSdk;
+export default NativeGleapsdk;
