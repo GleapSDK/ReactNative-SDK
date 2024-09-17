@@ -32,16 +32,16 @@
     "bootstrap": "yarn example && yarn && yarn pods"
   },
   "codegenConfig": {
-    "name": "react-native-gleapsdk",
+    "name": "NativeGleapSdk",
     "type": "all",
-    "jsSrcsDir": ".",
+    "jsSrcsDir": "./src",
     "outputDir": {
       "ios": "ios/generated",
       "android": "android/generated"
     },
     "includesGeneratedCode": true,
     "android": {
-      "javaPackageName": "com.facebook.fbreact.specs"
+      "javaPackageName": "com.reactnativegleapsdk"
     }
   },
   "keywords": [
