@@ -31,19 +31,6 @@
     "pods": "cd example && pod-install --quiet",
     "bootstrap": "yarn example && yarn && yarn pods"
   },
-  "codegenConfig": {
-    "name": "NativeGleapSdk",
-    "type": "all",
-    "jsSrcsDir": "./src",
-    "outputDir": {
-      "ios": "ios/generated",
-      "android": "android/generated"
-    },
-    "includesGeneratedCode": true,
-    "android": {
-      "javaPackageName": "com.reactnativegleapsdk"
-    }
-  },
   "keywords": [
     "react-native",
     "ios",
@@ -155,5 +142,18 @@
         }
       ]
     ]
+  },
+  "codegenConfig": {
+    "name": "Gleapsdk",
+    "type": "all",
+    "jsSrcsDir": "./src",
+    "outputDir": {
+      "ios": "ios/generated",
+      "android": "android/generated"
+    },
+    "includesGeneratedCode": true,
+    "android": {
+      "javaPackageName": "com.reactnativegleapsdk"
+    }
   }
 }
