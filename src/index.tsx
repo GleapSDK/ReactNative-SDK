@@ -44,6 +44,7 @@ type GleapSdkType = {
     }
   ): void;
   openConversations(showBackButton: boolean): void;
+  openConversation(shareToken: string): void;
   startConversation(showBackButton: boolean): void;
   startClassicForm(formId: string, showBackButton: boolean): void;
   open(): void;

@@ -1131,6 +1131,20 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void openConversation(String shareToken) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().openConversation(shareToken);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
   public void startConversation(Boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(

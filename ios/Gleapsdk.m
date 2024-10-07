@@ -268,6 +268,13 @@ RCT_EXPORT_METHOD(openConversations:(BOOL)showBackButton)
     });
 }
 
+RCT_EXPORT_METHOD(openConversation:(NSString *)shareToken)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap openConversation: shareToken];
+    });
+}
+
 RCT_EXPORT_METHOD(startConversation:(BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
