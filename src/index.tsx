@@ -99,7 +99,7 @@ type GleapSdkType = {
   stopNetworkLogging(): void;
   setActivationMethods(activationMethods: GleapActivationMethod[]): void;
   registerCustomAction(
-    customActionCallback: (data: { name: string }) => void
+    customActionCallback: (data: { name: string; shareToken?: string }) => void
   ): void;
   getIdentity(): Promise<any>;
   isUserIdentified(): Promise<boolean>;
@@ -276,10 +276,11 @@ if (GleapSdk && !GleapSdk.touched) {
       if (isJsonString(data)) {
         data = JSON.parse(data);
       }
-      const { name } = data;
+      const { name, shareToken } = data;
       if (name) {
         notifyCallback('customActionTriggered', {
           name,
+          shareToken,
         });
       }
     } catch (exp) {}

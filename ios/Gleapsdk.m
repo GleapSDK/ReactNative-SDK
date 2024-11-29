@@ -151,10 +151,11 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
-- (void)customActionCalled:(NSString *)customAction {
+- (void)customActionCalled:(NSString *)customAction withShareToken:(NSString *)shareToken {
     if (_hasListeners) {
         [self sendEventWithName:@"customActionTriggered" body:@{
-            @"name": customAction
+            @"name": customAction,
+            @"shareToken": shareToken
         }];
     }
 }

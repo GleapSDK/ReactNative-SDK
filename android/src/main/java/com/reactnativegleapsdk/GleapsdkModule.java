@@ -197,10 +197,13 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
                 Gleap.getInstance().registerCustomAction(new CustomActionCallback() {
                   @Override
-                  public void invoke(String message) {
+                  public void invoke(String message, String shareToken) {
                     JSONObject obj = new JSONObject();
                     try {
                       obj.put("name", message);
+                      if (shareToken != null) {
+                        obj.put("shareToken", shareToken);
+                      }
                     } catch (JSONException e) {
                       e.printStackTrace();
                     }
