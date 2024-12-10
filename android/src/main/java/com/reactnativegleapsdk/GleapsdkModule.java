@@ -867,6 +867,27 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
+   * Unset the value for a ticket attribute with key.
+   *
+   * @param key The key of the attribute
+   * @author Gleap
+   */
+  @ReactMethod
+  public void unsetTicketAttribute(String key) {
+    Gleap.getInstance().unsetTicketAttribute(key);
+  }
+
+  /**
+   * Clears all ticket attributes.
+   *
+   * @author Gleap
+   */
+  @ReactMethod
+  public void clearTicketAttributes() {
+    Gleap.getInstance().clearTicketAttributes();
+  }
+
+  /**
    * Removes one key from existing custom data.
    *
    * @param key The key of the attribute

@@ -599,6 +599,18 @@ RCT_EXPORT_METHOD(setTicketAttribute:(NSString *)key andValue:(NSString *)value)
     });
 }
 
+RCT_EXPORT_METHOD(unsetTicketAttribute:(NSString *)key) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap unsetTicketAttributeWithKey: key];
+    });
+}
+
+RCT_EXPORT_METHOD(clearTicketAttributes) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap clearTicketAttributes];
+    });
+}
+
 RCT_EXPORT_METHOD(setAiTools:(NSArray *)toolsArray) {
     dispatch_async(dispatch_get_main_queue(), ^{
         @try {

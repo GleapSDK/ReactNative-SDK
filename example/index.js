@@ -42,7 +42,11 @@ Gleap.setAiTools(tools);
 
 Gleap.setTicketAttribute('note', 'This is a test value.');
 
-Gleap.initialize('nKT6erqDUjwqfVN2xRkOG4XOf8NEEJ52');
+Gleap.unsetTicketAttribute('note');
+
+Gleap.clearTicketAttributes();
+
+Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
 
 Gleap.registerCustomAction(customAction => {
   console.log('customAction', JSON.stringify(customAction, null, 2));

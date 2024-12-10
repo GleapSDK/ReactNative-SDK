@@ -104,6 +104,8 @@ type GleapSdkType = {
   getIdentity(): Promise<any>;
   isUserIdentified(): Promise<boolean>;
   setTicketAttribute(key: string, value: string): void;
+  unsetTicketAttribute(key: string): void;
+  clearTicketAttributes(): void;
   setAiTools(
     tools: {
       name: string;
