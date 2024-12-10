@@ -24,4 +24,4 @@ Gleap.initialize('YOUR_API_KEY');
 
 ## Need help?
 
-Checkout our full [documentation](https://docs.gleap.io/react-native/getting-started) or [contact us](https://gleap.io/) - we are always here to help 👋.
+Checkout our full [documentation](https://docs.gleap.io/reactnative) or [contact us](https://gleap.io/) - we are always here to help 👋.
