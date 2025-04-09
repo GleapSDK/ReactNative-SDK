@@ -501,6 +501,9 @@ RCT_EXPORT_METHOD(updateContact: (NSDictionary *)userProperties)
         if (userProperties != nil && [userProperties objectForKey: @"companyId"] != nil) {
             userProperty.companyId = [userProperties objectForKey: @"companyId"];
         }
+        if (userProperties != nil && [userProperties objectForKey: @"avatar"] != nil) {
+            userProperty.avatar = [userProperties objectForKey: @"avatar"];
+        }
         if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
             userProperty.customData = [userProperties objectForKey: @"customData"];
         }
@@ -536,6 +539,9 @@ RCT_EXPORT_METHOD(identifyWithUserHash:(NSString *)userId withUserProperties: (N
         if (userProperties != nil && [userProperties objectForKey: @"companyId"] != nil) {
             userProperty.companyId = [userProperties objectForKey: @"companyId"];
         }
+        if (userProperties != nil && [userProperties objectForKey: @"avatar"] != nil) {
+            userProperty.avatar = [userProperties objectForKey: @"avatar"];
+        }
         if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
             userProperty.customData = [userProperties objectForKey: @"customData"];
         }
@@ -570,6 +576,9 @@ RCT_EXPORT_METHOD(identify:(NSString *)userId withUserProperties: (NSDictionary 
         }
         if (userProperties != nil && [userProperties objectForKey: @"companyId"] != nil) {
             userProperty.companyId = [userProperties objectForKey: @"companyId"];
+        }
+        if (userProperties != nil && [userProperties objectForKey: @"avatar"] != nil) {
+            userProperty.avatar = [userProperties objectForKey: @"avatar"];
         }
         if (userProperties != nil && [userProperties objectForKey: @"customData"] != nil) {
             userProperty.customData = [userProperties objectForKey: @"customData"];

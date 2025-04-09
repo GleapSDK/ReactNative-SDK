@@ -319,6 +319,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                 map.putString("plan", gleapUser.getPlan());
                 map.putString("companyName", gleapUser.getCompanyName());
                 map.putString("companyId", gleapUser.getCompanyId());
+                map.putString("avatar", gleapUser.getAvatar());
 
                 promise.resolve(map);
               } else {
@@ -561,6 +562,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               if (jsonObject.has("companyId")) {
                 gleapUserSession.setCompanyId(jsonObject.getString("companyId"));
               }
+              if (jsonObject.has("avatar")) {
+                gleapUserSession.setAvatar(jsonObject.getString("avatar"));
+              }
               if (jsonObject.has("customData")) {
                 gleapUserSession.setCustomData(jsonObject.getJSONObject("customData"));
               }
@@ -613,6 +617,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               }
               if (jsonObject.has("companyId")) {
                 gleapUserSession.setCompanyId(jsonObject.getString("companyId"));
+              }
+              if (jsonObject.has("avatar")) {
+                gleapUserSession.setAvatar(jsonObject.getString("avatar"));
               }
               if (jsonObject.has("customData")) {
                 gleapUserSession.setCustomData(jsonObject.getJSONObject("customData"));
@@ -680,6 +687,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               }
               if (jsonObject.has("companyId")) {
                 gleapUserSession.setCompanyId(jsonObject.getString("companyId"));
+              }
+              if (jsonObject.has("avatar")) {
+                gleapUserSession.setAvatar(jsonObject.getString("avatar"));
               }
               if (jsonObject.has("value")) {
                 gleapUserSession.setValue(jsonObject.getDouble("value"));
