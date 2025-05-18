@@ -152,12 +152,14 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (void)customActionCalled:(NSString *)customAction withShareToken:(NSString *)shareToken {
-    if (_hasListeners) {
-        [self sendEventWithName:@"customActionTriggered" body:@{
-            @"name": customAction,
-            @"shareToken": shareToken
-        }];
-    }
+    if (!_hasListeners) { return; }
+
+    [self sendEventWithName:@"customActionTriggered"
+        body:@{
+            @"name":       customAction ?: @"",
+            @"shareToken": shareToken   ?: @""
+        }
+    ];
 }
 
 - (void)feedbackFlowStarted:(NSDictionary *)feedbackAction {
