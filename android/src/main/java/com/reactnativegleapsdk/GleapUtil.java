@@ -10,6 +10,11 @@ import org.json.JSONObject;
 
 public class GleapUtil {
   protected static JSONObject convertMapToJson(ReadableMap readableMap) throws JSONException {
+    // Handle null ReadableMap to prevent NullPointerException
+    if (readableMap == null) {
+      return new JSONObject();
+    }
+    
     JSONObject object = new JSONObject();
     ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
     while (iterator.hasNextKey()) {
@@ -39,6 +44,11 @@ public class GleapUtil {
   }
 
   protected static JSONArray convertArrayToJson(ReadableArray readableArray) throws JSONException {
+    // Handle null ReadableArray to prevent NullPointerException
+    if (readableArray == null) {
+      return new JSONArray();
+    }
+    
     JSONArray array = new JSONArray();
     for (int i = 0; i < readableArray.size(); i++) {
       switch (readableArray.getType(i)) {

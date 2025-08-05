@@ -980,7 +980,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     try {
       String[] networkLogBlacklistArray = new String[networkLogBlacklist.size()];
       for (int i = 0; i < networkLogBlacklist.size(); i++) {
-        networkLogBlacklistArray[i] = networkLogBlacklist.getString(i);
+        try {
+          networkLogBlacklistArray[i] = networkLogBlacklist.getString(i);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
       }
       Gleap.getInstance().setNetworkLogsBlacklist(networkLogBlacklistArray);
     } catch (Exception ex) {
@@ -998,7 +1002,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     try {
       String[] networkLogPropsToIgnoreArray = new String[networkLogPropsToIgnore.size()];
       for (int i = 0; i < networkLogPropsToIgnore.size(); i++) {
-        networkLogPropsToIgnoreArray[i] = networkLogPropsToIgnore.getString(i);
+        try {
+          networkLogPropsToIgnoreArray[i] = networkLogPropsToIgnore.getString(i);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
       }
       Gleap.getInstance().setNetworkLogPropsToIgnore(networkLogPropsToIgnoreArray);
     } catch (Exception ex) {
@@ -1016,7 +1024,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     try {
       String[] tagsArray = new String[tags.size()];
       for (int i = 0; i < tags.size(); i++) {
-        tagsArray[i] = tags.getString(i);
+        try {
+          tagsArray[i] = tags.getString(i);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
       }
       Gleap.getInstance().setTags(tagsArray);
     } catch (Exception ex) {
@@ -1037,7 +1049,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     try {
       jsonObject = GleapUtil.convertMapToJson(data);
       Gleap.getInstance().trackEvent(name, jsonObject);
-    } catch (JSONException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
