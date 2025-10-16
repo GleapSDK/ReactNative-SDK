@@ -58,6 +58,7 @@ type GleapSdkType = {
   openHelpCenter(showBackButton: boolean): void;
   openHelpCenterCollection(collectionId: string, showBackButton: boolean): void;
   openHelpCenterArticle(articleId: string, showBackButton: boolean): void;
+  askAI(question: string, showBackButton: boolean): void;
   searchHelpCenter(term: string, showBackButton: boolean): void;
   close(): void;
   isOpened(): Promise<boolean>;

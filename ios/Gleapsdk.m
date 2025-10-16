@@ -410,6 +410,13 @@ RCT_EXPORT_METHOD(openHelpCenterArticle: (NSString *)articleId andShowBackButton
     });
 }
 
+RCT_EXPORT_METHOD(askAI: (NSString *)question andShowBackButton:(BOOL)showBackButton)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap askAI: question andShowBackButton: showBackButton];
+    });
+}
+
 RCT_EXPORT_METHOD(searchHelpCenter: (NSString *)term andShowBackButton:(BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

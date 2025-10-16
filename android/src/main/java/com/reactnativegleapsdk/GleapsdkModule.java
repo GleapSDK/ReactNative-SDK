@@ -1359,6 +1359,20 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void askAI(String question, Boolean showBackButton) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            Gleap.getInstance().askAI(question, showBackButton);
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
   public void searchHelpCenter(String term, Boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
