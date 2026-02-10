@@ -523,6 +523,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void setNotificationContainerOffset(int x, int y) {
+    Gleap.getInstance().setNotificationContainerOffset(x, y);
+  }
+
+  @ReactMethod
   public void enableDebugConsoleLog() {
 
   }

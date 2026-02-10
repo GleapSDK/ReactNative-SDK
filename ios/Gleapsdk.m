@@ -452,6 +452,13 @@ RCT_EXPORT_METHOD(setLanguage:(NSString *)language)
     });
 }
 
+RCT_EXPORT_METHOD(setNotificationContainerOffset:(int)x y:(int)y)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setNotificationContainerOffsetX: x y: y];
+    });
+}
+
 RCT_EXPORT_METHOD(clearIdentity)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
