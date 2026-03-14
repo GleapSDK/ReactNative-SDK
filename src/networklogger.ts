@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 class GleapNetworkIntercepter {
   requestId = 0;
   requests: any = {};
-  maxRequests = 25;
+  maxRequests = 30;
   stopped = false;
+  initialized = false;
   updatedCallback: any = null;
 
   setUpdatedCallback(updatedCallback: any) {
@@ -15,6 +15,9 @@ class GleapNetworkIntercepter {
   }
 
   setMaxRequests(maxRequests: number) {
+    if (maxRequests > 70) {
+      maxRequests = 70;
+    }
     this.maxRequests = maxRequests;
   }
 
@@ -41,29 +44,48 @@ class GleapNetworkIntercepter {
       return;
     }
 
-    var startDate = this.requests[gleapRequestId].date;
-    if (
-      startDate &&
-      typeof startDate.getTime === 'function' &&
-      !Object.isFrozen(this.requests[gleapRequestId])
-    ) {
-      this.requests[gleapRequestId].duration =
-        new Date().getTime() - startDate.getTime();
-      this.requests[gleapRequestId].date =
-        this.requests[gleapRequestId].date.toString();
+    var req = this.requests[gleapRequestId];
+    if (req.startTime) {
+      req.duration = Date.now() - req.startTime;
+      req.date = new Date(req.startTime).toString();
     }
   }
 
-  getTextContentSizeOk(text: string) {
-    if (text && text.length) {
-      const size = text.length * 16;
-      const kiloBytes = size / 1024;
-      const megaBytes = kiloBytes / 1024;
-      if (megaBytes < 0.2) {
+  isContentTypeSupported(contentType: string | null | undefined): boolean {
+    if (typeof contentType !== 'string') {
+      return false;
+    }
+
+    if (contentType === '') {
+      return true;
+    }
+
+    contentType = contentType.toLowerCase();
+    var supported = ['text/', 'xml', 'json'];
+    for (var i = 0; i < supported.length; i++) {
+      if (contentType.includes(supported[i])) {
         return true;
       }
     }
+
     return false;
+  }
+
+  getTextContentSizeOk(text: string) {
+    if (!text || !text.length) {
+      return false;
+    }
+
+    try {
+      var size = new (global as any).TextEncoder().encode(text).length;
+      var megaBytes = size / 1024 / 1024;
+      return megaBytes < 0.15;
+    } catch (e) {}
+
+    // Fallback: assume ~2 bytes per char (UTF-16)
+    var estimatedBytes = text.length * 2;
+    var megaBytes = estimatedBytes / 1024 / 1024;
+    return megaBytes < 0.15;
   }
 
   prepareContent(text: string) {
@@ -76,12 +98,15 @@ class GleapNetworkIntercepter {
 
   cleanupPayload(payload: any) {
     if (payload === undefined || payload === null) {
-      return '{}';
+      return '';
     }
 
     try {
       if (ArrayBuffer.isView(payload)) {
-        return `{ type: "binary", length: ${payload.byteLength} }`;
+        if (typeof (global as any).TextDecoder !== 'undefined') {
+          return new (global as any).TextDecoder().decode(payload);
+        }
+        return JSON.stringify({ type: 'binary', length: payload.byteLength });
       }
     } catch (exp) {}
 
@@ -93,15 +118,64 @@ class GleapNetworkIntercepter {
     return this.prepareContent(payloadText);
   }
 
+  extractFetchUrl(params: any[]): string {
+    if (params.length === 0) {
+      return '';
+    }
+
+    var first = params[0];
+
+    // Handle Request object
+    if (first && typeof first === 'object' && typeof first.url === 'string') {
+      return first.url;
+    }
+
+    // Handle string URL
+    if (typeof first === 'string') {
+      return first;
+    }
+
+    return String(first);
+  }
+
   start() {
+    if (this.initialized) {
+      return;
+    }
+
+    this.initialized = true;
     this.setStopped(false);
+
     this.interceptNetworkRequests({
       onFetch: (params: any[], gleapRequestId: any) => {
         if (this.stopped || params.length === 0) {
           return;
         }
 
-        if (params.length >= 2 && params[1] !== undefined) {
+        var url = this.extractFetchUrl(params);
+        var first = params[0];
+
+        // Handle Request object: fetch(new Request(url, opts))
+        if (
+          first &&
+          typeof first === 'object' &&
+          typeof first.url === 'string'
+        ) {
+          this.requests[gleapRequestId] = {
+            url: first.url,
+            startTime: Date.now(),
+            date: new Date(),
+            request: {
+              payload: '',
+              headers:
+                first.headers && typeof first.headers.entries === 'function'
+                  ? Object.fromEntries(first.headers.entries())
+                  : {},
+            },
+            type: first.method || 'GET',
+          };
+        } else if (params.length >= 2 && params[1] !== undefined) {
+          // Handle fetch(url, options)
           var method = params[1].method ? params[1].method : 'GET';
           this.requests[gleapRequestId] = {
             request: {
@@ -109,14 +183,17 @@ class GleapNetworkIntercepter {
               headers: params[1].headers,
             },
             type: method,
-            url: params[0],
+            url: url,
+            startTime: Date.now(),
             date: new Date(),
           };
         } else {
+          // Handle fetch(url)
           this.requests[gleapRequestId] = {
             request: {},
-            url: params[0],
+            url: url,
             type: 'GET',
+            startTime: Date.now(),
             date: new Date(),
           };
         }
@@ -134,35 +211,42 @@ class GleapNetworkIntercepter {
         }
 
         try {
-          this.requests[gleapRequestId].success = true;
-          this.requests[gleapRequestId].response = {
-            status: req.status,
-            statusText: '',
-            responseText: '<request_still_open>',
-          };
-          this.calcRequestTime(gleapRequestId);
-        } catch (exp) {}
+          var contentType = '';
+          if (req.headers && typeof req.headers.get === 'function') {
+            contentType = req.headers.get('content-type') || '';
+          }
 
-        req
-          .text()
-          .then((responseText: any) => {
-            if (this.requests && this.requests[gleapRequestId]) {
-              this.requests[gleapRequestId].success = true;
-              this.requests[gleapRequestId].response = {
-                status: req.status,
-                statusText: req.statusText,
-                responseText: this.prepareContent(responseText),
-              };
-
-              this.calcRequestTime(gleapRequestId);
-              this.cleanRequests();
-            }
-          })
-          .catch((_err: any) => {
-            if (this) {
-              this.cleanRequests();
-            }
-          });
+          if (this.isContentTypeSupported(contentType)) {
+            req
+              .text()
+              .then((responseText: any) => {
+                if (this.requests && this.requests[gleapRequestId]) {
+                  this.requests[gleapRequestId].success = true;
+                  this.requests[gleapRequestId].response = {
+                    status: req.status,
+                    statusText: req.statusText,
+                    responseText: this.prepareContent(responseText),
+                  };
+                  this.calcRequestTime(gleapRequestId);
+                  this.cleanRequests();
+                }
+              })
+              .catch((_err: any) => {
+                this.cleanRequests();
+              });
+          } else {
+            this.requests[gleapRequestId].success = true;
+            this.requests[gleapRequestId].response = {
+              status: req.status,
+              statusText: req.statusText,
+              responseText: '<content_type_not_supported>',
+            };
+            this.calcRequestTime(gleapRequestId);
+            this.cleanRequests();
+          }
+        } catch (exp) {
+          this.cleanRequests();
+        }
       },
       onFetchFailed: (_err: any, gleapRequestId: any) => {
         if (this.stopped || !gleapRequestId) {
@@ -189,6 +273,7 @@ class GleapNetworkIntercepter {
           this.requests[request.gleapRequestId] = {
             type: args[0],
             url: args[1],
+            startTime: Date.now(),
             date: new Date(),
           };
         }
@@ -239,22 +324,28 @@ class GleapNetworkIntercepter {
           this.requests &&
           this.requests[request.gleapRequestId]
         ) {
-          const contentType = request.getResponseHeader('content-type');
-          const isTextOrJSON =
-            contentType &&
-            (contentType.includes('json') || contentType.includes('text'));
+          var contentType = '';
+          try {
+            contentType = request.getResponseHeader('content-type') || '';
+          } catch (e) {}
 
           var responseText = '<' + contentType + '>';
-          if (request.responseType === '' || request.responseType === 'text') {
-            responseText = request.responseText;
-          }
-          if (request._response && isTextOrJSON) {
-            responseText = request._response;
+          if (this.isContentTypeSupported(contentType)) {
+            if (
+              request.responseType === '' ||
+              request.responseType === 'text'
+            ) {
+              responseText = request.responseText;
+            }
+            if (request._response) {
+              responseText = request._response;
+            }
           }
 
           this.requests[request.gleapRequestId].success = true;
           this.requests[request.gleapRequestId].response = {
             status: request.status,
+            statusText: request.statusText,
             responseText: this.prepareContent(responseText),
           };
 
@@ -267,47 +358,51 @@ class GleapNetworkIntercepter {
   }
 
   interceptNetworkRequests(callback: any) {
-    // eslint-disable-next-line consistent-this
     var self = this;
-
-    // @ts-ignore
-    if (XMLHttpRequest.prototype.gleapTouched) {
-      return;
-    }
-
-    // @ts-ignore
-    XMLHttpRequest.prototype.gleapTouched = true;
 
     // XMLHttpRequest
     const open = XMLHttpRequest.prototype.open;
     const send = XMLHttpRequest.prototype.send;
 
     // @ts-ignore
-    XMLHttpRequest.prototype.wrappedSetRequestHeader =
-      XMLHttpRequest.prototype.setRequestHeader;
-    XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
+    if (XMLHttpRequest.prototype.gleapSetRequestHeader === undefined) {
       // @ts-ignore
-      if (!this.requestHeaders) {
+      XMLHttpRequest.prototype.gleapSetRequestHeader =
+        XMLHttpRequest.prototype.setRequestHeader;
+    }
+
+    // @ts-ignore
+    if (XMLHttpRequest.prototype.gleapSetRequestHeader) {
+      XMLHttpRequest.prototype.setRequestHeader = function (
+        header: string,
+        value: string
+      ) {
         // @ts-ignore
-        this.requestHeaders = {};
-      }
+        if (!this.requestHeaders) {
+          // @ts-ignore
+          this.requestHeaders = {};
+        }
 
-      // @ts-ignore
-      if (this.requestHeaders && this.requestHeaders.hasOwnProperty(header)) {
-        return;
-      }
-
-      // @ts-ignore
-      if (!this.requestHeaders[header]) {
         // @ts-ignore
-        this.requestHeaders[header] = [];
-      }
+        if (
+          this.requestHeaders &&
+          this.requestHeaders.hasOwnProperty(header)
+        ) {
+          return;
+        }
 
-      // @ts-ignore
-      this.requestHeaders[header].push(value);
-      // @ts-ignore
-      this.wrappedSetRequestHeader(header, value);
-    };
+        // @ts-ignore
+        if (!this.requestHeaders[header]) {
+          // @ts-ignore
+          this.requestHeaders[header] = [];
+        }
+
+        // @ts-ignore
+        this.requestHeaders[header].push(value);
+        // @ts-ignore
+        this.gleapSetRequestHeader(header, value);
+      };
+    }
 
     XMLHttpRequest.prototype.open = function () {
       (this as any).gleapRequestId = ++self.requestId;
@@ -337,32 +432,30 @@ class GleapNetworkIntercepter {
     };
 
     // Fetch
-    if (global) {
-      (function () {
-        var originalFetch = global.fetch;
-        global.fetch = function () {
-          var gleapRequestId = ++self.requestId;
-          callback.onFetch(arguments, gleapRequestId);
+    if (global && global.fetch) {
+      var originalFetch = global.fetch;
+      global.fetch = function () {
+        var gleapRequestId = ++self.requestId;
+        callback.onFetch(arguments, gleapRequestId);
 
-          return (
-            originalFetch
-              // @ts-ignore
-              .apply(this, arguments)
-              .then(function (response) {
-                if (response && typeof response.clone === 'function') {
-                  const data = response.clone();
-                  callback.onFetchLoad(data, gleapRequestId);
-                }
+        return (
+          originalFetch
+            // @ts-ignore
+            .apply(this, arguments)
+            .then(function (response: any) {
+              if (response && typeof response.clone === 'function') {
+                var data = response.clone();
+                callback.onFetchLoad(data, gleapRequestId);
+              }
 
-                return response;
-              })
-              .catch((err) => {
-                callback.onFetchFailed(err, gleapRequestId);
-                throw err;
-              })
-          );
-        };
-      })();
+              return response;
+            })
+            .catch((err: any) => {
+              callback.onFetchFailed(err, gleapRequestId);
+              throw err;
+            })
+        );
+      };
     }
 
     return callback;
