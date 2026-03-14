@@ -384,10 +384,7 @@ class GleapNetworkIntercepter {
         }
 
         // @ts-ignore
-        if (
-          this.requestHeaders &&
-          this.requestHeaders.hasOwnProperty(header)
-        ) {
+        if (this.requestHeaders && this.requestHeaders.hasOwnProperty(header)) {
           return;
         }
 
