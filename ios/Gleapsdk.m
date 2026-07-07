@@ -24,6 +24,7 @@ static NSString *const RCTShowDevMenuNotification = @"RCTShowDevMenuNotification
 @implementation Gleapsdk
 {
     BOOL _hasListeners;
+    NSMutableDictionary<NSString *, GleapAgentToolCompletion> *_pendingAgentToolExecutions;
 }
 
 RCT_EXPORT_MODULE()
@@ -179,7 +180,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"outboundSent", @"toolExecution", @"feedbackSendingFailed", @"notificationCountUpdated", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
+    return @[@"feedbackSent", @"outboundSent", @"toolExecution", @"agentToolExecution", @"feedbackSendingFailed", @"notificationCountUpdated", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
 }
 
 RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)
@@ -636,60 +637,40 @@ RCT_EXPORT_METHOD(clearTicketAttributes) {
     });
 }
 
-RCT_EXPORT_METHOD(setAiTools:(NSArray *)toolsArray) {
+RCT_EXPORT_METHOD(registerAgentTool:(NSString *)name) {
     dispatch_async(dispatch_get_main_queue(), ^{
-        @try {
-            NSMutableArray *aiTools = [[NSMutableArray alloc] init];
-
-            for (NSDictionary *toolDict in toolsArray) {
-                // Safely unwrap tool dictionary properties
-                NSString *name = toolDict[@"name"];
-                NSString *toolDescription = toolDict[@"description"];
-                NSString *response = toolDict[@"response"];
-                NSString *executionType = toolDict[@"executionType"];
-                NSArray *parametersArray = toolDict[@"parameters"];
-                
-                if (name && toolDescription && response && parametersArray) {
-                    NSMutableArray *parameters = [[NSMutableArray alloc] init];
-
-                    for (NSDictionary *paramDict in parametersArray) {
-                        // Safely unwrap parameter dictionary properties
-                        NSString *paramName = paramDict[@"name"];
-                        NSString *paramDescription = paramDict[@"description"];
-                        NSString *type = paramDict[@"type"];
-                        NSNumber *required = paramDict[@"required"];
-                        NSArray *enums = paramDict[@"enum"];
-                        if (enums == nil) {
-                            enums = [[NSArray alloc] init];
-                        }
-
-                        // Check for required properties in parameter dictionary
-                        if (paramName && paramDescription && type && required) {
-                            GleapAiToolParameter *parameter = [[GleapAiToolParameter alloc]
-                                initWithName:paramName
-                                parameterDescription:paramDescription
-                                type:type
-                                required:[required boolValue]
-                                enums:enums];
-                            
-                            [parameters addObject:parameter];
-                        }
-                    }
-
-                    GleapAiTool *aiTool = [[GleapAiTool alloc]
-                        initWithName:name
-                        toolDescription:toolDescription
-                        response:response
-                        executionType:executionType
-                        parameters:parameters];
-
-                    [aiTools addObject:aiTool];
-                }
+        [Gleap registerAgentTool: name handler:^(NSDictionary *params, GleapAgentToolCompletion completion) {
+            if (!self->_hasListeners) {
+                completion(@"Tool execution failed: no listener attached.");
+                return;
             }
 
-            [Gleap setAiTools:aiTools];
-        } @catch (NSException *exception) {
-            
+            if (self->_pendingAgentToolExecutions == nil) {
+                self->_pendingAgentToolExecutions = [[NSMutableDictionary alloc] init];
+            }
+
+            NSString *executionId = [[NSUUID UUID] UUIDString];
+            [self->_pendingAgentToolExecutions setObject: completion forKey: executionId];
+
+            [self sendEventWithName:@"agentToolExecution" body:@{
+                @"executionId": executionId,
+                @"name": name,
+                @"params": params ?: @{}
+            }];
+        }];
+    });
+}
+
+RCT_EXPORT_METHOD(sendAgentToolResult:(NSString *)executionId result:(NSString *)result) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (executionId == nil || self->_pendingAgentToolExecutions == nil) {
+            return;
+        }
+
+        GleapAgentToolCompletion completion = [self->_pendingAgentToolExecutions objectForKey: executionId];
+        if (completion != nil) {
+            [self->_pendingAgentToolExecutions removeObjectForKey: executionId];
+            completion(result);
         }
     });
 }

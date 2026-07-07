@@ -109,20 +109,15 @@ type GleapSdkType = {
   setTicketAttribute(key: string, value: string): void;
   unsetTicketAttribute(key: string): void;
   clearTicketAttributes(): void;
-  setAiTools(
-    tools: {
-      name: string;
-      description: string;
-      response: string;
-      executionType: 'auto' | 'button';
-      parameters: {
-        name: string;
-        description: string;
-        type: 'string' | 'number' | 'boolean';
-        required: boolean;
-        enums?: string[];
-      }[];
-    }[]
+  /**
+   * Registers the handler for a Frontend tool defined on your AI agent in the
+   * Gleap dashboard. The agent calls the handler with the configured
+   * parameters and waits for the returned result (string or object, which
+   * gets stringified).
+   */
+  registerAgentTool(
+    name: string,
+    handler: (params: Record<string, any>) => any | Promise<any>
   ): void;
 };
 
@@ -190,6 +185,22 @@ if (GleapSdk && !GleapSdk.touched) {
     GleapSdk.registerListener('customActionTriggered', customActionCallback);
   };
 
+  const registeredAgentTools: {
+    [name: string]: (params: Record<string, any>) => any;
+  } = {};
+  const nativeRegisterAgentTool = GleapSdk.registerAgentTool;
+
+  GleapSdk.registerAgentTool = (
+    name: string,
+    handler: (params: Record<string, any>) => any
+  ) => {
+    if (!name || typeof handler !== 'function') {
+      return;
+    }
+    registeredAgentTools[name] = handler;
+    nativeRegisterAgentTool(name);
+  };
+
   const notifyCallback = function (eventType: string, data?: any) {
     if (callbacks && callbacks[eventType] && callbacks[eventType].length > 0) {
       for (var i = 0; i < callbacks[eventType].length; i++) {
@@ -222,6 +233,39 @@ if (GleapSdk && !GleapSdk.touched) {
     try {
       const dataJSON = data instanceof Object ? data : JSON.parse(data);
       notifyCallback('toolExecution', dataJSON);
+    } catch (exp) {}
+  });
+
+  gleapEmitter.addListener('agentToolExecution', async (data) => {
+    try {
+      const dataJSON = data instanceof Object ? data : JSON.parse(data);
+      const { executionId, name, params } = dataJSON;
+      if (!executionId || !name) {
+        return;
+      }
+
+      let result;
+      const handler = registeredAgentTools[name];
+      if (!handler) {
+        result = `No handler registered for tool '${name}' in the app. Register one via Gleap.registerAgentTool('${name}', handler).`;
+      } else {
+        try {
+          const handlerResult = await handler(params ?? {});
+          result =
+            typeof handlerResult === 'string'
+              ? handlerResult
+              : JSON.stringify(handlerResult ?? '');
+          if (!result) {
+            result = 'The action completed without returning a result.';
+          }
+        } catch (error: any) {
+          result = `Tool execution failed: ${
+            error?.message ?? 'unknown error'
+          }`;
+        }
+      }
+
+      GleapSdk.sendAgentToolResult(executionId, result);
     } catch (exp) {}
   });
 
