@@ -27,15 +27,18 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.gleap.APPLICATIONTYPE;
-import io.gleap.GleapAiTool;
-import io.gleap.GleapAiToolParameter;
 import io.gleap.GleapSessionProperties;
 import io.gleap.SurveyType;
 import io.gleap.callbacks.AiToolExecutedCallback;
+import io.gleap.callbacks.GleapAgentToolHandler;
+import io.gleap.callbacks.GleapAgentToolResultCallback;
 import io.gleap.callbacks.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
@@ -61,6 +64,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "Gleapsdk";
   private boolean isSilentBugReport = false;
   private boolean invalidated = false;
+  private final Map<String, GleapAgentToolResultCallback> pendingAgentToolExecutions = new ConcurrentHashMap<>();
 
   public GleapsdkModule(ReactApplicationContext context) {
     super(context);
@@ -799,73 +803,52 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
-   * Set the ai tools.
-   * @param tools
+   * Registers the handler for a dashboard-defined Frontend tool. Executions
+   * round-trip to JS via the agentToolExecution event and sendAgentToolResult.
+   * @param name The tool's runtime name as defined on the AI agent.
    */
   @ReactMethod
-  public void setAiTools(ReadableArray tools) {
+  public void registerAgentTool(String name) {
     try {
-      if (Gleap.getInstance() == null) {
-        return;
-      }
+      Gleap.getInstance().registerAgentTool(name, new GleapAgentToolHandler() {
+        @Override
+        public void execute(JSONObject params, GleapAgentToolResultCallback callback) {
+          try {
+            String executionId = UUID.randomUUID().toString();
+            pendingAgentToolExecutions.put(executionId, callback);
 
-      ArrayList<GleapAiTool> gleapAiTools = new ArrayList<>();
+            JSONObject eventData = new JSONObject();
+            eventData.put("executionId", executionId);
+            eventData.put("name", name);
+            eventData.put("params", params != null ? params : new JSONObject());
 
-      // Loop through the tools array
-      for (int i = 0; i < tools.size(); i++) {
-        ReadableMap tool = tools.getMap(i);
-        if (tool == null) continue;
-
-        String name = tool.getString("name");
-        String description = tool.getString("description");
-        String response = tool.getString("response");
-        String executionType = tool.getString("executionType");
-        ReadableArray parametersArray = tool.getArray("parameters");
-        ArrayList<GleapAiToolParameter> gleapParameters = new ArrayList<>();
-
-        if (parametersArray != null) {
-          // Loop through the parameters array
-          for (int j = 0; j < parametersArray.size(); j++) {
-            ReadableMap parameter = parametersArray.getMap(j);
-            if (parameter == null) continue;
-
-            String paramName = parameter.getString("name");
-            String paramDescription = parameter.getString("description");
-            String type = parameter.getString("type");
-            boolean required = parameter.getBoolean("required");
-            String[] enums = null;
-            if (parameter.hasKey("enum") && !parameter.isNull("enum")) {
-              ReadableArray enumsArray = parameter.getArray("enum");
-              enums = new String[enumsArray.size()];
-              for (int k = 0; k < enumsArray.size(); k++) {
-                enums[k] = enumsArray.getString(k);
-              }
-            }
-
-            // Create a new parameter and add it to the list
-            GleapAiToolParameter gleapParameter = new GleapAiToolParameter(
-              paramName, paramDescription, type, required, enums);
-            gleapParameters.add(gleapParameter);
+            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+              .emit("agentToolExecution", eventData.toString());
+          } catch (Exception e) {
+            callback.onResult("Tool execution failed: " + e.getMessage());
           }
         }
-
-        // Create the AI tool with parameters
-        GleapAiToolParameter[] paramsArray = new GleapAiToolParameter[gleapParameters.size()];
-        paramsArray = gleapParameters.toArray(paramsArray);
-        GleapAiTool gleapAiTool = new GleapAiTool(
-          name, description, response, executionType, paramsArray);
-
-        // Add the AI tool to the list
-        gleapAiTools.add(gleapAiTool);
-      }
-
-      // Convert the list to an array and set the AI tools
-      GleapAiTool[] toolsArray = new GleapAiTool[gleapAiTools.size()];
-      toolsArray = gleapAiTools.toArray(toolsArray);
-      Gleap.getInstance().setAiTools(toolsArray);
-
+      });
     } catch (Exception e) {
-      System.out.println("Error setting AI tools: " + e);
+      System.out.println("Error registering agent tool: " + e);
+    }
+  }
+
+  /**
+   * Resolves a pending agent tool execution with the handler's result.
+   */
+  @ReactMethod
+  public void sendAgentToolResult(String executionId, String result) {
+    try {
+      if (executionId == null) {
+        return;
+      }
+      GleapAgentToolResultCallback callback = pendingAgentToolExecutions.remove(executionId);
+      if (callback != null) {
+        callback.onResult(result);
+      }
+    } catch (Exception e) {
+      System.out.println("Error sending agent tool result: " + e);
     }
   }
 
