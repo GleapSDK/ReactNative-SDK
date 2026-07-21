@@ -279,6 +279,13 @@ RCT_EXPORT_METHOD(openConversation:(NSString *)shareToken)
     });
 }
 
+RCT_EXPORT_METHOD(handlePushNotification:(NSDictionary *)notificationData)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap handlePushNotification: notificationData];
+    });
+}
+
 RCT_EXPORT_METHOD(startConversation:(BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

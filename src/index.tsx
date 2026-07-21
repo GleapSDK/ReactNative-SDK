@@ -46,6 +46,14 @@ type GleapSdkType = {
   ): void;
   openConversations(showBackButton: boolean): void;
   openConversation(shareToken: string): void;
+  /**
+   * Handles a tapped Gleap push notification. Pass the FCM message's `data`
+   * payload (e.g. `remoteMessage.data`) after checking
+   * `data.sender === 'GLEAP'`. Opens the right destination based on
+   * `data.type` ('conversation' | 'news' | 'checklist') and `data.id`, and
+   * safely defers until the Gleap session is ready (cold starts).
+   */
+  handlePushNotification(notificationData: { [key: string]: any }): void;
   startConversation(showBackButton: boolean): void;
   startClassicForm(formId: string, showBackButton: boolean): void;
   open(): void;

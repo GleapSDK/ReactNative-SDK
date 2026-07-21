@@ -1179,6 +1179,24 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void handlePushNotification(ReadableMap notificationData) {
+    try {
+      getActivitySafe().runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              JSONObject jsonObject = GleapUtil.convertMapToJson(notificationData);
+              Gleap.getInstance().handlePushNotification(jsonObject);
+            } catch (Exception ignore) {
+            }
+          }
+        });
+    } catch (NoUiThreadException e) {
+    }
+  }
+
+  @ReactMethod
   public void startConversation(Boolean showBackButton) {
     try {
       getActivitySafe().runOnUiThread(
