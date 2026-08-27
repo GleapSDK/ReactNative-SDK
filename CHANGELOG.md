@@ -1,5 +1,10 @@
 # Changelog
 
+## 17.0.0
+Updated native iOS dependency to 17.0.0
+Updated native Android dependency to 17.0.0
+(Android: remote images are now downsampled to their destination size and served from a memory-pressure-aware cache, replacing the manual full-size bitmap decodes flagged by Google Play's new Android Vitals bitmap-optimization advisory; both platforms: calling setLanguage() after initialize() now reloads the widget config, so server-translated copy switches language immediately)
+
 ## 16.4.5
 Updated native iOS dependency to 16.4.5
 Updated native Android dependency to 16.4.5
