@@ -82,8 +82,20 @@ type GleapSdkType = {
   preFillForm(formData: { [key: string]: string }): void;
   setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;
   setNetworkLogPropsToIgnore(networkLogPropsToIgnore: string[]): void;
+  /**
+   * Sets the data region of your Gleap project. Sets the API url, the
+   * websocket url and the realtime host at once. Must be called before
+   * initialize. A manual setter (setApiUrl, setWSApiUrl, setRealtimeHost)
+   * called after setRegion overrides that single host. The static widget
+   * hosts (frame, banner, modal) are global and not changed by the region.
+   */
+  setRegion(region: 'eu' | 'us'): void;
   setApiUrl(apiUrl: string): void;
+  setWSApiUrl(wsApiUrl: string): void;
+  setRealtimeHost(host: string): void;
   setFrameUrl(frameUrl: string): void;
+  setBannerUrl(url: string): void;
+  setModalUrl(url: string): void;
   attachCustomData(customData: any): void;
   setCustomData(key: string, value: string): void;
   removeCustomDataForKey(key: string): void;

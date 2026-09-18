@@ -763,6 +763,23 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
+   * Sets the data region of your Gleap project. Sets the API url, the websocket
+   * url and the realtime host at once. Must be called before initialize. A manual
+   * setter (setApiUrl, setWSApiUrl, setRealtimeHost) called after setRegion
+   * overrides that single host.
+   *
+   * @param region "eu" | "us"
+   */
+  @ReactMethod
+  public void setRegion(String region) {
+    try {
+      Gleap.getInstance().setRegion(region);
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
    * Used for dedicated server. Set the url, where bugs are reported to.
    *
    * @param apiUrl Url to the dedicated server.
@@ -777,6 +794,34 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
+   * Used for dedicated server. Set the websocket url.
+   *
+   * @param wsApiUrl Websocket url of the dedicated server.
+   */
+  @ReactMethod
+  public void setWSApiUrl(String wsApiUrl) {
+    try {
+      Gleap.getInstance().setWSApiUrl(wsApiUrl);
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Used for dedicated server. Set the realtime host.
+   *
+   * @param realtimeHost Realtime host of the dedicated server.
+   */
+  @ReactMethod
+  public void setRealtimeHost(String realtimeHost) {
+    try {
+      Gleap.getInstance().setRealtimeHost(realtimeHost);
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
    * Frame url
    *
    * @param frameUrl Url to the dedicated server.
@@ -785,6 +830,34 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   public void setFrameUrl(String frameUrl) {
     try {
       Gleap.getInstance().setFrameUrl(frameUrl);
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Banner url
+   *
+   * @param bannerUrl Url the banner widget is loaded from.
+   */
+  @ReactMethod
+  public void setBannerUrl(String bannerUrl) {
+    try {
+      Gleap.getInstance().setBannerUrl(bannerUrl);
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Modal url
+   *
+   * @param modalUrl Url the modal widget is loaded from.
+   */
+  @ReactMethod
+  public void setModalUrl(String modalUrl) {
+    try {
+      Gleap.getInstance().setModalUrl(modalUrl);
     } catch (Exception e) {
       System.out.println(e);
     }
