@@ -703,6 +703,13 @@ RCT_EXPORT_METHOD(clearCustomData)
     });
 }
 
+RCT_EXPORT_METHOD(setRegion: (NSString *)region)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setRegion: region];
+    });
+}
+
 RCT_EXPORT_METHOD(setApiUrl: (NSString *)apiUrl)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -710,10 +717,38 @@ RCT_EXPORT_METHOD(setApiUrl: (NSString *)apiUrl)
     });
 }
 
+RCT_EXPORT_METHOD(setWSApiUrl: (NSString *)wsApiUrl)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setWSApiUrl: wsApiUrl];
+    });
+}
+
+RCT_EXPORT_METHOD(setRealtimeHost: (NSString *)realtimeHost)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setRealtimeHost: realtimeHost];
+    });
+}
+
 RCT_EXPORT_METHOD(setFrameUrl: (NSString *)frameUrl)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [Gleap setFrameUrl: frameUrl];
+    });
+}
+
+RCT_EXPORT_METHOD(setBannerUrl: (NSString *)bannerUrl)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setBannerUrl: bannerUrl];
+    });
+}
+
+RCT_EXPORT_METHOD(setModalUrl: (NSString *)modalUrl)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setModalUrl: modalUrl];
     });
 }
 
