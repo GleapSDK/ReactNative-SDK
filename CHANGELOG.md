@@ -1,5 +1,10 @@
 # Changelog
 
+## 18.0.0
+Updated native iOS dependency to 18.0.0
+Updated native Android dependency to 18.0.0
+(data regions: new `Gleap.setRegion('eu' | 'us')` points the API, websocket and realtime hosts at the chosen region in one call — `eu` is the default, call it before `initialize`; new host setters `setWSApiUrl`, `setRealtimeHost`, `setBannerUrl` and `setModalUrl` next to the existing `setApiUrl` / `setFrameUrl` — a setter called after `setRegion` overrides that single host; the static widget hosts (frame, banner, modal) are global and not changed by the region)
+
 ## 17.0.0
 Updated native iOS dependency to 17.0.0
 Updated native Android dependency to 17.0.0
