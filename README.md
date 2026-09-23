@@ -1,10 +1,10 @@
-# Gleap ReactNative SDK
+# Gleap React Native SDK
 
 ![Gleap ReactNative SDK Intro](https://raw.githubusercontent.com/GleapSDK/Gleap-iOS-SDK/main/Resources/GleapHeaderImage.png)
 
-The Gleap SDK for ReactNative is the easiest way to integrate Gleap into your apps!
+Add AI-native customer support, live chat, in-app bug reporting, a help center and surveys to your React Native apps with [Gleap](https://www.gleap.ai). Gleap is an Intercom alternative for software teams that connects customer conversations and feedback with product development.
 
-You have two ways to set up the Gleap SDK for ReactNative. The easiest way ist to use the maven repository to add Gleap SDK to your project.  (it's super easy to get started & worth using 😍)
+[SDK documentation](https://docs.gleap.ai/documentation/reactnative/README) · [Website](https://www.gleap.ai) · [Plans and pricing](https://www.gleap.ai/pricing)
 
 ## Installation
 
@@ -35,4 +35,4 @@ Gleap.initialize('YOUR_API_KEY');
 
 ## Need help?
 
-Checkout our full [documentation](https://docs.gleap.io/reactnative) or [contact us](https://gleap.io/) - we are always here to help 👋.
+Checkout our full [documentation](https://docs.gleap.ai/documentation/reactnative/README) or [contact us](https://www.gleap.ai/) - we are always here to help 👋.

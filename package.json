@@ -1,7 +1,7 @@
 {
   "name": "react-native-gleapsdk",
   "version": "18.0.0",
-  "description": "Know exactly why and how a bug happened. Get reports with screenshots, live action replays and all of the important metadata every time.",
+  "description": "Gleap SDK for React Native: AI customer support, live chat, in-app bug reporting and customer feedback.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
@@ -34,7 +34,12 @@
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "gleap",
+    "customer-support",
+    "bug-reporting",
+    "customer-feedback",
+    "intercom-alternative"
   ],
   "repository": "https://github.com/GleapSDK/ReactNative-SDK",
   "author": "gleap <hello@gleap.io> (https://github.com/GleapSDK)",
