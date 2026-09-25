@@ -83,6 +83,14 @@ type GleapSdkType = {
   setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;
   setNetworkLogPropsToIgnore(networkLogPropsToIgnore: string[]): void;
   /**
+   * Removes the given env data keys (exact and case-sensitive, e.g.
+   * 'deviceName', 'batteryLevel') from tickets and conversations before they
+   * leave the device. Each call replaces the previous list; an empty list
+   * resets it. Can be called before or after initialize and applies to the
+   * next ticket.
+   */
+  setEnvDataPropsToIgnore(envDataPropsToIgnore: string[]): void;
+  /**
    * Sets the data region of your Gleap project. Sets the API url, the
    * websocket url and the realtime host at once. Must be called before
    * initialize. A manual setter (setApiUrl, setWSApiUrl, setRealtimeHost)
@@ -101,6 +109,13 @@ type GleapSdkType = {
   removeCustomDataForKey(key: string): void;
   clearCustomData(): void;
   setDisableInAppNotifications(disableInAppNotifications: boolean): void;
+  /**
+   * Stops the SDK from collecting env data (device name, OS, screen size,
+   * locale, battery, ...) when set to true: tickets and conversations are
+   * sent with an empty metaData object. Pass false to collect it again. Can
+   * be called before or after initialize and applies to the next ticket.
+   */
+  setDisableEnvData(disableEnvData: boolean): void;
   setNotificationContainerOffset(x: number, y: number): void;
   registerListener(eventType: string, callback: (data?: any) => void): void;
   setLanguage(language: string): void;
