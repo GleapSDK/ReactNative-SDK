@@ -241,6 +241,13 @@ RCT_EXPORT_METHOD(setNetworkLogPropsToIgnore:(NSArray *)networkLogPropsToIgnore)
     });
 }
 
+RCT_EXPORT_METHOD(setEnvDataPropsToIgnore:(NSArray *)envDataPropsToIgnore)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setEnvDataPropsToIgnore: envDataPropsToIgnore];
+    });
+}
+
 RCT_EXPORT_METHOD(setActivationMethods:(NSArray *)activationMethods)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -366,6 +373,13 @@ RCT_EXPORT_METHOD(setDisableInAppNotifications: (BOOL)disableInAppNotifications)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [Gleap setDisableInAppNotifications: disableInAppNotifications];
+    });
+}
+
+RCT_EXPORT_METHOD(setDisableEnvData: (BOOL)disableEnvData)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setDisableEnvData: disableEnvData];
     });
 }
 

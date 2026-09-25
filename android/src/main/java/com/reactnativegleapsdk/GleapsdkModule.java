@@ -1076,6 +1076,29 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
+   * Manually sets the env data props to ignore. Each call replaces the
+   * previous list; an empty array resets it.
+   *
+   * @param envDataPropsToIgnore Array of env data keys to remove from tickets.
+   */
+  @ReactMethod
+  public void setEnvDataPropsToIgnore(ReadableArray envDataPropsToIgnore) {
+    try {
+      String[] envDataPropsToIgnoreArray = new String[envDataPropsToIgnore.size()];
+      for (int i = 0; i < envDataPropsToIgnore.size(); i++) {
+        try {
+          envDataPropsToIgnoreArray[i] = envDataPropsToIgnore.getString(i);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+      Gleap.getInstance().setEnvDataPropsToIgnore(envDataPropsToIgnoreArray);
+    } catch (Exception ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
    * Set tags to send with feedback items.
    *
    * @param tags Tags to use send with feedback items.
@@ -1364,6 +1387,23 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           }
         });
     } catch (NoUiThreadException e) {
+    }
+  }
+
+  /**
+   * Disables (true) or re-enables (false) collecting env data. When disabled,
+   * tickets are sent with an empty metaData object.
+   *
+   * @param disableEnvData Whether env data collection is disabled.
+   */
+  @ReactMethod
+  public void setDisableEnvData(Boolean disableEnvData) {
+    // Only sets a flag, so no Activity is needed: an opt-out made before the
+    // first screen must not be dropped.
+    try {
+      Gleap.getInstance().setDisableEnvData(Boolean.TRUE.equals(disableEnvData));
+    } catch (Exception e) {
+      System.out.println(e);
     }
   }
 

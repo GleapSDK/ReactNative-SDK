@@ -33,6 +33,17 @@ Gleap.initialize('YOUR_API_KEY');
 
 `setRegion` sets the API, websocket and realtime hosts at once. For dedicated servers you can still override a single host afterwards with `setApiUrl`, `setWSApiUrl` or `setRealtimeHost`.
 
+## Env data
+
+With every ticket the SDK sends env data (device model, OS version, screen size, locale, battery state, …), shown under the **Env data** tab in Gleap. Leave out individual keys or stop collecting env data entirely:
+
+```js
+Gleap.setEnvDataPropsToIgnore(['deviceName', 'batteryLevel']);
+Gleap.setDisableEnvData(true);
+```
+
+Both can be called at any time and apply to the next ticket. Each `setEnvDataPropsToIgnore` call replaces the previous list, an empty array resets it. `setDisableEnvData(false)` turns the collection back on.
+
 ## Need help?
 
 Checkout our full [documentation](https://docs.gleap.ai/documentation/reactnative/README) or [contact us](https://www.gleap.ai/) - we are always here to help 👋.
