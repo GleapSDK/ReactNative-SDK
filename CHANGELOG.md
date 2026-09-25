@@ -1,5 +1,10 @@
 # Changelog
 
+## 18.1.0
+Updated native iOS dependency to 18.1.0
+Updated native Android dependency to 18.1.0
+(env data: new `Gleap.setEnvDataPropsToIgnore([...])` drops individual env data fields — exact, case-sensitive keys such as `deviceName` or `batteryLevel` — before a ticket or conversation leaves the device; each call replaces the previous list, an empty list resets it; new `Gleap.setDisableEnvData(true)` stops collecting env data entirely (sent as an empty object), `false` turns it back on; both can be called before or after `initialize` and apply to the next ticket)
+
 ## 18.0.0
 Updated native iOS dependency to 18.0.0
 Updated native Android dependency to 18.0.0
