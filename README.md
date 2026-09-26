@@ -44,6 +44,17 @@ Gleap.setDisableEnvData(true);
 
 Both can be called at any time and apply to the next ticket. Each `setEnvDataPropsToIgnore` call replaces the previous list, an empty array resets it. `setDisableEnvData(false)` turns the collection back on.
 
+## Dark mode
+
+Switch the widget between dark and light mode. `auto` follows the device appearance; if your app has its own theme toggle, pass `light` or `dark` explicitly and call it again whenever the theme changes:
+
+```js
+Gleap.setColorScheme('auto');
+Gleap.setColorScheme(isDarkTheme ? 'dark' : 'light', { darkBackgroundColor: '#121212' });
+```
+
+`setColorScheme` overrides the color scheme set in the Gleap dashboard, `'default'` removes the override. Only the widget background changes: the dashboard background is kept when it already fits the active scheme, otherwise `lightBackgroundColor` (default `#ffffff`) or `darkBackgroundColor` (default `#18181b`) is used. Can be called before or after `initialize`.
+
 ## Need help?
 
 Checkout our full [documentation](https://docs.gleap.ai/documentation/reactnative/README) or [contact us](https://www.gleap.ai/) - we are always here to help 👋.

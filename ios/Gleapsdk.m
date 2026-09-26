@@ -383,6 +383,13 @@ RCT_EXPORT_METHOD(setDisableEnvData: (BOOL)disableEnvData)
     });
 }
 
+RCT_EXPORT_METHOD(setColorScheme:(NSString *)colorScheme lightBackgroundColor:(nullable NSString *)lightBackgroundColor darkBackgroundColor:(nullable NSString *)darkBackgroundColor)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setColorScheme: colorScheme lightBackgroundColor: lightBackgroundColor darkBackgroundColor: darkBackgroundColor];
+    });
+}
+
 RCT_EXPORT_METHOD(openChecklists: (BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

@@ -116,6 +116,26 @@ type GleapSdkType = {
    * be called before or after initialize and applies to the next ticket.
    */
   setDisableEnvData(disableEnvData: boolean): void;
+  /**
+   * Sets the color scheme of the Gleap widget and overrides the color scheme
+   * configured in the Gleap dashboard. 'auto' follows the device appearance
+   * (dark/light mode). Apps with their own in-app theme toggle should pass
+   * 'light' / 'dark' explicitly (e.g. from useColorScheme() or the app's
+   * theme state) and call it again whenever the theme changes. 'default'
+   * removes the override and uses the dashboard setting.
+   * Only the widget background is swapped: the dashboard background is kept
+   * when it already matches the active scheme, otherwise
+   * lightBackgroundColor (default #ffffff) or darkBackgroundColor (default
+   * #18181b) is used (#rrggbb). Can be called before or after initialize and
+   * applies live.
+   */
+  setColorScheme(
+    colorScheme: 'default' | 'auto' | 'light' | 'dark',
+    options?: {
+      lightBackgroundColor?: string;
+      darkBackgroundColor?: string;
+    }
+  ): void;
   setNotificationContainerOffset(x: number, y: number): void;
   registerListener(eventType: string, callback: (data?: any) => void): void;
   setLanguage(language: string): void;
@@ -218,6 +238,21 @@ if (GleapSdk && !GleapSdk.touched) {
 
   GleapSdk.registerCustomAction = (customActionCallback: any) => {
     GleapSdk.registerListener('customActionTriggered', customActionCallback);
+  };
+
+  // The native method takes the colors as separate (nullable) arguments, so
+  // the options object stays optional on the JS side.
+  const nativeSetColorScheme = GleapSdk.setColorScheme;
+
+  GleapSdk.setColorScheme = (
+    colorScheme: 'default' | 'auto' | 'light' | 'dark',
+    options?: { lightBackgroundColor?: string; darkBackgroundColor?: string }
+  ) => {
+    nativeSetColorScheme(
+      colorScheme,
+      options?.lightBackgroundColor ?? null,
+      options?.darkBackgroundColor ?? null
+    );
   };
 
   const registeredAgentTools: {

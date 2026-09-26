@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Handler;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.facebook.react.ReactApplication;
@@ -1402,6 +1403,26 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     // first screen must not be dropped.
     try {
       Gleap.getInstance().setDisableEnvData(Boolean.TRUE.equals(disableEnvData));
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Sets the color scheme of the widget ("default", "auto", "light" or
+   * "dark"). "auto" follows the device appearance. Null colors fall back to
+   * the dashboard setting / the SDK defaults.
+   *
+   * @param colorScheme          The color scheme.
+   * @param lightBackgroundColor Background (#rrggbb) used in light mode.
+   * @param darkBackgroundColor  Background (#rrggbb) used in dark mode.
+   */
+  @ReactMethod
+  public void setColorScheme(String colorScheme, @Nullable String lightBackgroundColor, @Nullable String darkBackgroundColor) {
+    // Only sets the scheme, so no Activity is needed: a call made before the
+    // first screen must not be dropped.
+    try {
+      Gleap.getInstance().setColorScheme(colorScheme, lightBackgroundColor, darkBackgroundColor);
     } catch (Exception e) {
       System.out.println(e);
     }
