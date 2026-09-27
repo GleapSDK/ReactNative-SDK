@@ -1,5 +1,12 @@
 # Changelog
 
+## 18.2.0
+Updated native iOS dependency to 18.2.0
+Updated native Android dependency to 18.2.0
+(network logs, iOS: now recorded by the native SDK, which logs every request of the app — React Native's `fetch` and `XMLHttpRequest` as well as requests made by native modules — with complete headers, bodies, timing and errors; `startNetworkLogging()` / `stopNetworkLogging()` switch this recording on and off)
+(network logs, Android: the JavaScript interceptor was reworked — a `fetch` request is logged once instead of twice, failed, aborted and timed-out requests are logged with their error, response headers are included, dates are ISO timestamps, the app's request headers are always sent unchanged (a repeated header used to be dropped), streaming and binary bodies are skipped and bodies over 150 KB are cut, and the log is handed to the native SDK at most every 500 ms instead of on every network event; a silent crash report sent right after a request now includes it)
+(network logs, both platforms: `setNetworkLogPropsToIgnore` removes matching headers, JSON keys at any depth (a dotted name such as `user.password` also works as a path), form fields and query parameters, case-insensitively; `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` headers are always masked; each call to `setNetworkLogPropsToIgnore` / `setNetworkLogsBlacklist` replaces the previous list; `stopNetworkLogging()` now also wins over the dashboard setting, and `startNetworkLogging()` after a stop resumes logging)
+
 ## 18.1.0
 Updated native iOS dependency to 18.1.0
 Updated native Android dependency to 18.1.0
