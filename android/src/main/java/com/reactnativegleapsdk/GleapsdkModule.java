@@ -43,9 +43,7 @@ import io.gleap.callbacks.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
 import io.gleap.GleapLogLevel;
-import io.gleap.Networklog;
 import io.gleap.PrefillHelper;
-import io.gleap.RequestType;
 import io.gleap.callbacks.ConfigLoadedCallback;
 import io.gleap.callbacks.InitializedCallback;
 import io.gleap.callbacks.CustomActionCallback;
@@ -1001,32 +999,18 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
-   * Log network traffic by logging it manually.
+   * Replaces the network log collected by the JS interceptor (fetch and
+   * XMLHttpRequest). The entries are passed on as given (ISO dates, any
+   * method, failed requests without a status); the native SDK merges them
+   * with its own logs and redacts them when a report is built.
    *
-   * @param networkLog Logs collected by rn
+   * @param networkLog JSON array of network log entries collected by rn
    */
   @ReactMethod
   public void attachNetworkLog(String networkLog) {
     try {
-      JSONArray object = new JSONArray(networkLog);
-
-      Networklog[] networklogs = new Networklog[object.length()];
-
-      for (int i = 0; i < object.length(); i++) {
-        JSONObject currentRequest = (JSONObject) object.get(i);
-        JSONObject response = (JSONObject) currentRequest.get("response");
-        JSONObject request = new JSONObject();
-        if (currentRequest.has("request")) {
-          request = (JSONObject) currentRequest.get("request");
-        }
-        networklogs[i] = new Networklog(currentRequest.getString("url"),
-          RequestType.valueOf(currentRequest.getString("type")), response.getInt("status"),
-          currentRequest.getInt("duration"), request, response);
-      }
-
-      Gleap.getInstance().attachNetworkLogs(networklogs);
-
-    } catch (Exception ex) {
+      Gleap.getInstance().attachNetworkLogs(new JSONArray(networkLog));
+    } catch (Exception | LinkageError ex) {
       System.out.println(ex);
     }
   }

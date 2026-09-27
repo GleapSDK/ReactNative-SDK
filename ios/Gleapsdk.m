@@ -220,6 +220,22 @@ RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
     });
 }
 
+// The native SDK logs every NSURLSession request (React Native's networking
+// included) while recording, so network logging on iOS is native only.
+RCT_EXPORT_METHOD(startNetworkRecording)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap startNetworkRecording];
+    });
+}
+
+RCT_EXPORT_METHOD(stopNetworkRecording)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap stopNetworkRecording];
+    });
+}
+
 RCT_EXPORT_METHOD(setTags:(NSArray *)tags)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
