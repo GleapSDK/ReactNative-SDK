@@ -121,6 +121,40 @@ function looksBinary(text: string): boolean {
   return sample.indexOf('\u0000') !== -1 || sample.indexOf('�') !== -1;
 }
 
+// Reads a Blob as text through FileReader (React Native has no Blob.text()).
+function readBlobAsText(blob: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    try {
+      const reader = new (global as any).FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(blob);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+// The head of a body cut at a byte offset: a split character becomes U+FFFD.
+function captureTextHead(
+  text: unknown,
+  contentType: string,
+  totalBytes: number
+): string {
+  const captured = captureText(text, contentType);
+  if (
+    typeof text !== 'string' ||
+    captured === BINARY_BODY ||
+    captured === STREAMING_BODY ||
+    captured === BODY_NOT_CAPTURED
+  ) {
+    return captured;
+  }
+  return (
+    text.replace(/\uFFFD+$/, '') + '\n… [truncated, ' + totalBytes + ' bytes]'
+  );
+}
+
 function captureText(text: unknown, contentType: string): string {
   if (typeof text !== 'string') {
     return BODY_NOT_CAPTURED;
@@ -729,7 +763,37 @@ class GleapNetworkIntercepter {
       return;
     }
     try {
-      Promise.resolve(response.clone().text()).then(
+      const clone = response.clone();
+      // React Native's fetch holds the downloaded body in a Blob: without a
+      // Content-Length, read only its head instead of the whole body.
+      if (
+        typeof clone.blob === 'function' &&
+        typeof (global as any).FileReader === 'function'
+      ) {
+        Promise.resolve(clone.blob())
+          .then((blob: any) => {
+            const size = Number(blob && blob.size);
+            if (
+              !blob ||
+              !Number.isFinite(size) ||
+              size <= MAX_BODY_LENGTH ||
+              typeof blob.slice !== 'function'
+            ) {
+              return readBlobAsText(blob).then((text) =>
+                this.setResponseBody(record, captureText(text, contentType))
+              );
+            }
+            return readBlobAsText(blob.slice(0, MAX_BODY_LENGTH)).then((text) =>
+              this.setResponseBody(
+                record,
+                captureTextHead(text, contentType, size)
+              )
+            );
+          })
+          .catch(() => this.setResponseBody(record, BODY_NOT_CAPTURED));
+        return;
+      }
+      Promise.resolve(clone.text()).then(
         (text: unknown) =>
           this.setResponseBody(record, captureText(text, contentType)),
         () => this.setResponseBody(record, BODY_NOT_CAPTURED)
