@@ -55,6 +55,22 @@ Gleap.setColorScheme(isDarkTheme ? 'dark' : 'light', { darkBackgroundColor: '#12
 
 `setColorScheme` overrides the color scheme set in the Gleap dashboard, `'default'` removes the override. Only the widget background changes: the dashboard background is kept when it already fits the active scheme, otherwise `lightBackgroundColor` (default `#ffffff`) or `darkBackgroundColor` (default `#18181b`) is used. Can be called before or after `initialize`.
 
+## Network logs
+
+Network logs are recorded when they are turned on in the Gleap dashboard, or after you call `Gleap.startNetworkLogging()`. `Gleap.stopNetworkLogging()` turns them off again, also when the dashboard turns them on.
+
+- **iOS:** the native SDK records every request of the app, including requests made by native modules.
+- **Android:** the SDK records `fetch` and `XMLHttpRequest` requests (and libraries built on them, such as axios) in JavaScript and hands them to the native SDK.
+
+Leave requests out or remove data before it leaves the device:
+
+```js
+Gleap.setNetworkLogsBlacklist(['analytics.example.com']);
+Gleap.setNetworkLogPropsToIgnore(['password', 'token', 'user.email']);
+```
+
+`setNetworkLogsBlacklist` drops every request whose URL contains one of the strings. `setNetworkLogPropsToIgnore` removes headers, JSON keys (at any depth; a dotted name such as `user.email` also works as a path from the root), form fields and query parameters with these names, case-insensitively. `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` headers are always masked, and requests to Gleap itself are never logged. Each call replaces the previous list. Bodies over 150 KB are cut; binary and streaming bodies (images, server-sent events, …) are left out.
+
 ## Need help?
 
 Checkout our full [documentation](https://docs.gleap.ai/documentation/reactnative/README) or [contact us](https://www.gleap.ai/) - we are always here to help 👋.

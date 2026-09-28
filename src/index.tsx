@@ -80,7 +80,19 @@ type GleapSdkType = {
   showFeedbackButton(show: boolean): void;
   clearIdentity(): void;
   preFillForm(formData: { [key: string]: string }): void;
+  /**
+   * Leaves requests whose URL contains one of the given strings out of the
+   * network logs (gleap.io and gleap.ai are always left out). Each call
+   * replaces the previous list.
+   */
   setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;
+  /**
+   * Removes headers, JSON keys (at any depth; `user.password` also works as a
+   * path), form fields and query parameters with these names from the
+   * network logs, case-insensitively. Authorization, Proxy-Authorization,
+   * Cookie and Set-Cookie headers are always masked. Each call replaces the
+   * previous list.
+   */
   setNetworkLogPropsToIgnore(networkLogPropsToIgnore: string[]): void;
   /**
    * Removes the given env data keys (exact and case-sensitive, e.g.
@@ -188,38 +200,101 @@ const GleapSdk = NativeModules.Gleapsdk
     );
 
 if (GleapSdk && !GleapSdk.touched) {
+  // iOS: the native SDK logs every NSURLSession request, React Native's
+  // networking included, so a JS interceptor would log each request twice.
+  // Android: React Native's OkHttp client is not instrumented natively, so
+  // the JS interceptor logs fetch / XMLHttpRequest and hands the list over.
+  const logsNetworkInJs = Platform.OS === 'android';
   const networkLogger = new GleapNetworkIntercepter();
+  let networkLoggingStoppedByApp = false;
 
-  // Push the network log to the native SDK.
+  const setNativeNetworkRecording = (enabled: boolean) => {
+    if (enabled && typeof GleapSdk.startNetworkRecording === 'function') {
+      GleapSdk.startNetworkRecording();
+    }
+    if (!enabled && typeof GleapSdk.stopNetworkRecording === 'function') {
+      GleapSdk.stopNetworkRecording();
+    }
+  };
+
   GleapSdk.startNetworkLogging = () => {
-    // Set the callback.
-    networkLogger.setUpdatedCallback(() => {
-      if (!networkLogger) {
-        return;
-      }
-
-      const requests = networkLogger.getRequests();
-
-      if (
-        requests &&
-        GleapSdk &&
-        typeof GleapSdk.attachNetworkLog !== 'undefined'
-      ) {
-        if (Platform.OS === 'android') {
-          GleapSdk.attachNetworkLog(JSON.stringify(requests));
-        } else {
-          GleapSdk.attachNetworkLog(JSON.parse(JSON.stringify(requests)));
-        }
-      }
-    });
-
-    // Start the logger.
-    networkLogger.start();
+    networkLoggingStoppedByApp = false;
+    if (logsNetworkInJs) {
+      networkLogger.start();
+    } else {
+      setNativeNetworkRecording(true);
+    }
   };
 
   GleapSdk.stopNetworkLogging = () => {
-    networkLogger.setStopped(true);
+    networkLoggingStoppedByApp = true;
+    if (logsNetworkInJs) {
+      networkLogger.setStopped(true);
+    } else {
+      setNativeNetworkRecording(false);
+    }
   };
+
+  if (logsNetworkInJs) {
+    // Hands the full, redacted list of finished requests to the native SDK
+    // (replace semantics). The logger calls this at most every 500 ms.
+    networkLogger.setUpdatedCallback((networkLogs) => {
+      if (typeof GleapSdk.attachNetworkLog === 'function') {
+        GleapSdk.attachNetworkLog(JSON.stringify(networkLogs));
+      }
+    });
+
+    // The JS logger keeps a copy of both lists to redact before the
+    // hand-off; the native SDK still gets them.
+    const nativeSetNetworkLogsBlacklist = GleapSdk.setNetworkLogsBlacklist;
+    GleapSdk.setNetworkLogsBlacklist = (networkLogBlacklist: string[]) => {
+      networkLogger.setBlacklist(networkLogBlacklist);
+      if (typeof nativeSetNetworkLogsBlacklist === 'function') {
+        nativeSetNetworkLogsBlacklist(networkLogBlacklist);
+      }
+    };
+
+    const nativeSetNetworkLogPropsToIgnore =
+      GleapSdk.setNetworkLogPropsToIgnore;
+    GleapSdk.setNetworkLogPropsToIgnore = (
+      networkLogPropsToIgnore: string[]
+    ) => {
+      networkLogger.setPropsToIgnore(networkLogPropsToIgnore);
+      if (typeof nativeSetNetworkLogPropsToIgnore === 'function') {
+        nativeSetNetworkLogPropsToIgnore(networkLogPropsToIgnore);
+      }
+    };
+
+    // Silent crash reports are built right away, so hand over the latest
+    // network logs first instead of waiting for the next scheduled push.
+    const nativeSendSilentCrashReport = GleapSdk.sendSilentCrashReport;
+    if (typeof nativeSendSilentCrashReport === 'function') {
+      GleapSdk.sendSilentCrashReport = (
+        description: string,
+        severity: string
+      ) => {
+        networkLogger.flush();
+        nativeSendSilentCrashReport(description, severity);
+      };
+    }
+
+    const nativeSendSilentCrashReportWithExcludeData =
+      GleapSdk.sendSilentCrashReportWithExcludeData;
+    if (typeof nativeSendSilentCrashReportWithExcludeData === 'function') {
+      GleapSdk.sendSilentCrashReportWithExcludeData = (
+        description: string,
+        severity: string,
+        excludeData: any
+      ) => {
+        networkLogger.flush();
+        nativeSendSilentCrashReportWithExcludeData(
+          description,
+          severity,
+          excludeData
+        );
+      };
+    }
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   GleapSdk.logEvent = (name: string, data: any) => {
@@ -286,8 +361,16 @@ if (GleapSdk && !GleapSdk.touched) {
   gleapEmitter.addListener('configLoaded', (config: any) => {
     try {
       const configJSON = config instanceof Object ? config : JSON.parse(config);
-      if (configJSON.enableNetworkLogs) {
-        GleapSdk.startNetworkLogging();
+      // An explicit stopNetworkLogging() wins over the remote config.
+      if (logsNetworkInJs) {
+        networkLogger.setRemoteConfig(configJSON);
+        if (configJSON.enableNetworkLogs && !networkLoggingStoppedByApp) {
+          networkLogger.start();
+        }
+      } else if (networkLoggingStoppedByApp) {
+        // The native SDK starts recording itself when the config enables
+        // network logs.
+        setNativeNetworkRecording(false);
       }
       notifyCallback('configLoaded', configJSON);
     } catch (exp) {}
