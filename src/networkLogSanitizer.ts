@@ -235,8 +235,8 @@ function looksLikeJson(text: string): boolean {
   return false;
 }
 
-// Returns the redacted JSON text, or null when the text is not JSON or
-// nothing was removed (the caller keeps the original string then).
+// Returns the redacted JSON text (the original string when nothing was
+// removed), or null when the text does not parse.
 function redactJsonText(
   text: string,
   rules: NetworkLogRedactionRules
@@ -254,7 +254,43 @@ function redactJsonText(
       changed = true;
     }
   }
-  return changed ? JSON.stringify(parsed) : null;
+  return changed ? JSON.stringify(parsed) : text;
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const TRUNCATION_MARKER = /\n… \[truncated, [^\]\n]*\]$/;
+
+// JSON that does not parse, usually because it was cut at the size limit:
+// mask the values of ignored keys in the text instead of handing the head
+// over as is. Object and array values are left alone; their inner keys are
+// matched on their own.
+function maskJsonText(text: string, rules: NetworkLogRedactionRules): string {
+  const keys = new Set<string>();
+  rules.props.forEach((prop) => {
+    keys.add(prop);
+    const lastDot = prop.lastIndexOf('.');
+    if (lastDot !== -1 && lastDot < prop.length - 1) {
+      keys.add(prop.slice(lastDot + 1));
+    }
+  });
+
+  // Keep the truncation marker out of reach of a string value cut at the end.
+  const marker = TRUNCATION_MARKER.exec(text);
+  let body = marker ? text.slice(0, marker.index) : text;
+  keys.forEach((key) => {
+    const pattern = new RegExp(
+      '"(' +
+        escapeRegExp(key) +
+        ')"(\\s*:\\s*)("(?:[^"\\\\]|\\\\.)*"?|-?\\d[0-9.eE+-]*|true|false|null)',
+      'gi'
+    );
+    body = body.replace(pattern, '"$1"$2"' + REDACTED_VALUE + '"');
+  });
+  const masked = marker ? body + marker[0] : body;
+  return masked === text ? text : masked;
 }
 
 function decodeParamName(raw: string): string {
@@ -344,7 +380,7 @@ export function redactNetworkLogBody(
   try {
     if (looksLikeJson(text)) {
       const redacted = redactJsonText(text, rules);
-      return redacted === null ? text : redacted;
+      return redacted === null ? maskJsonText(text, rules) : redacted;
     }
 
     const type = contentType.toLowerCase();

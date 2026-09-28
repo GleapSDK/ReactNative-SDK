@@ -181,9 +181,8 @@ describe('JSON bodies', () => {
     expect(result.request?.payload).toBe(payload);
   });
 
-  it('leaves bodies that do not parse untouched', () => {
-    const truncated =
-      '{"password":"secret","items":[1,2\n… [truncated, 200000 bytes]';
+  it('leaves bodies that do not parse and hold no ignored key untouched', () => {
+    const truncated = '{"id":1,"items":[1,2\n… [truncated, 200000 bytes]';
     const result = redactOne(
       entry({
         request: { headers: {}, payload: truncated },
@@ -197,6 +196,33 @@ describe('JSON bodies', () => {
     );
     expect(result.request?.payload).toBe(truncated);
     expect(result.response?.responseText).toBe('[binary body omitted]');
+  });
+
+  it('masks ignored keys in JSON bodies that were cut at the size limit', () => {
+    const marker = '\n… [truncated, 200000 bytes]';
+    const result = redactOne(
+      entry({
+        request: {
+          headers: {},
+          payload:
+            '{"user":{"password":"pw-0","name":"n"},"token":"abc","items":[{"Token":"x"' +
+            marker,
+        },
+        response: {
+          status: 200,
+          headers: {},
+          responseText: '[{"id":1,"password": 42},{"password":"pw-cut' + marker,
+        },
+      }),
+      ['password', 'token']
+    );
+    expect(result.request?.payload).toBe(
+      '{"user":{"password":"[REDACTED]","name":"n"},"token":"[REDACTED]","items":[{"Token":"[REDACTED]"' +
+        marker
+    );
+    expect(result.response?.responseText).toBe(
+      '[{"id":1,"password": "[REDACTED]"},{"password":"[REDACTED]"' + marker
+    );
   });
 
   it('serialises a non-string body before redacting it', () => {
