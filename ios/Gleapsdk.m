@@ -98,15 +98,17 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
-- (void)notificationCountUpdated:(NSInteger)count {
+- (void)notificationCountUpdated:(int)count {
     if (_hasListeners) {
         [self sendEventWithName:@"notificationCountUpdated" body: @(count)];
     }
 }
 
-- (void)feedbackSendingFailed {
+// GleapDelegate declares feedbackSendingFailed: with the error data; the SDK never calls a
+// variant without it.
+- (void)feedbackSendingFailed:(NSDictionary *)data {
     if (_hasListeners) {
-        [self sendEventWithName:@"feedbackSendingFailed" body:@{}];
+        [self sendEventWithName:@"feedbackSendingFailed" body:data ?: @{}];
     }
 }
 
