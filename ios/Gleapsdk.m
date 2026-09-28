@@ -47,26 +47,36 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (void)configLoaded:(NSDictionary *)config {
-    // Hook up shake gesture recognizer.
-    [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(motionEnded:)
-                                                     name: RCTShowDevMenuNotification
-                                                object: nil];
-    
-    #if !RCT_DEV
-        RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(handleShakeEvent:withEvent:));
-    #endif
+    // Gleap delivers configLoaded again when the JS context reloads (dev reload, OTA update)
+    // and initializes again. Register the shake and screenshot hooks once per process: the
+    // window method swap would flip back on every second call and each observer would fire
+    // once per reload. The hooks don't depend on this module instance.
+    static dispatch_once_t gleapActivationHooksOnce;
+    dispatch_once(&gleapActivationHooksOnce, ^{
+        // Hook up shake gesture recognizer.
+        [[NSNotificationCenter defaultCenter] addObserverForName: RCTShowDevMenuNotification
+                                                          object: nil
+                                                           queue: nil
+                                                      usingBlock: ^(NSNotification *note) {
+            if ([Gleap isActivationMethodActive: SHAKE]) {
+                [Gleap open];
+            }
+        }];
 
-    // Add screenshot gesture recognizer
-    NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
-                                                          object:nil
-                                                           queue:mainQueue
-                                                      usingBlock:^(NSNotification *note) {
-        if ([Gleap isActivationMethodActive: SCREENSHOT]) {
-            [Gleap open];
-        }
-    }];
+        #if !RCT_DEV
+            RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(handleShakeEvent:withEvent:));
+        #endif
+
+        // Add screenshot gesture recognizer
+        [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationUserDidTakeScreenshotNotification
+                                                          object: nil
+                                                           queue: [NSOperationQueue mainQueue]
+                                                      usingBlock: ^(NSNotification *note) {
+            if ([Gleap isActivationMethodActive: SCREENSHOT]) {
+                [Gleap open];
+            }
+        }];
+    });
 
     if ([Gleap getActivationMethods].count == 0) {
         NSMutableArray *activationMethods = [[NSMutableArray alloc] init];
@@ -88,13 +98,6 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 - (void)initialized {
     if (_hasListeners) {
         [self sendEventWithName:@"initialized" body: @{}];
-    }
-}
-
-- (void)motionEnded:(NSNotification *)notification
-{
-    if ([Gleap isActivationMethodActive: SHAKE]) {
-        [Gleap open];
     }
 }
 
