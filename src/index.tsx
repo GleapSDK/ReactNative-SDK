@@ -130,16 +130,18 @@ type GleapSdkType = {
   setDisableEnvData(disableEnvData: boolean): void;
   /**
    * Sets the color scheme of the Gleap widget and overrides the color scheme
-   * configured in the Gleap dashboard. 'auto' follows the device appearance
+   * configured in the Gleap dashboard. Only takes effect when "Adapt to dark /
+   * light mode" is enabled in the dashboard; otherwise the widget always keeps
+   * its normal colors. 'auto' follows the device appearance
    * (dark/light mode). Apps with their own in-app theme toggle should pass
    * 'light' / 'dark' explicitly (e.g. from useColorScheme() or the app's
    * theme state) and call it again whenever the theme changes. 'default'
    * removes the override and uses the dashboard setting.
-   * Only the widget background is swapped: the dashboard background is kept
-   * when it already matches the active scheme, otherwise
-   * lightBackgroundColor (default #ffffff) or darkBackgroundColor (default
-   * #18181b) is used (#rrggbb). Can be called before or after initialize and
-   * applies live.
+   * In dark mode the widget uses the dark mode colors, logo, header image and
+   * composer glow set in the Gleap dashboard; without dark colors it keeps
+   * its normal colors. lightBackgroundColor / darkBackgroundColor (#rrggbb)
+   * override the background in light / dark mode. Can be called before or
+   * after initialize and applies live.
    */
   setColorScheme(
     colorScheme: 'default' | 'auto' | 'light' | 'dark',
