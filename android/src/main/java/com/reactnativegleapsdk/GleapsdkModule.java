@@ -1393,9 +1393,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
-   * Sets the color scheme of the widget ("default", "auto", "light" or
-   * "dark"). "auto" follows the device appearance. Null colors fall back to
-   * the dashboard setting / the SDK defaults.
+   * Sets the color scheme of the widget ("auto", "light" or "dark"). "auto"
+   * follows the device appearance. Null colors fall back to the dashboard
+   * setting / the SDK defaults.
    *
    * @param colorScheme          The color scheme.
    * @param lightBackgroundColor Background (#rrggbb) used in light mode.

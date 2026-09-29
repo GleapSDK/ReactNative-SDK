@@ -53,7 +53,7 @@ Gleap.setColorScheme('auto');
 Gleap.setColorScheme(isDarkTheme ? 'dark' : 'light', { darkBackgroundColor: '#121212' });
 ```
 
-`setColorScheme` only takes effect when "Adapt to dark / light mode" is enabled in the Gleap dashboard; it then overrides the dashboard's color scheme, and `'default'` removes the override. In dark mode the widget uses the dark mode colors, logo, header image and composer glow set in the Gleap dashboard; without dark colors it keeps its normal colors. `lightBackgroundColor` / `darkBackgroundColor` override the background in light / dark mode. Can be called before or after `initialize`.
+`setColorScheme` only takes effect when "Adapt to dark / light mode" is enabled in the Gleap dashboard; it then overrides the dashboard's color scheme. Before the first call the dashboard setting applies. In dark mode the widget uses the dark mode colors, logo, header image and composer glow set in the Gleap dashboard; without dark colors it keeps its normal colors. `lightBackgroundColor` / `darkBackgroundColor` override the background in light / dark mode. Can be called before or after `initialize`.
 
 ## Network logs
 
