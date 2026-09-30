@@ -360,9 +360,21 @@ if (GleapSdk && !GleapSdk.touched) {
 
   const gleapEmitter = new NativeEventEmitter(NativeModules.Gleapsdk);
 
+  // Android: the native module replays the loaded config when initialize is
+  // called again (JS reload, SDK already initialized natively), so a config
+  // can arrive twice; it is handled once per JS context.
+  let configHandled = false;
+  let initializedHandled = false;
+
   gleapEmitter.addListener('configLoaded', (config: any) => {
     try {
       const configJSON = config instanceof Object ? config : JSON.parse(config);
+      if (Platform.OS === 'android') {
+        if (configHandled) {
+          return;
+        }
+        configHandled = true;
+      }
       // An explicit stopNetworkLogging() wins over the remote config.
       if (logsNetworkInJs) {
         networkLogger.setRemoteConfig(configJSON);
@@ -380,6 +392,12 @@ if (GleapSdk && !GleapSdk.touched) {
 
   gleapEmitter.addListener('initialized', () => {
     try {
+      if (Platform.OS === 'android') {
+        if (initializedHandled) {
+          return;
+        }
+        initializedHandled = true;
+      }
       notifyCallback('initialized');
     } catch (exp) {}
   });
