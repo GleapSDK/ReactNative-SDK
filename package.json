@@ -1,6 +1,6 @@
 {
   "name": "react-native-gleapsdk",
-  "version": "18.2.0",
+  "version": "19.0.0",
   "description": "Gleap SDK for React Native: AI customer support, live chat, in-app bug reporting and customer feedback.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
