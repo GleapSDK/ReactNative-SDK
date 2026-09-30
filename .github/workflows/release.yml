@@ -1,0 +1,108 @@
+# Publishes react-native-gleapsdk to npm when a version tag (e.g. 18.2.0) is pushed.
+#
+# Authentication uses npm trusted publishing (GitHub OIDC): no stored token,
+# provenance is attached automatically. One-time setup on npmjs.com →
+# react-native-gleapsdk → Settings → Trusted publishing: GitHub Actions,
+# organization GleapSDK, repository ReactNative-SDK, workflow release.yml.
+# See CONTRIBUTING.md → Releasing.
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-*'
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Ensure npm >= 11.5.1 (trusted publishing)
+        run: |
+          if ! node -e 'const [a,b,c]=process.argv[1].split(".").map(Number);process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$(npm --version)"; then
+            npm install -g npm@latest
+          fi
+          npm --version
+
+      - name: Verify tag matches package.json version
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          echo "tag=${GITHUB_REF_NAME} package.json=${PKG_VERSION}"
+          if [ "${GITHUB_REF_NAME}" != "${PKG_VERSION}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${PKG_VERSION}"
+            exit 1
+          fi
+
+      # package-lock.json is the committed lockfile; npm ci also runs `prepare` (bob build).
+      - name: Install dependencies and build
+        run: npm ci
+
+      # Scoped to the library: example/ has pre-existing lint/type/test failures
+      # (missing react-test-renderer, prettier drift) and is not published.
+      - name: Typecheck
+        run: npx tsc --noEmit -p tsconfig.build.json
+
+      - name: Lint
+        run: npx eslint "src/**/*.{js,ts,tsx}"
+
+      - name: Test
+        run: npx jest src
+
+      - name: Pack (dry run)
+        run: npm pack --dry-run
+
+      # `npm publish` re-runs `prepare`. Prerelease versions (X.Y.Z-…) go to the `next` dist-tag.
+      - name: Publish to npm
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            *-*) npm publish --tag next ;;
+            *) npm publish ;;
+          esac
+
+  github-release:
+    name: GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create GitHub Release from CHANGELOG.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping."
+            exit 0
+          fi
+          # Section "## <version>" up to the next "## " heading.
+          awk -v v="$TAG" '/^## / { if (found) exit; if ($2 == v) { found = 1; next } } found' CHANGELOG.md > release-notes.md
+          args=(--title "$TAG" --verify-tag)
+          if [ -s release-notes.md ]; then
+            args+=(--notes-file release-notes.md)
+          else
+            echo "::warning::No CHANGELOG.md section for $TAG, using generated notes."
+            args+=(--generate-notes)
+          fi
+          case "$TAG" in *-*) args+=(--prerelease) ;; esac
+          gh release create "$TAG" "${args[@]}"
