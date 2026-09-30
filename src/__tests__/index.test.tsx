@@ -2,6 +2,10 @@
 // (JS reload, SDK already initialized natively). On Android the JS network
 // logger depends on it, and handles it once per JS context.
 
+// A module, not a global script: its declarations must not clash with the
+// copy bob emits to lib/typescript.
+export {};
+
 type Listener = (data?: any) => void;
 
 const loadSdk = (os: 'android' | 'ios') => {
