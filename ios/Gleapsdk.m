@@ -539,6 +539,18 @@ RCT_EXPORT_METHOD(isUserIdentified:(RCTPromiseResolveBlock)resolve rejecter:(RCT
     });
 }
 
+RCT_EXPORT_METHOD(openProtectedFileFromUrl:(NSString *)url resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSURL *protectedFileUrl = url != nil ? [NSURL URLWithString: url] : nil;
+        if (protectedFileUrl == nil) {
+            resolve(@(NO));
+            return;
+        }
+        resolve(@([Gleap openProtectedFileFromURL: protectedFileUrl]));
+    });
+}
+
 RCT_EXPORT_METHOD(updateContact: (NSDictionary *)userProperties)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

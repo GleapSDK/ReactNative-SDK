@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.0.1
+Native iOS and Android dependencies stay on 19.0.0
+(protected conversation files: new `Gleap.openProtectedFileFromUrl(url)` opens the conversation of a file linked in a Gleap email — emails link attachments to your customer application URL with a `gleapFile` query parameter; pass the URL that opened the app (from `Linking.getInitialURL()` or the `Linking` `url` event); resolves `true` if the URL carries a Gleap file reference, `false` otherwise; the conversation opens once the user is identified with a user hash (`identifyWithUserHash`), the link alone grants no access)
+
 ## 19.0.0
 Updated native iOS dependency to 19.0.0
 (iOS: the native Gleap SDK is now installed with Swift Package Manager instead of the `Gleap` pod from CocoaPods trunk, which is read-only from December 2, 2026 — `pod install` adds the Gleap-iOS-SDK package (exact version 19.0.0) to the Pods project through React Native's `spm_dependency`, nothing to change in your app; requires React Native 0.75 or later (Expo SDK 52 or later); on older React Native versions `pod install` falls back to the `Gleap` pod and prints a warning)

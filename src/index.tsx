@@ -54,6 +54,16 @@ type GleapSdkType = {
    * safely defers until the Gleap session is ready (cold starts).
    */
   handlePushNotification(notificationData: { [key: string]: any }): void;
+  /**
+   * Opens the conversation of a protected file linked in a Gleap email.
+   * Emails link attachments to your customer application URL with a
+   * `gleapFile` query parameter. Pass the URL that opened the app (e.g. from
+   * `Linking.getInitialURL()` or the `Linking` `url` event). Resolves true if
+   * the URL carries a Gleap file reference, false otherwise. The conversation
+   * opens once the user is identified with a user hash
+   * (`identifyWithUserHash`); the link alone grants no access.
+   */
+  openProtectedFileFromUrl(url: string): Promise<boolean>;
   startConversation(showBackButton: boolean): void;
   startClassicForm(formId: string, showBackButton: boolean): void;
   open(): void;
