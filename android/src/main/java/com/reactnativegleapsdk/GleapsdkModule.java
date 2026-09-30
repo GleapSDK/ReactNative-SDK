@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Handler;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.facebook.react.ReactApplication;
@@ -43,9 +44,7 @@ import io.gleap.callbacks.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
 import io.gleap.GleapLogLevel;
-import io.gleap.Networklog;
 import io.gleap.PrefillHelper;
-import io.gleap.RequestType;
 import io.gleap.callbacks.ConfigLoadedCallback;
 import io.gleap.callbacks.InitializedCallback;
 import io.gleap.callbacks.CustomActionCallback;
@@ -63,8 +62,15 @@ import io.gleap.callbacks.NotificationUnreadCountUpdatedCallback;
 public class GleapsdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "Gleapsdk";
   private boolean isSilentBugReport = false;
-  private boolean invalidated = false;
+  private volatile boolean invalidated = false;
   private final Map<String, GleapAgentToolResultCallback> pendingAgentToolExecutions = new ConcurrentHashMap<>();
+
+  // The native SDK loads its config once per process and fires configLoaded / initialized only
+  // then. The JS side (e.g. the Android network logger) depends on configLoaded, so the config
+  // is kept for the process and replayed when initialize is called again: after a JS reload
+  // (dev reload, OTA update) or when the SDK was already initialized natively.
+  @Nullable
+  private static volatile String loadedFlowConfig = null;
 
   public GleapsdkModule(ReactApplicationContext context) {
     super(context);
@@ -75,6 +81,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         return context.getCurrentActivity();
       }
     });
+
+    // Registered right away, so a config loaded by a native Gleap.initialize (e.g. in
+    // Application.onCreate) before the JS initialize is not missed.
+    registerConfigCallbacks();
 
     try {
       JSONObject body = new JSONObject();
@@ -141,27 +151,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   }
                 });
 
-                Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
-                  @Override
-                  public void configLoaded(JSONObject jsonObject) {
-                    if (!invalidated) {
-                      getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("configLoaded", jsonObject.toString());
-                    }
-
-                  }
-                });
-
-                Gleap.getInstance().setInitializedCallback(new InitializedCallback() {
-                  @Override
-                  public void initialized() {
-                    if (!invalidated) {
-                      getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("initialized", null);
-                    }
-
-                  }
-                });
+                registerConfigCallbacks();
 
                 Gleap.getInstance().setOutboundSentCallback(new OutboundSentCallback() {
                   @Override
@@ -241,6 +231,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                       .emit("unregisterPushMessageGroup", pushMessageGroup);
                   }
                 });
+
+                // Already initialized (JS reload, native initialize): the native SDK does not
+                // load the config again, so hand the loaded one to this JS context.
+                replayLoadedConfig();
               }
             } catch (Exception ex) {
               System.out.println(ex);
@@ -249,6 +243,54 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         });
     } catch (NoUiThreadException e) {
       System.err.println(e.getMessage());
+    }
+  }
+
+  private void registerConfigCallbacks() {
+    try {
+      Gleap.getInstance().setConfigLoadedCallback(new ConfigLoadedCallback() {
+        @Override
+        public void configLoaded(JSONObject jsonObject) {
+          String flowConfig = jsonObject != null ? jsonObject.toString() : "{}";
+          loadedFlowConfig = flowConfig;
+          emitToJs("configLoaded", flowConfig);
+        }
+      });
+
+      Gleap.getInstance().setInitializedCallback(new InitializedCallback() {
+        @Override
+        public void initialized() {
+          emitToJs("initialized", null);
+        }
+      });
+    } catch (Exception ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
+   * Sends the config the native SDK already loaded (configLoaded, then initialized) to JS, like
+   * the iOS SDK does when it is initialized again. Does nothing while the config is still
+   * loading: the callbacks deliver it. The JS side handles the config once per JS context.
+   */
+  private void replayLoadedConfig() {
+    String flowConfig = loadedFlowConfig;
+    if (flowConfig == null) {
+      return;
+    }
+    emitToJs("configLoaded", flowConfig);
+    emitToJs("initialized", null);
+  }
+
+  private void emitToJs(String eventName, @Nullable Object data) {
+    if (invalidated) {
+      return;
+    }
+    try {
+      getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit(eventName, data);
+    } catch (Exception ex) {
+      System.out.println(ex);
     }
   }
 
@@ -286,55 +328,61 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void isUserIdentified(final Promise promise) {
+    Runnable resolveIsUserIdentified = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          promise.resolve(Gleap.getInstance().isUserIdentified());
+        } catch (Exception ex) {
+          promise.resolve(false);
+        }
+      }
+    };
+
     try {
-      getActivitySafe().runOnUiThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              promise.resolve(Gleap.getInstance().isUserIdentified());
-            } catch (Exception ex) {
-            }
-          }
-        });
+      getActivitySafe().runOnUiThread(resolveIsUserIdentified);
     } catch (NoUiThreadException e) {
-      System.err.println(e.getMessage());
+      // No activity (e.g. in the background): answer right away so the promise settles.
+      resolveIsUserIdentified.run();
     }
   }
 
   @ReactMethod
   public void getIdentity(final Promise promise) {
-    try {
-      getActivitySafe().runOnUiThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              GleapSessionProperties gleapUser = Gleap.getInstance().getIdentity();
-              if (gleapUser != null) {
-                WritableMap map = new WritableNativeMap();
+    Runnable resolveIdentity = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          GleapSessionProperties gleapUser = Gleap.getInstance().getIdentity();
+          if (gleapUser != null) {
+            WritableMap map = new WritableNativeMap();
 
-                map.putString("userId", gleapUser.getUserId());
-                map.putString("phone", gleapUser.getPhone());
-                map.putString("email", gleapUser.getEmail());
-                map.putString("name", gleapUser.getName());
-                map.putDouble("value", gleapUser.getValue());
-                map.putDouble("sla", gleapUser.getSla());
-                map.putString("plan", gleapUser.getPlan());
-                map.putString("companyName", gleapUser.getCompanyName());
-                map.putString("companyId", gleapUser.getCompanyId());
-                map.putString("avatar", gleapUser.getAvatar());
+            map.putString("userId", gleapUser.getUserId());
+            map.putString("phone", gleapUser.getPhone());
+            map.putString("email", gleapUser.getEmail());
+            map.putString("name", gleapUser.getName());
+            map.putDouble("value", gleapUser.getValue());
+            map.putDouble("sla", gleapUser.getSla());
+            map.putString("plan", gleapUser.getPlan());
+            map.putString("companyName", gleapUser.getCompanyName());
+            map.putString("companyId", gleapUser.getCompanyId());
+            map.putString("avatar", gleapUser.getAvatar());
 
-                promise.resolve(map);
-              } else {
-                promise.resolve(null);
-              }
-            } catch (Exception ex) {
-            }
+            promise.resolve(map);
+          } else {
+            promise.resolve(null);
           }
-        });
+        } catch (Exception ex) {
+          promise.resolve(null);
+        }
+      }
+    };
+
+    try {
+      getActivitySafe().runOnUiThread(resolveIdentity);
     } catch (NoUiThreadException e) {
-      System.err.println(e.getMessage());
+      // No activity (e.g. in the background): answer right away so the promise settles.
+      resolveIdentity.run();
     }
   }
 
@@ -358,16 +406,22 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void isOpened(final Promise promise) {
+    Runnable resolveIsOpened = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          promise.resolve(Gleap.getInstance().isOpened());
+        } catch (Exception ex) {
+          promise.resolve(false);
+        }
+      }
+    };
+
     try {
-      getActivitySafe().runOnUiThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            promise.resolve(Gleap.getInstance().isOpened());
-          }
-        });
+      getActivitySafe().runOnUiThread(resolveIsOpened);
     } catch (NoUiThreadException e) {
-      System.err.println(e.getMessage());
+      // No activity (e.g. in the background): answer right away so the promise settles.
+      resolveIsOpened.run();
     }
   }
 
@@ -451,10 +505,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
           public void run() {
             isSilentBugReport = true;
             Gleap.SEVERITY severity = Gleap.SEVERITY.LOW;
-            if (priority == "MEDIUM") {
+            if ("MEDIUM".equals(priority)) {
               severity = Gleap.SEVERITY.MEDIUM;
             }
-            if (priority == "HIGH") {
+            if ("HIGH".equals(priority)) {
               severity = Gleap.SEVERITY.HIGH;
             }
             Gleap.getInstance().sendSilentCrashReport(description, severity);
@@ -486,10 +540,10 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
 
             isSilentBugReport = true;
             Gleap.SEVERITY severity = Gleap.SEVERITY.LOW;
-            if (priority == "MEDIUM") {
+            if ("MEDIUM".equals(priority)) {
               severity = Gleap.SEVERITY.MEDIUM;
             }
-            if (priority == "HIGH") {
+            if ("HIGH".equals(priority)) {
               severity = Gleap.SEVERITY.HIGH;
             }
             Gleap.getInstance().sendSilentCrashReport(description, severity, jsonObject);
@@ -1001,32 +1055,18 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
-   * Log network traffic by logging it manually.
+   * Replaces the network log collected by the JS interceptor (fetch and
+   * XMLHttpRequest). The entries are passed on as given (ISO dates, any
+   * method, failed requests without a status); the native SDK merges them
+   * with its own logs and redacts them when a report is built.
    *
-   * @param networkLog Logs collected by rn
+   * @param networkLog JSON array of network log entries collected by rn
    */
   @ReactMethod
   public void attachNetworkLog(String networkLog) {
     try {
-      JSONArray object = new JSONArray(networkLog);
-
-      Networklog[] networklogs = new Networklog[object.length()];
-
-      for (int i = 0; i < object.length(); i++) {
-        JSONObject currentRequest = (JSONObject) object.get(i);
-        JSONObject response = (JSONObject) currentRequest.get("response");
-        JSONObject request = new JSONObject();
-        if (currentRequest.has("request")) {
-          request = (JSONObject) currentRequest.get("request");
-        }
-        networklogs[i] = new Networklog(currentRequest.getString("url"),
-          RequestType.valueOf(currentRequest.getString("type")), response.getInt("status"),
-          currentRequest.getInt("duration"), request, response);
-      }
-
-      Gleap.getInstance().attachNetworkLogs(networklogs);
-
-    } catch (Exception ex) {
+      Gleap.getInstance().attachNetworkLogs(new JSONArray(networkLog));
+    } catch (Exception | LinkageError ex) {
       System.out.println(ex);
     }
   }
@@ -1402,6 +1442,26 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     // first screen must not be dropped.
     try {
       Gleap.getInstance().setDisableEnvData(Boolean.TRUE.equals(disableEnvData));
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Sets the color scheme of the widget ("auto", "light" or "dark"). "auto"
+   * follows the device appearance. Null colors fall back to the dashboard
+   * setting / the SDK defaults.
+   *
+   * @param colorScheme          The color scheme.
+   * @param lightBackgroundColor Background (#rrggbb) used in light mode.
+   * @param darkBackgroundColor  Background (#rrggbb) used in dark mode.
+   */
+  @ReactMethod
+  public void setColorScheme(String colorScheme, @Nullable String lightBackgroundColor, @Nullable String darkBackgroundColor) {
+    // Only sets the scheme, so no Activity is needed: a call made before the
+    // first screen must not be dropped.
+    try {
+      Gleap.getInstance().setColorScheme(colorScheme, lightBackgroundColor, darkBackgroundColor);
     } catch (Exception e) {
       System.out.println(e);
     }

@@ -47,26 +47,36 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (void)configLoaded:(NSDictionary *)config {
-    // Hook up shake gesture recognizer.
-    [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(motionEnded:)
-                                                     name: RCTShowDevMenuNotification
-                                                object: nil];
-    
-    #if !RCT_DEV
-        RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(handleShakeEvent:withEvent:));
-    #endif
+    // Gleap delivers configLoaded again when the JS context reloads (dev reload, OTA update)
+    // and initializes again. Register the shake and screenshot hooks once per process: the
+    // window method swap would flip back on every second call and each observer would fire
+    // once per reload. The hooks don't depend on this module instance.
+    static dispatch_once_t gleapActivationHooksOnce;
+    dispatch_once(&gleapActivationHooksOnce, ^{
+        // Hook up shake gesture recognizer.
+        [[NSNotificationCenter defaultCenter] addObserverForName: RCTShowDevMenuNotification
+                                                          object: nil
+                                                           queue: nil
+                                                      usingBlock: ^(NSNotification *note) {
+            if ([Gleap isActivationMethodActive: SHAKE]) {
+                [Gleap open];
+            }
+        }];
 
-    // Add screenshot gesture recognizer
-    NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
-                                                          object:nil
-                                                           queue:mainQueue
-                                                      usingBlock:^(NSNotification *note) {
-        if ([Gleap isActivationMethodActive: SCREENSHOT]) {
-            [Gleap open];
-        }
-    }];
+        #if !RCT_DEV
+            RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(handleShakeEvent:withEvent:));
+        #endif
+
+        // Add screenshot gesture recognizer
+        [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationUserDidTakeScreenshotNotification
+                                                          object: nil
+                                                           queue: [NSOperationQueue mainQueue]
+                                                      usingBlock: ^(NSNotification *note) {
+            if ([Gleap isActivationMethodActive: SCREENSHOT]) {
+                [Gleap open];
+            }
+        }];
+    });
 
     if ([Gleap getActivationMethods].count == 0) {
         NSMutableArray *activationMethods = [[NSMutableArray alloc] init];
@@ -91,22 +101,17 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
-- (void)motionEnded:(NSNotification *)notification
-{
-    if ([Gleap isActivationMethodActive: SHAKE]) {
-        [Gleap open];
-    }
-}
-
-- (void)notificationCountUpdated:(NSInteger)count {
+- (void)notificationCountUpdated:(int)count {
     if (_hasListeners) {
         [self sendEventWithName:@"notificationCountUpdated" body: @(count)];
     }
 }
 
-- (void)feedbackSendingFailed {
+// GleapDelegate declares feedbackSendingFailed: with the error data; the SDK never calls a
+// variant without it.
+- (void)feedbackSendingFailed:(NSDictionary *)data {
     if (_hasListeners) {
-        [self sendEventWithName:@"feedbackSendingFailed" body:@{}];
+        [self sendEventWithName:@"feedbackSendingFailed" body:data ?: @{}];
     }
 }
 
@@ -217,6 +222,22 @@ RCT_EXPORT_METHOD(attachNetworkLog:(NSArray *)networkLogs)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [Gleap attachExternalData: @{ @"networkLogs": networkLogs }];
+    });
+}
+
+// The native SDK logs every NSURLSession request (React Native's networking
+// included) while recording, so network logging on iOS is native only.
+RCT_EXPORT_METHOD(startNetworkRecording)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap startNetworkRecording];
+    });
+}
+
+RCT_EXPORT_METHOD(stopNetworkRecording)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap stopNetworkRecording];
     });
 }
 
@@ -380,6 +401,13 @@ RCT_EXPORT_METHOD(setDisableEnvData: (BOOL)disableEnvData)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [Gleap setDisableEnvData: disableEnvData];
+    });
+}
+
+RCT_EXPORT_METHOD(setColorScheme:(NSString *)colorScheme lightBackgroundColor:(nullable NSString *)lightBackgroundColor darkBackgroundColor:(nullable NSString *)darkBackgroundColor)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setColorScheme: colorScheme lightBackgroundColor: lightBackgroundColor darkBackgroundColor: darkBackgroundColor];
     });
 }
 
