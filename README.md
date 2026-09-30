@@ -10,7 +10,19 @@ Add AI-native customer support, live chat, in-app bug reporting, a help center a
 
 ```sh
 npm install react-native-gleapsdk
+cd ios && pod install
 ```
+
+### iOS requirements
+
+- iOS 15.0 or later
+- React Native 0.75 or later (Expo SDK 52 or later)
+
+The native Gleap iOS SDK is installed with Swift Package Manager: `pod install` adds the [Gleap-iOS-SDK](https://github.com/GleapSDK/Gleap-iOS-SDK) package (product `Gleap`) to the `Pods` project through React Native's `spm_dependency`, and Xcode resolves it on the next build. You don't add the package to your app yourself. Your Podfile must call `react_native_post_install` in its `post_install` hook, as the React Native and Expo templates do.
+
+`pod install` logs a warning that a Swift package with static linking "might cause linker errors". You can ignore it: the SDK builds with the default static linkage as well as with `USE_FRAMEWORKS=dynamic`.
+
+On React Native older than 0.75, `pod install` falls back to the `Gleap` pod from CocoaPods trunk and prints a warning. CocoaPods trunk is read-only from December 2, 2026, so only versions released before then are available this way.
 
 ## Usage
 

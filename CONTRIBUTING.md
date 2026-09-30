@@ -82,9 +82,9 @@ Releases are published by GitHub Actions ([`.github/workflows/release.yml`](.git
 
 1. In a PR, bump the version:
    - `version` in `package.json` (and `package-lock.json`: `npm install --package-lock-only`)
-   - the native pins: `s.dependency "Gleap", "X.Y.Z"` in `react-native-gleapsdk.podspec` and `gleap-android-sdk` in `android/build.gradle`
+   - the native pins: `gleap_ios_sdk_version = "X.Y.Z"` at the top of `react-native-gleapsdk.podspec` and `gleap-android-sdk` in `android/build.gradle`
    - a `## X.Y.Z` section at the top of `CHANGELOG.md` (it becomes the GitHub Release notes)
-2. Merge the PR into `main`.
+2. Merge the PR into `main`. Tag only after the native SDKs are released: the podspec resolves the iOS SDK as the Swift package tag `X.Y.Z` of [Gleap-iOS-SDK](https://github.com/GleapSDK/Gleap-iOS-SDK) (exact version), so that tag must exist, and `gleap-android-sdk` `X.Y.Z` must be on Maven Central.
 3. Tag the merge commit and push the tag:
 
    ```sh
@@ -93,6 +93,10 @@ Releases are published by GitHub Actions ([`.github/workflows/release.yml`](.git
    ```
 
 The workflow checks that the tag equals `package.json`'s version, runs `npm ci` (which builds with bob), the typecheck, lint and tests, `npm pack --dry-run`, then `npm publish` via [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC, no npm token, provenance attached), and finally creates the GitHub Release. A prerelease tag such as `18.2.0-beta.1` publishes to the `next` dist-tag. [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the same checks on every pull request and push to `main`.
+
+#### The native iOS SDK
+
+The podspec adds the iOS SDK with React Native's `spm_dependency` (React Native 0.75+), not as a pod: CocoaPods trunk is read-only from December 2, 2026. `gleap_ios_sdk_version` is used for both the Swift package requirement (`exactVersion`) and the fallback `s.dependency "Gleap"` on React Native < 0.75, which only resolves versions pushed to trunk before that date. To build against an unreleased iOS SDK, temporarily change the requirement in the installed podspec (`node_modules/react-native-gleapsdk/react-native-gleapsdk.podspec`) to `{ kind: "branch", branch: "main" }` and run `pod install` again; never commit that.
 
 **One-time setup** (npmjs.com → `react-native-gleapsdk` → Settings → Trusted publishing → GitHub Actions):
 
