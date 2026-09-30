@@ -348,6 +348,27 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void openProtectedFileFromUrl(final String url, final Promise promise) {
+    Runnable resolveOpenProtectedFile = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          promise.resolve(Gleap.getInstance().openProtectedFileFromUrl(url));
+        } catch (Exception ex) {
+          promise.resolve(false);
+        }
+      }
+    };
+
+    try {
+      getActivitySafe().runOnUiThread(resolveOpenProtectedFile);
+    } catch (NoUiThreadException e) {
+      // No activity yet: queue the file right away so the promise settles.
+      resolveOpenProtectedFile.run();
+    }
+  }
+
+  @ReactMethod
   public void getIdentity(final Promise promise) {
     Runnable resolveIdentity = new Runnable() {
       @Override

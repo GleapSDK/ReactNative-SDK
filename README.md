@@ -83,6 +83,33 @@ Gleap.setNetworkLogPropsToIgnore(['password', 'token', 'user.email']);
 
 `setNetworkLogsBlacklist` drops every request whose URL contains one of the strings. `setNetworkLogPropsToIgnore` removes headers, JSON keys (at any depth; a dotted name such as `user.email` also works as a path from the root), form fields and query parameters with these names, case-insensitively. `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` headers are always masked, and requests to Gleap itself are never logged. Each call replaces the previous list. Bodies over 150 KB are cut; binary and streaming bodies (images, server-sent events, …) are left out.
 
+## Protected conversation files
+
+With "Require authenticated file access" (Project settings → User identity), conversation files can only be opened by agents and by the verified customer the conversation belongs to. The SDK supports it without extra setup, as long as the app identifies the customer with a user hash on every app start (the hash is created on your server with the project's identity verification secret):
+
+```js
+Gleap.identifyWithUserHash('user-1', { name: 'Jane', email: 'jane@example.com' }, userHash);
+```
+
+A verified identify gives the session a short-lived file access token, which the native SDK keeps in memory only and renews while the app is in use. `clearIdentity` revokes it. Guests and contacts identified without a hash see "Sign in to view" instead of the file.
+
+Email replies link attachments to your customer application URL with a `gleapFile` query parameter. If that URL opens your app (universal link / App Link), pass it to Gleap; the conversation opens once the customer is identified with a user hash:
+
+```js
+import { Linking } from 'react-native';
+
+Linking.getInitialURL().then((url) => {
+  if (url) {
+    Gleap.openProtectedFileFromUrl(url);
+  }
+});
+Linking.addEventListener('url', ({ url }) => {
+  Gleap.openProtectedFileFromUrl(url);
+});
+```
+
+`openProtectedFileFromUrl` resolves `true` if the URL carries a Gleap file reference and `false` otherwise. The link alone grants no access; keep the parameter through your app's login flow.
+
 ## Need help?
 
 Checkout our full [documentation](https://docs.gleap.ai/documentation/reactnative/README) or [contact us](https://www.gleap.ai/) - we are always here to help 👋.
