@@ -41,7 +41,10 @@
     "customer-feedback",
     "intercom-alternative"
   ],
-  "repository": "https://github.com/GleapSDK/ReactNative-SDK",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GleapSDK/ReactNative-SDK.git"
+  },
   "author": "gleap <hello@gleap.io> (https://github.com/GleapSDK)",
   "license": "MIT",
   "bugs": {

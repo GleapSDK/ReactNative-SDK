@@ -76,15 +76,34 @@ We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint]
 
 Our pre-commit hooks verify that the linter and tests pass when committing.
 
-### Publishing to npm
+### Releasing
 
-We use [release-it](https://github.com/release-it/release-it) to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.
+Releases are published by GitHub Actions ([`.github/workflows/release.yml`](.github/workflows/release.yml)) when a version tag is pushed. The tag is the plain version (`18.2.0`, no `v`), the same across all Gleap SDKs. Nobody runs `npm publish` (or `yarn release`) by hand.
 
-To publish new versions, run the following:
+1. In a PR, bump the version:
+   - `version` in `package.json` (and `package-lock.json`: `npm install --package-lock-only`)
+   - the native pins: `s.dependency "Gleap", "X.Y.Z"` in `react-native-gleapsdk.podspec` and `gleap-android-sdk` in `android/build.gradle`
+   - a `## X.Y.Z` section at the top of `CHANGELOG.md` (it becomes the GitHub Release notes)
+2. Merge the PR into `main`.
+3. Tag the merge commit and push the tag:
 
-```sh
-yarn release
-```
+   ```sh
+   git switch main && git pull --ff-only
+   git tag X.Y.Z && git push origin X.Y.Z
+   ```
+
+The workflow checks that the tag equals `package.json`'s version, runs `npm ci` (which builds with bob), the typecheck, lint and tests, `npm pack --dry-run`, then `npm publish` via [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC, no npm token, provenance attached), and finally creates the GitHub Release. A prerelease tag such as `18.2.0-beta.1` publishes to the `next` dist-tag. [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the same checks on every pull request and push to `main`.
+
+**One-time setup** (npmjs.com → `react-native-gleapsdk` → Settings → Trusted publishing → GitHub Actions):
+
+| Field | Value |
+| --- | --- |
+| Organization or user | `GleapSDK` |
+| Repository | `ReactNative-SDK` |
+| Workflow filename | `release.yml` |
+| Environment name | _(leave empty)_ |
+
+Optional, once the first automated release succeeded: set Publishing access to "Require two-factor authentication and disallow tokens" (npm's recommendation for trusted publishing).
 
 ### Scripts
 

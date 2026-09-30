@@ -1,0 +1,44 @@
+# The pre-publish checks of release.yml, without publishing.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Build, typecheck, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      # package-lock.json is the committed lockfile; npm ci also runs `prepare` (bob build).
+      - name: Install dependencies and build
+        run: npm ci
+
+      # Scoped to the library: example/ has pre-existing lint/type/test failures
+      # (missing react-test-renderer, prettier drift) and is not published.
+      - name: Typecheck
+        run: npx tsc --noEmit -p tsconfig.build.json
+
+      - name: Lint
+        run: npx eslint "src/**/*.{js,ts,tsx}"
+
+      - name: Test
+        run: npx jest src
+
+      - name: Pack (dry run)
+        run: npm pack --dry-run
