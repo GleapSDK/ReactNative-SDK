@@ -160,6 +160,28 @@ type GleapSdkType = {
       darkBackgroundColor?: string;
     }
   ): void;
+  /**
+   * Enables or disables screenshots and screen recordings for capture
+   * requests: when a workflow, an AI agent or a teammate asks the user in the
+   * widget to show the issue, the widget steps aside, a small bar lets the
+   * user go to the right screen, and the SDK captures the app once they tap
+   * Capture (or records it between Start and Stop). Nothing is captured
+   * without that tap. While disabled, the widget only offers to upload a
+   * file. Enabled by default; can be called before or after initialize.
+   */
+  setCaptureEnabled(enabled: boolean): void;
+  /**
+   * Enables or disables sending the app's logs for capture requests: a
+   * workflow or an AI agent can ask for the logs while the app runs (no user
+   * action), and screenshots and recordings can bring the logs around them.
+   * The logs are what a bug report carries (console and network logs, custom
+   * data, env data, custom events; the replay only when it is asked for and
+   * enabled in the dashboard), and the existing settings still apply (e.g.
+   * disableConsoleLog, setDisableEnvData). While disabled, log requests are
+   * answered as not supported and captures are sent without logs. Enabled by
+   * default; can be called before or after initialize.
+   */
+  setRemoteLogCollectionEnabled(enabled: boolean): void;
   setNotificationContainerOffset(x: number, y: number): void;
   registerListener(eventType: string, callback: (data?: any) => void): void;
   setLanguage(language: string): void;
@@ -342,6 +364,24 @@ if (GleapSdk && !GleapSdk.touched) {
     );
   };
 
+  // Capture requests. JavaScript updated over the air can run on an older
+  // native build without these methods; that build can't capture or send
+  // logs for a request either, so they do nothing there.
+  const nativeSetCaptureEnabled = GleapSdk.setCaptureEnabled;
+  GleapSdk.setCaptureEnabled = (enabled: boolean) => {
+    if (typeof nativeSetCaptureEnabled === 'function') {
+      nativeSetCaptureEnabled(!!enabled);
+    }
+  };
+
+  const nativeSetRemoteLogCollectionEnabled =
+    GleapSdk.setRemoteLogCollectionEnabled;
+  GleapSdk.setRemoteLogCollectionEnabled = (enabled: boolean) => {
+    if (typeof nativeSetRemoteLogCollectionEnabled === 'function') {
+      nativeSetRemoteLogCollectionEnabled(!!enabled);
+    }
+  };
+
   const registeredAgentTools: {
     [name: string]: (params: Record<string, any>) => any;
   } = {};
@@ -369,6 +409,28 @@ if (GleapSdk && !GleapSdk.touched) {
   };
 
   const gleapEmitter = new NativeEventEmitter(NativeModules.Gleapsdk);
+
+  // Capture requests, Android: before the native SDK collects the logs for a
+  // request, it asks for the network requests the JS logger has not handed
+  // over yet (pushed at most every 500 ms otherwise) and waits up to 500 ms
+  // for the answer. iOS records the network natively: nothing to flush.
+  if (
+    logsNetworkInJs &&
+    typeof GleapSdk.registerLogFlushHandler === 'function'
+  ) {
+    gleapEmitter.addListener('flushLogs', (data: any) => {
+      try {
+        networkLogger.flush();
+      } catch (exp) {}
+      try {
+        const flushId = typeof data === 'string' ? data : data?.id;
+        if (flushId && typeof GleapSdk.logsFlushed === 'function') {
+          GleapSdk.logsFlushed(String(flushId));
+        }
+      } catch (exp) {}
+    });
+    GleapSdk.registerLogFlushHandler();
+  }
 
   // Android: the native module replays the loaded config when initialize is
   // called again (JS reload, SDK already initialized natively), so a config

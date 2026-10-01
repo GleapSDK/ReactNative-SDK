@@ -1,5 +1,10 @@
 # Changelog
 
+## 19.1.0
+Updated native iOS dependency to 19.1.0
+Updated native Android dependency to 19.1.0
+New `Gleap.setCaptureEnabled(enabled)` and `Gleap.setRemoteLogCollectionEnabled(enabled)` for capture requests: in-app screenshots and screen recordings that workflows, AI agents and teammates ask for in a conversation, and background log collection. On Android the JS network log is handed to the native SDK before it collects logs for a request.
+
 ## 19.0.1
 Native iOS and Android dependencies stay on 19.0.0
 (protected conversation files: new `Gleap.openProtectedFileFromUrl(url)` opens the conversation of a file linked in a Gleap email — emails link attachments to your customer application URL with a `gleapFile` query parameter; pass the URL that opened the app (from `Linking.getInitialURL()` or the `Linking` `url` event); resolves `true` if the URL carries a Gleap file reference, `false` otherwise; the conversation opens once the user is identified with a user hash (`identifyWithUserHash`), the link alone grants no access)

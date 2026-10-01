@@ -43,6 +43,7 @@ import io.gleap.callbacks.GleapAgentToolResultCallback;
 import io.gleap.callbacks.GetActivityCallback;
 import io.gleap.Gleap;
 import io.gleap.GleapActivationMethod;
+import io.gleap.GleapLogFlushHandler;
 import io.gleap.GleapLogLevel;
 import io.gleap.PrefillHelper;
 import io.gleap.callbacks.ConfigLoadedCallback;
@@ -64,6 +65,9 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   private boolean isSilentBugReport = false;
   private volatile boolean invalidated = false;
   private final Map<String, GleapAgentToolResultCallback> pendingAgentToolExecutions = new ConcurrentHashMap<>();
+  // Capture requests: log flushes the native SDK waits for (at most 500 ms) until JS has handed
+  // over the network requests it still holds back, by flush id.
+  private final Map<String, Runnable> pendingLogFlushes = new ConcurrentHashMap<>();
 
   // The native SDK loads its config once per process and fires configLoaded / initialized only
   // then. The JS side (e.g. the Android network logger) depends on configLoaded, so the config
@@ -1488,6 +1492,102 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     }
   }
 
+  /**
+   * Enables or disables screenshots and screen recordings for capture requests. Only sets a
+   * flag, so no Activity is needed.
+   *
+   * @param enabled false to turn in-app screenshots and recordings off.
+   */
+  @ReactMethod
+  public void setCaptureEnabled(boolean enabled) {
+    try {
+      Gleap.getInstance().setCaptureEnabled(enabled);
+    } catch (Exception | LinkageError ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
+   * Enables or disables sending the app's logs for capture requests. Only sets a flag, so no
+   * Activity is needed.
+   *
+   * @param enabled false to never send logs for capture requests.
+   */
+  @ReactMethod
+  public void setRemoteLogCollectionEnabled(boolean enabled) {
+    try {
+      Gleap.getInstance().setRemoteLogCollectionEnabled(enabled);
+    } catch (Exception | LinkageError ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
+   * Called by JS once it listens for flushLogs. On Android the network log is recorded in JS and
+   * handed over at most every 500 ms; before the native SDK collects the logs for a capture
+   * request, it asks JS for the requests it still holds back and waits at most 500 ms.
+   */
+  @ReactMethod
+  public void registerLogFlushHandler() {
+    try {
+      Gleap.getInstance().setLogFlushHandler(new GleapLogFlushHandler() {
+        @Override
+        public void onFlushRequested(Runnable done) {
+          requestLogFlush(done);
+        }
+      });
+    } catch (Exception | LinkageError ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
+   * JS handed over the network requests for the flush with this id: its attachNetworkLog call
+   * came first and already ran on this queue.
+   */
+  @ReactMethod
+  public void logsFlushed(String flushId) {
+    finishLogFlush(flushId);
+  }
+
+  private void requestLogFlush(@Nullable Runnable done) {
+    if (done == null) {
+      return;
+    }
+    // Nobody answers in a destroyed JS context (a reloaded one registers its own handler).
+    if (invalidated) {
+      done.run();
+      return;
+    }
+    String flushId = UUID.randomUUID().toString();
+    pendingLogFlushes.put(flushId, done);
+    try {
+      getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("flushLogs", flushId);
+    } catch (Exception ex) {
+      finishLogFlush(flushId);
+    }
+  }
+
+  private void finishLogFlush(@Nullable String flushId) {
+    if (flushId == null) {
+      return;
+    }
+    Runnable done = pendingLogFlushes.remove(flushId);
+    if (done != null) {
+      try {
+        done.run();
+      } catch (Exception ignore) {
+      }
+    }
+  }
+
+  private void finishPendingLogFlushes() {
+    for (String flushId : pendingLogFlushes.keySet()) {
+      finishLogFlush(flushId);
+    }
+  }
+
   @ReactMethod
   public void openNewsArticle(String articleId, Boolean showBackButton) {
     try {
@@ -1640,12 +1740,14 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   @Override
   public void onCatalystInstanceDestroy() {
     invalidated = true;
+    finishPendingLogFlushes();
     super.onCatalystInstanceDestroy();
   }
 
   @Override
   public void invalidate() {
     invalidated = true;
+    finishPendingLogFlushes();
     super.invalidate();
   }
 
