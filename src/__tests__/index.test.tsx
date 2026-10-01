@@ -131,3 +131,58 @@ describe('configLoaded on iOS', () => {
     }
   });
 });
+
+// Capture requests: before the native SDK collects the logs for a request, it
+// asks for the network requests the JS logger holds back (Android) and goes on
+// once JS answers, so the answer must come after the hand-over.
+describe('log flush for capture requests', () => {
+  const originalFetch = (global as any).fetch;
+
+  beforeEach(() => {
+    jest.resetModules();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    (global as any).fetch = originalFetch;
+  });
+
+  it('Android: hands the held-back network logs over, then answers', async () => {
+    (global as any).fetch = jest.fn(() => Promise.reject(new Error('offline')));
+    const { sdk, emit } = loadSdk('android');
+    expect(sdk.registerLogFlushHandler).toHaveBeenCalledTimes(1);
+    emit('configLoaded', config);
+
+    await (global as any)
+      .fetch('https://api.example.com/items')
+      .catch(() => undefined);
+    // Pushed at most every 500 ms: still held back.
+    expect(sdk.attachNetworkLog).not.toHaveBeenCalled();
+
+    emit('flushLogs', 'flush-1');
+
+    expect(sdk.attachNetworkLog).toHaveBeenCalledTimes(1);
+    const networkLogs = JSON.parse(sdk.attachNetworkLog.mock.calls[0][0]);
+    expect(networkLogs[0].url).toBe('https://api.example.com/items');
+    expect(sdk.logsFlushed).toHaveBeenCalledWith('flush-1');
+    expect(sdk.attachNetworkLog.mock.invocationCallOrder[0]).toBeLessThan(
+      sdk.logsFlushed.mock.invocationCallOrder[0]
+    );
+  });
+
+  it('Android: answers right away when nothing is held back', () => {
+    const { sdk, emit } = loadSdk('android');
+
+    emit('flushLogs', 'flush-2');
+
+    expect(sdk.attachNetworkLog).not.toHaveBeenCalled();
+    expect(sdk.logsFlushed).toHaveBeenCalledWith('flush-2');
+  });
+
+  it('iOS: registers no flush handler (the network is logged natively)', () => {
+    const { sdk } = loadSdk('ios');
+
+    expect(sdk.registerLogFlushHandler).not.toHaveBeenCalled();
+  });
+});

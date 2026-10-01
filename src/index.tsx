@@ -410,6 +410,28 @@ if (GleapSdk && !GleapSdk.touched) {
 
   const gleapEmitter = new NativeEventEmitter(NativeModules.Gleapsdk);
 
+  // Capture requests, Android: before the native SDK collects the logs for a
+  // request, it asks for the network requests the JS logger has not handed
+  // over yet (pushed at most every 500 ms otherwise) and waits up to 500 ms
+  // for the answer. iOS records the network natively: nothing to flush.
+  if (
+    logsNetworkInJs &&
+    typeof GleapSdk.registerLogFlushHandler === 'function'
+  ) {
+    gleapEmitter.addListener('flushLogs', (data: any) => {
+      try {
+        networkLogger.flush();
+      } catch (exp) {}
+      try {
+        const flushId = typeof data === 'string' ? data : data?.id;
+        if (flushId && typeof GleapSdk.logsFlushed === 'function') {
+          GleapSdk.logsFlushed(String(flushId));
+        }
+      } catch (exp) {}
+    });
+    GleapSdk.registerLogFlushHandler();
+  }
+
   // Android: the native module replays the loaded config when initialize is
   // called again (JS reload, SDK already initialized natively), so a config
   // can arrive twice; it is handled once per JS context.
