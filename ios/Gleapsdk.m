@@ -411,6 +411,22 @@ RCT_EXPORT_METHOD(setColorScheme:(NSString *)colorScheme lightBackgroundColor:(n
     });
 }
 
+// Capture requests. No log flush handler on iOS: the native SDK records the network itself, so
+// JS holds back no logs it would have to hand over first.
+RCT_EXPORT_METHOD(setCaptureEnabled:(BOOL)enabled)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setCaptureEnabled: enabled];
+    });
+}
+
+RCT_EXPORT_METHOD(setRemoteLogCollectionEnabled:(BOOL)enabled)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setRemoteLogCollectionEnabled: enabled];
+    });
+}
+
 RCT_EXPORT_METHOD(openChecklists: (BOOL)showBackButton)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

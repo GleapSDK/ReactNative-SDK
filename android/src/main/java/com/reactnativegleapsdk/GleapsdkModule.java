@@ -1488,6 +1488,36 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
     }
   }
 
+  /**
+   * Enables or disables screenshots and screen recordings for capture requests. Only sets a
+   * flag, so no Activity is needed.
+   *
+   * @param enabled false to turn in-app screenshots and recordings off.
+   */
+  @ReactMethod
+  public void setCaptureEnabled(boolean enabled) {
+    try {
+      Gleap.getInstance().setCaptureEnabled(enabled);
+    } catch (Exception | LinkageError ex) {
+      System.out.println(ex);
+    }
+  }
+
+  /**
+   * Enables or disables sending the app's logs for capture requests. Only sets a flag, so no
+   * Activity is needed.
+   *
+   * @param enabled false to never send logs for capture requests.
+   */
+  @ReactMethod
+  public void setRemoteLogCollectionEnabled(boolean enabled) {
+    try {
+      Gleap.getInstance().setRemoteLogCollectionEnabled(enabled);
+    } catch (Exception | LinkageError ex) {
+      System.out.println(ex);
+    }
+  }
+
   @ReactMethod
   public void openNewsArticle(String articleId, Boolean showBackButton) {
     try {
