@@ -1,5 +1,10 @@
 # Changelog
 
+## 19.2.0
+Updated native iOS dependency to 19.2.0
+Updated native Android dependency to 19.2.0
+Surveys 2.0: the feedback sent and outbound sent callbacks (and on Android feedback will be sent) now also fire when a Surveys 2.0 survey is completed in the native SDKs, with the survey's answers; server-triggered surveys keep their resume data, and full-screen and card surveys look right on Android (native SDK 19.2.0).
+
 ## 19.1.0
 Updated native iOS dependency to 19.1.0
 Updated native Android dependency to 19.1.0
