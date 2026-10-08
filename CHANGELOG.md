@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.2.1
+Updated native iOS dependency to 19.2.1
+Updated native Android dependency to 19.2.1
+
 ## 19.2.0
 Updated native iOS dependency to 19.2.0
 Updated native Android dependency to 19.2.0
