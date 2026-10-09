@@ -1,5 +1,10 @@
 # Changelog
 
+## 19.2.2
+iOS: sending a form or bug report no longer freezes the app for seconds (no loading state after Submit, late thank-you screen); see the iOS SDK 19.2.2 notes.
+Updated native iOS dependency to 19.2.2
+Updated native Android dependency to 19.2.2
+
 ## 19.2.1
 Updated native iOS dependency to 19.2.1
 Updated native Android dependency to 19.2.1
