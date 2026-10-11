@@ -1,5 +1,10 @@
 # Changelog
 
+## 19.2.3
+iOS: the realtime socket opens and closes far less often and closes cleanly (close codes 1000/1001 instead of none, one socket per session start and identify, backoff after errors, closed in the background); see the iOS SDK 19.2.3 notes.
+Updated native iOS dependency to 19.2.3
+Updated native Android dependency to 19.2.3
+
 ## 19.2.2
 iOS: sending a form or bug report no longer freezes the app for seconds (no loading state after Submit, late thank-you screen); see the iOS SDK 19.2.2 notes.
 Updated native iOS dependency to 19.2.2

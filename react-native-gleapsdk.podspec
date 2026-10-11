@@ -3,7 +3,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 # Native Gleap iOS SDK, released together with this package.
-gleap_ios_sdk_version = "19.2.2"
+gleap_ios_sdk_version = "19.2.3"
 
 Pod::Spec.new do |s|
   s.name         = "react-native-gleapsdk"
