@@ -1,5 +1,10 @@
 # Changelog
 
+## 19.2.4
+Android: the realtime socket opens and closes far less often (no reconnect on a network change or an unchanged identify, closed with 1001 after 10 s in the background, backoff reset only after a healthy socket); see the Android SDK 19.2.4 notes.
+Updated native iOS dependency to 19.2.4
+Updated native Android dependency to 19.2.4
+
 ## 19.2.3
 iOS: the realtime socket opens and closes far less often and closes cleanly (close codes 1000/1001 instead of none, one socket per session start and identify, backoff after errors, closed in the background); see the iOS SDK 19.2.3 notes.
 Updated native iOS dependency to 19.2.3
