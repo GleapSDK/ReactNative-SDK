@@ -1,5 +1,6 @@
 import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 import GleapNetworkIntercepter from './networklogger';
+import { setCurrentBannerHeight } from './bannerHeight';
 
 const LINKING_ERROR =
   `The package 'react-native-gleapsdk' doesn't seem to be linked. Make sure: \n\n` +
@@ -80,6 +81,13 @@ type GleapSdkType = {
   searchHelpCenter(term: string, showBackButton: boolean): void;
   close(): void;
   isOpened(): Promise<boolean>;
+  /**
+   * The space the shown inline banner takes at the top of the screen (points
+   * on iOS, dp on Android; the banner covers the status bar), 0 when none is
+   * shown. Changes are reported as the 'bannerHeightChanged' event; to keep
+   * the app below inline banners, wrap it in GleapBannerArea.
+   */
+  getBannerHeight(): Promise<number>;
   identify(userId: string, userProperties: GleapUserProperty): void;
   identifyWithUserHash(
     userId: string,
@@ -463,6 +471,7 @@ if (GleapSdk && !GleapSdk.touched) {
   });
 
   gleapEmitter.addListener('initialized', () => {
+    refreshBannerHeight();
     try {
       if (Platform.OS === 'android') {
         if (initializedHandled) {
@@ -540,6 +549,22 @@ if (GleapSdk && !GleapSdk.touched) {
     notifyCallback('notificationCountUpdated', count);
   });
 
+  gleapEmitter.addListener('bannerHeightChanged', (height) => {
+    setCurrentBannerHeight(height);
+    notifyCallback('bannerHeightChanged', height);
+  });
+
+  // The native SDKs only report changes: a banner may already be shown after a
+  // JS reload.
+  const refreshBannerHeight = () => {
+    try {
+      Promise.resolve(GleapSdk.getBannerHeight())
+        .then((height: number) => setCurrentBannerHeight(height))
+        .catch(() => {});
+    } catch (exp) {}
+  };
+  refreshBannerHeight();
+
   gleapEmitter.addListener('widgetOpened', () => {
     notifyCallback('widgetOpened');
   });
@@ -583,5 +608,8 @@ if (GleapSdk && !GleapSdk.touched) {
   GleapSdk.removeAllAttachments();
   GleapSdk.touched = true;
 }
+
+export { GleapBannerArea, useGleapBannerHeight } from './GleapBannerArea';
+export type { GleapBannerAreaProps } from './GleapBannerArea';
 
 export default GleapSdk as GleapSdkType;

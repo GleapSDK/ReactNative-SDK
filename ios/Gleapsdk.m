@@ -107,6 +107,12 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
     }
 }
 
+- (void)bannerHeightChanged:(CGFloat)height {
+    if (_hasListeners) {
+        [self sendEventWithName:@"bannerHeightChanged" body: @(height)];
+    }
+}
+
 // GleapDelegate declares feedbackSendingFailed: with the error data; the SDK never calls a
 // variant without it.
 - (void)feedbackSendingFailed:(NSDictionary *)data {
@@ -185,7 +191,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"outboundSent", @"toolExecution", @"agentToolExecution", @"feedbackSendingFailed", @"notificationCountUpdated", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
+    return @[@"feedbackSent", @"outboundSent", @"toolExecution", @"agentToolExecution", @"feedbackSendingFailed", @"notificationCountUpdated", @"bannerHeightChanged", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
 }
 
 RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)
@@ -537,6 +543,13 @@ RCT_EXPORT_METHOD(getIdentity:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromi
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary * userIdentity = [Gleap getIdentity];
         resolve(userIdentity);
+    });
+}
+
+RCT_EXPORT_METHOD(getBannerHeight:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        resolve(@([Gleap bannerHeight]));
     });
 }
 
