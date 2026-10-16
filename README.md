@@ -67,6 +67,45 @@ Gleap.setColorScheme(isDarkTheme ? 'dark' : 'light', { darkBackgroundColor: '#12
 
 `setColorScheme` only takes effect when "Adapt to dark / light mode" is enabled in the Gleap dashboard; it then overrides the dashboard's color scheme. Before the first call the dashboard setting applies. In dark mode the widget uses the dark mode colors, logo, header image and composer glow set in the Gleap dashboard; without dark colors it keeps its normal colors. `lightBackgroundColor` / `darkBackgroundColor` override the background in light / dark mode. Can be called before or after `initialize`.
 
+## Inline banners
+
+Inline banners (the banner style set in the Gleap dashboard) sit at the top of the screen and cover the status bar. To push your app down below them instead of covering it, like inline banners on the web, wrap the app in `GleapBannerArea`:
+
+```tsx
+import Gleap, { GleapBannerArea } from 'react-native-gleapsdk';
+
+export default function App() {
+  return (
+    <GleapBannerArea>
+      <NavigationContainer>{/* ... */}</NavigationContainer>
+    </GleapBannerArea>
+  );
+}
+```
+
+While an inline banner is shown, the content moves down by the banner's height (animated) and back up when it closes; floating banners still float above the app. Without `GleapBannerArea` nothing changes: banners overlay the app as before.
+
+The banner already covers the status bar, so screens that add the top safe-area inset themselves (React Navigation headers, `SafeAreaView`) would leave a gap below it. With `react-native-safe-area-context`, hand them the inset that is left:
+
+```tsx
+import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GleapBannerArea, useGleapBannerHeight } from 'react-native-gleapsdk';
+
+function BannerSafeArea({ children }) {
+  const insets = useSafeAreaInsets();
+  const bannerHeight = useGleapBannerHeight();
+  return (
+    <SafeAreaInsetsContext.Provider value={{ ...insets, top: Math.max(0, insets.top - bannerHeight) }}>
+      {children}
+    </SafeAreaInsetsContext.Provider>
+  );
+}
+
+// <SafeAreaProvider><GleapBannerArea><BannerSafeArea><NavigationContainer>…
+```
+
+`useGleapBannerHeight()` returns the height (points on iOS, dp on Android, measured from the top edge; 0 while no inline banner is shown) for custom layouts; `Gleap.getBannerHeight()` and the `bannerHeightChanged` listener (`Gleap.registerListener('bannerHeightChanged', (height) => …)`) give the same value.
+
 ## Network logs
 
 Network logs are recorded when they are turned on in the Gleap dashboard, or after you call `Gleap.startNetworkLogging()`. `Gleap.stopNetworkLogging()` turns them off again, also when the dashboard turns them on.

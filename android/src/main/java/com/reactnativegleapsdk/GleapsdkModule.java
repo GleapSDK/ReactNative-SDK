@@ -57,6 +57,7 @@ import io.gleap.callbacks.WidgetClosedCallback;
 import io.gleap.callbacks.WidgetOpenedCallback;
 import io.gleap.callbacks.RegisterPushMessageGroupCallback;
 import io.gleap.callbacks.UnRegisterPushMessageGroupCallback;
+import io.gleap.callbacks.BannerHeightChangedCallback;
 import io.gleap.callbacks.NotificationUnreadCountUpdatedCallback;
 
 @ReactModule(name = GleapsdkModule.NAME)
@@ -190,6 +191,13 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                   public void invoke(int count) {
                     getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                       .emit("notificationCountUpdated", count);
+                  }
+                });
+
+                Gleap.getInstance().setBannerHeightChangedCallback(new BannerHeightChangedCallback() {
+                  @Override
+                  public void invoke(int height) {
+                    emitToJs("bannerHeightChanged", height);
                   }
                 });
 
@@ -426,6 +434,15 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         });
     } catch (NoUiThreadException e) {
       System.err.println(e.getMessage());
+    }
+  }
+
+  @ReactMethod
+  public void getBannerHeight(final Promise promise) {
+    try {
+      promise.resolve(Gleap.getInstance().getBannerHeight());
+    } catch (Exception ex) {
+      promise.resolve(0);
     }
   }
 
