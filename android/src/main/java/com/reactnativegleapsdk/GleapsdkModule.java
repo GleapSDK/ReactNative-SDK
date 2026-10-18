@@ -1082,6 +1082,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
         internalActivationMethods.add(GleapActivationMethod.SCREENSHOT);
       }
     }
+    // An empty array turns the activation methods off. The native SDK reads an empty array as
+    // "use the dashboard settings", NONE alone as "none".
+    if (internalActivationMethods.isEmpty()) {
+      internalActivationMethods.add(GleapActivationMethod.NONE);
+    }
     if (Gleap.getInstance() != null) {
       Gleap.getInstance().setActivationMethods(
         internalActivationMethods.toArray(new GleapActivationMethod[internalActivationMethods.size()]));

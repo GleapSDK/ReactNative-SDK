@@ -209,6 +209,10 @@ type GleapSdkType = {
   removeAllAttachments(): void;
   startNetworkLogging(): void;
   stopNetworkLogging(): void;
+  /**
+   * Replaces the dashboard's activation methods. An empty array turns shake and
+   * screenshot off.
+   */
   setActivationMethods(activationMethods: GleapActivationMethod[]): void;
   registerCustomAction(
     customActionCallback: (data: { name: string; shareToken?: string }) => void
