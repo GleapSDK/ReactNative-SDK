@@ -287,6 +287,11 @@ RCT_EXPORT_METHOD(setActivationMethods:(NSArray *)activationMethods)
                 [internalActivationMethods addObject: @(SCREENSHOT)];
             }
         }
+        // An empty array turns the activation methods off. The native SDK (and configLoaded:
+        // above) read an empty array as "use the dashboard settings", NONE alone as "none".
+        if (internalActivationMethods.count == 0) {
+            [internalActivationMethods addObject: @(NONE)];
+        }
         
         [Gleap setActivationMethods: internalActivationMethods];
     });
