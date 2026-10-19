@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.3.1
+Updated native iOS dependency to 19.3.1
+Updated native Android dependency to 19.3.1
+
 ## 19.3.0
 Inline banners can push the app down instead of covering it, like on the web. Wrap the app in `GleapBannerArea`: while an inline banner is shown, the content moves down by the banner's height (animated) and back up when it closes; floating banners still float. `useGleapBannerHeight()`, `Gleap.getBannerHeight()` and the `bannerHeightChanged` listener give the height (points on iOS, dp on Android, from the top edge; the banner covers the status bar) for custom layouts. See the README for React Navigation / safe-area-context.
 Updated native iOS dependency to 19.3.0
