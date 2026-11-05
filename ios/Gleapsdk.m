@@ -25,6 +25,8 @@ static NSString *const RCTShowDevMenuNotification = @"RCTShowDevMenuNotification
 {
     BOOL _hasListeners;
     NSMutableDictionary<NSString *, GleapAgentToolCompletion> *_pendingAgentToolExecutions;
+    // setUserJwtProvider: the native SDK's token requests waiting for the JS provider.
+    NSMutableDictionary<NSString *, void (^)(NSString * _Nullable)> *_pendingUserJwtRequests;
 }
 
 RCT_EXPORT_MODULE()
@@ -191,7 +193,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)token)
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"feedbackSent", @"outboundSent", @"toolExecution", @"agentToolExecution", @"feedbackSendingFailed", @"notificationCountUpdated", @"bannerHeightChanged", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup"];
+    return @[@"feedbackSent", @"outboundSent", @"toolExecution", @"agentToolExecution", @"feedbackSendingFailed", @"notificationCountUpdated", @"bannerHeightChanged", @"initialized", @"configLoaded", @"customActionTriggered", @"feedbackFlowStarted", @"widgetOpened", @"widgetClosed", @"registerPushMessageGroup", @"unregisterPushMessageGroup", @"userJwtRequested"];
 }
 
 RCT_EXPORT_METHOD(sendSilentCrashReport:(NSString *)description andSeverity:(NSString *)severity)
@@ -761,6 +763,62 @@ RCT_EXPORT_METHOD(sendAgentToolResult:(NSString *)executionId result:(NSString *
         if (completion != nil) {
             [self->_pendingAgentToolExecutions removeObjectForKey: executionId];
             completion(result);
+        }
+    });
+}
+
+// Customer identity (setUserJwt, setUserJwtProvider, setAuthTokens).
+RCT_EXPORT_METHOD(setUserJwt:(NSString *)token)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setUserJwt: token];
+    });
+}
+
+RCT_EXPORT_METHOD(setAuthTokens:(NSDictionary *)tokens)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // null from JS arrives as NSNull: it removes the token.
+        [Gleap setAuthTokens: tokens ?: @{}];
+    });
+}
+
+// The JS provider answers each `userJwtRequested` event with userJwtProviderResult. The native
+// SDK keeps the rules (one call at a time, 10 s timeout, 30 s pause after a failure).
+RCT_EXPORT_METHOD(setUserJwtProviderEnabled:(BOOL)enabled)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (!enabled) {
+            [Gleap setUserJwtProvider: nil];
+            return;
+        }
+        __weak Gleapsdk *weakSelf = self;
+        [Gleap setUserJwtProvider:^(void (^completion)(NSString * _Nullable token)) {
+            Gleapsdk *strongSelf = weakSelf;
+            if (strongSelf == nil || !strongSelf->_hasListeners) {
+                completion(nil);
+                return;
+            }
+            if (strongSelf->_pendingUserJwtRequests == nil) {
+                strongSelf->_pendingUserJwtRequests = [[NSMutableDictionary alloc] init];
+            }
+            NSString *requestId = [[NSUUID UUID] UUIDString];
+            [strongSelf->_pendingUserJwtRequests setObject: [completion copy] forKey: requestId];
+            [strongSelf sendEventWithName:@"userJwtRequested" body:@{ @"requestId": requestId }];
+        }];
+    });
+}
+
+RCT_EXPORT_METHOD(userJwtProviderResult:(NSString *)requestId token:(NSString *)token)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (requestId == nil || self->_pendingUserJwtRequests == nil) {
+            return;
+        }
+        void (^completion)(NSString * _Nullable) = [self->_pendingUserJwtRequests objectForKey: requestId];
+        if (completion != nil) {
+            [self->_pendingUserJwtRequests removeObjectForKey: requestId];
+            completion([token isKindOfClass: [NSString class]] && [token length] > 0 ? token : nil);
         }
     });
 }

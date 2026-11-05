@@ -122,6 +122,27 @@ Gleap.setNetworkLogPropsToIgnore(['password', 'token', 'user.email']);
 
 `setNetworkLogsBlacklist` drops every request whose URL contains one of the strings. `setNetworkLogPropsToIgnore` removes headers, JSON keys (at any depth; a dotted name such as `user.email` also works as a path from the root), form fields and query parameters with these names, case-insensitively. `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` headers are always masked, and requests to Gleap itself are never logged. Each call replaces the previous list. Bodies over 150 KB are cut; binary and streaming bodies (images, server-sent events, …) are left out.
 
+## Customer identity (JWT)
+
+Sign the user in with one HS256 JWT your backend signs with an identity key (Settings → Security → Customer identity). The token's `userId` names the user; everything else on the contact comes from the token. The native SDK keeps it in memory only. See [Customer identity](https://docs.gleap.ai/documentation/guides/customer-identity).
+
+```js
+// After login and on every app start of a logged-in user
+await Gleap.setUserJwt(token);
+
+// Called when the token has expired or is about to; return a fresh one
+Gleap.setUserJwtProvider(async () => {
+  const response = await fetch('https://api.example.com/gleap-token', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const { token } = await response.json();
+  return token;
+});
+
+// Optional: tokens API tools may use to call your backend as this user (null removes one)
+await Gleap.setAuthTokens({ backend: accessToken });
+```
+
 ## Protected conversation files
 
 With "Require authenticated file access" (Project settings → User identity), conversation files can only be opened by agents and by the verified customer the conversation belongs to. The SDK supports it without extra setup, as long as the app identifies the customer with a user hash on every app start (the hash is created on your server with the project's identity verification secret):

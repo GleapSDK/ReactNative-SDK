@@ -8,9 +8,12 @@ export {};
 
 type Listener = (data?: any) => void;
 
-const loadSdk = (os: 'android' | 'ios') => {
+const loadSdk = (
+  os: 'android' | 'ios',
+  natives: { [name: string]: any } = {}
+) => {
   const listeners: { [eventType: string]: Listener } = {};
-  const store: { [name: string]: any } = {};
+  const store: { [name: string]: any } = { ...natives };
   const nativeModule = new Proxy(store, {
     get(target, name: string) {
       if (!(name in target) && name !== 'touched') {
@@ -184,5 +187,67 @@ describe('log flush for capture requests', () => {
     const { sdk } = loadSdk('ios');
 
     expect(sdk.registerLogFlushHandler).not.toHaveBeenCalled();
+  });
+});
+
+describe('customer identity', () => {
+  beforeEach(() => {
+    jest.resetModules();
+  });
+
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  it('hands the token and the auth tokens to the native SDK', async () => {
+    const setUserJwt = jest.fn();
+    const setAuthTokens = jest.fn();
+    const { sdk } = loadSdk('ios', { setUserJwt, setAuthTokens });
+
+    await expect(sdk.setUserJwt('a.b.c')).resolves.toBeUndefined();
+    await expect(
+      sdk.setAuthTokens({ backend: 'secret', crm: null })
+    ).resolves.toBeUndefined();
+
+    expect(setUserJwt).toHaveBeenCalledWith('a.b.c');
+    expect(setAuthTokens).toHaveBeenCalledWith({
+      backend: 'secret',
+      crm: null,
+    });
+  });
+
+  it('answers a token request with the provider result', async () => {
+    const native = {
+      setUserJwtProviderEnabled: jest.fn(),
+      userJwtProviderResult: jest.fn(),
+    };
+    const { sdk, emit } = loadSdk('android', native);
+    sdk.setUserJwtProvider(async () => 'fresh.jwt.token');
+    expect(native.setUserJwtProviderEnabled).toHaveBeenCalledWith(true);
+
+    emit('userJwtRequested', JSON.stringify({ requestId: 'r1' }));
+    await flush();
+
+    expect(native.userJwtProviderResult).toHaveBeenCalledWith(
+      'r1',
+      'fresh.jwt.token'
+    );
+  });
+
+  it('answers null when the provider fails or is removed', async () => {
+    const native = {
+      setUserJwtProviderEnabled: jest.fn(),
+      userJwtProviderResult: jest.fn(),
+    };
+    const { sdk, emit } = loadSdk('ios', native);
+    sdk.setUserJwtProvider(() => Promise.reject(new Error('offline')));
+
+    emit('userJwtRequested', { requestId: 'r1' });
+    await flush();
+    expect(native.userJwtProviderResult).toHaveBeenCalledWith('r1', null);
+
+    sdk.setUserJwtProvider(null);
+    expect(native.setUserJwtProviderEnabled).toHaveBeenLastCalledWith(false);
+    emit('userJwtRequested', { requestId: 'r2' });
+    await flush();
+    expect(native.userJwtProviderResult).toHaveBeenCalledWith('r2', null);
   });
 });
