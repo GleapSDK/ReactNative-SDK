@@ -152,6 +152,8 @@ await Gleap.setAuthTokens({ backend: accessToken });
 
 `setUserJwt` resolves once the native SDK has the token, not when the server accepted it. Refusals (`token_expired`, `token_invalid`, `signature_required`) are logged by the native SDK: look in the Xcode console and in logcat under the tag `Gleap`, not in Metro. A token re-minted with the same claims (only `iat`/`exp` differ) is not sent again.
 
+The identity handling runs in the native iOS and Android SDKs, so their behaviour applies here as is: `setUserJwt` may be called before `initialize` (the token is sent once the SDK starts), a returning user on a project that switched to Signed gets the identify of this app start sent once to obtain a signed session, and a short session duration is renewed at half its lifetime.
+
 `getIdentity()` returns the contact the native SDK knows (user id and contact fields); it never contains the identity token or the grant.
 
 ### Legacy user hash
