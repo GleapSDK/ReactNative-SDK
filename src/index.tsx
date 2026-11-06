@@ -113,6 +113,13 @@ type GleapSdkType = {
    */
   setUserJwt(token: string): Promise<void>;
   /**
+   * Shortens how long a signed session stays signed, in milliseconds. Sent
+   * with every identify; the project's maximum (Settings > Security) applies
+   * when yours is longer. Call it before `setUserJwt`. `0` or less goes back
+   * to the project's maximum.
+   */
+  setSessionDuration(milliseconds: number): void;
+  /**
    * Sets the function that fetches a fresh identity token from your backend.
    * Gleap calls it when the server answers that the token expired (and
    * retries once with the new token), and before it renews the file access or
@@ -457,6 +464,19 @@ if (GleapSdk && !GleapSdk.touched) {
     }
     nativeSetUserJwt(token);
     return Promise.resolve();
+  };
+
+  const nativeSetSessionDuration = GleapSdk.setSessionDuration;
+  GleapSdk.setSessionDuration = (milliseconds: number): void => {
+    if (typeof milliseconds !== 'number' || !isFinite(milliseconds)) {
+      console.warn('Gleap: setSessionDuration expects milliseconds.');
+      return;
+    }
+    if (typeof nativeSetSessionDuration !== 'function') {
+      missingNative('setSessionDuration');
+      return;
+    }
+    nativeSetSessionDuration(Math.max(0, Math.floor(milliseconds)));
   };
 
   const nativeSetAuthTokens = GleapSdk.setAuthTokens;

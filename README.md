@@ -141,9 +141,14 @@ Gleap.setUserJwtProvider(async () => {
   return token;
 });
 
+// Optional: shorten the signed session (milliseconds)
+Gleap.setSessionDuration(24 * 60 * 60 * 1000);
+
 // Optional: tokens API tools may use to call your backend as this user (null removes one)
 await Gleap.setAuthTokens({ backend: accessToken });
 ```
+
+`setSessionDuration(ms)` shortens the signed session; the project's maximum applies.
 
 ### Legacy user hash
 

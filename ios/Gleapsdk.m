@@ -775,6 +775,13 @@ RCT_EXPORT_METHOD(setUserJwt:(NSString *)token)
     });
 }
 
+RCT_EXPORT_METHOD(setSessionDuration:(double)milliseconds)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [Gleap setSessionDuration: (NSInteger)milliseconds];
+    });
+}
+
 RCT_EXPORT_METHOD(setAuthTokens:(NSDictionary *)tokens)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

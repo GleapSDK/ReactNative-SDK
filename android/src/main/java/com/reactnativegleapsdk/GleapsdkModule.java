@@ -1023,6 +1023,18 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   }
 
   /**
+   * Customer identity: caps how long a signed session stays signed (milliseconds).
+   */
+  @ReactMethod
+  public void setSessionDuration(double milliseconds) {
+    try {
+      Gleap.getInstance().setSessionDuration((long) milliseconds);
+    } catch (Exception e) {
+      System.out.println("Error setting the session duration: " + e);
+    }
+  }
+
+  /**
    * Customer identity: per-user tokens for API tools; a null value removes one.
    */
   @ReactMethod
