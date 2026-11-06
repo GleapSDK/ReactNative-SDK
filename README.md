@@ -150,6 +150,10 @@ await Gleap.setAuthTokens({ backend: accessToken });
 
 `setSessionDuration(ms)` shortens the signed session; the project's maximum applies.
 
+`setUserJwt` resolves once the native SDK has the token, not when the server accepted it. Refusals (`token_expired`, `token_invalid`, `signature_required`) are logged by the native SDK: look in the Xcode console and in logcat under the tag `Gleap`, not in Metro. A token re-minted with the same claims (only `iat`/`exp` differ) is not sent again.
+
+`getIdentity()` returns the contact the native SDK knows (user id and contact fields); it never contains the identity token or the grant.
+
 ### Legacy user hash
 
 Instead of a token you can still identify with a user hash: the HMAC-SHA256 of the user id, created on your server with the project's identity verification secret. It is accepted while "Accept legacy user hash" stays on in the project's security settings.

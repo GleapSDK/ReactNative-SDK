@@ -106,10 +106,14 @@ type GleapSdkType = {
    * signs with an identity key. The token is the whole identify: its `userId`
    * (or `user_id`) claim names the user and every other claim lands on the
    * contact as signed data; no other contact field is sent. Call it after
-   * login and on every app start. Kept in memory only and sent again whenever
-   * it changes. A token that is not a JWT, has no user id or is over 4096
-   * characters is refused with a log line and nothing is sent. Resolves once
-   * the native SDK has the token.
+   * login and on every app start. Kept in memory only and sent again when it
+   * says something new (another claim or key; a token re-minted with only a
+   * new iat/exp is not sent again). A token that is not a JWT, has no user id
+   * or is over 4096 characters is refused with a log line and nothing is
+   * sent. Resolves once the native SDK has the token, before the server
+   * answers. Refusals (`token_expired`, `token_invalid`,
+   * `signature_required`) are logged natively, in the Xcode console and in
+   * logcat under the tag `Gleap`, not in Metro.
    */
   setUserJwt(token: string): Promise<void>;
   /**
@@ -256,6 +260,10 @@ type GleapSdkType = {
   registerCustomAction(
     customActionCallback: (data: { name: string; shareToken?: string }) => void
   ): void;
+  /**
+   * The contact the native SDK knows (user id and contact fields). Never
+   * contains the identity token or the grant.
+   */
   getIdentity(): Promise<any>;
   isUserIdentified(): Promise<boolean>;
   setTicketAttribute(key: string, value: string): void;
