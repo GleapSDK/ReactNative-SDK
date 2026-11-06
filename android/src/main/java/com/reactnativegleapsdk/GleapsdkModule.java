@@ -3,6 +3,7 @@ package com.reactnativegleapsdk;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -72,6 +73,11 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   private final Map<String, GleapAgentToolResultCallback> pendingAgentToolExecutions = new ConcurrentHashMap<>();
   // setUserJwtProvider: the native SDK's token requests waiting for the JS provider.
   private final Map<String, GleapUserJwtProvider.Callback> pendingUserJwtRequests = new ConcurrentHashMap<>();
+  // The native SDK stops waiting for a token after 10 s; an unanswered request is forgotten a little later.
+  private static final long USER_JWT_REQUEST_FORGET_MS = 15000;
+  // The native SDK asks one token at a time, so more than a few pending requests are stale ones.
+  private static final int USER_JWT_PENDING_MAX = 16;
+  private final Handler userJwtHandler = new Handler(Looper.getMainLooper());
   // Capture requests: log flushes the native SDK waits for (at most 500 ms) until JS has handed
   // over the network requests it still holds back, by flush id.
   private final Map<String, Runnable> pendingLogFlushes = new ConcurrentHashMap<>();
@@ -1080,8 +1086,17 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
               callback.onToken(null);
               return;
             }
-            String requestId = UUID.randomUUID().toString();
+            final String requestId = UUID.randomUUID().toString();
+            if (pendingUserJwtRequests.size() >= USER_JWT_PENDING_MAX) {
+              pendingUserJwtRequests.clear();
+            }
             pendingUserJwtRequests.put(requestId, callback);
+            userJwtHandler.postDelayed(new Runnable() {
+              @Override
+              public void run() {
+                pendingUserJwtRequests.remove(requestId);
+              }
+            }, USER_JWT_REQUEST_FORGET_MS);
             JSONObject eventData = new JSONObject();
             eventData.put("requestId", requestId);
             getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
