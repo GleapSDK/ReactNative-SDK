@@ -124,7 +124,9 @@ Gleap.setNetworkLogPropsToIgnore(['password', 'token', 'user.email']);
 
 ## Customer identity (JWT)
 
-Sign the user in with one HS256 JWT your backend signs with an identity key (Settings → Security → Customer identity). The token's `userId` names the user; everything else on the contact comes from the token. The native SDK keeps it in memory only. See [Customer identity](https://docs.gleap.ai/documentation/guides/customer-identity).
+### Signed identity (recommended)
+
+Your backend signs an HS256 JWT with an identity key from Settings → Security → Identity keys (put the key id in the `kid` header; the secret never leaves your server). The `userId` claim is required. Optional claims: `email`, `name`, `company` (`{ id, name }`), `plan`, and provider ids such as `stripeCustomerId`. Set `exp` to at most one hour. Everything in the token lands on the contact as signed data the app cannot change. Pass the token to the SDK after login and on every app start of a logged-in user; `setUserJwt` keeps it in memory only. `setUserJwtProvider` fetches a fresh token when it expires, and `setAuthTokens` hands Kai your own API tokens for this user. See [Customer identity](https://docs.gleap.ai/documentation/guides/customer-identity).
 
 ```js
 // After login and on every app start of a logged-in user
@@ -143,17 +145,21 @@ Gleap.setUserJwtProvider(async () => {
 await Gleap.setAuthTokens({ backend: accessToken });
 ```
 
-## Protected conversation files
+### Legacy user hash
 
-With "Require authenticated file access" (Project settings → User identity), conversation files can only be opened by agents and by the verified customer the conversation belongs to. The SDK supports it without extra setup, as long as the app identifies the customer with a user hash on every app start (the hash is created on your server with the project's identity verification secret):
+Instead of a token you can still identify with a user hash: the HMAC-SHA256 of the user id, created on your server with the project's identity verification secret. It is accepted while "Accept legacy user hash" stays on in the project's security settings.
 
 ```js
 Gleap.identifyWithUserHash('user-1', { name: 'Jane', email: 'jane@example.com' }, userHash);
 ```
 
-A verified identify gives the session a short-lived file access token, which the native SDK keeps in memory only and renews while the app is in use. `clearIdentity` revokes it. Guests and contacts identified without a hash see "Sign in to view" instead of the file.
+## Protected conversation files
 
-Email replies link attachments to your customer application URL with a `gleapFile` query parameter. If that URL opens your app (universal link / App Link), pass it to Gleap; the conversation opens once the customer is identified with a user hash:
+With "Require authenticated file access" (Project settings → User identity), conversation files can only be opened by agents and by the verified customer the conversation belongs to. The SDK supports it without extra setup, as long as the app identifies the customer with a signed identity on every app start (`Gleap.setUserJwt`, or the legacy user hash).
+
+A signed identify gives the session a short-lived file access token, which the native SDK keeps in memory only and renews while the app is in use. `clearIdentity` revokes it. Guests and contacts identified without a signed identity see "Sign in to view" instead of the file.
+
+Email replies link attachments to your customer application URL with a `gleapFile` query parameter. If that URL opens your app (universal link / App Link), pass it to Gleap; the conversation opens once the customer is identified with a signed identity:
 
 ```js
 import { Linking } from 'react-native';
