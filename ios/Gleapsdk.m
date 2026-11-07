@@ -21,6 +21,23 @@ static NSString *const RCTShowDevMenuNotification = @"RCTShowDevMenuNotification
 
 #endif
 
+// The Project ID (formerly the SDK key). Native iOS SDK 19.5.0+ has initializeWithProjectId:
+// (initializeWithToken: is deprecated there); 19.4.0 only has initializeWithToken:, which takes the
+// same value. Looked up at runtime so this builds and runs against both.
+static void GleapInitializeWithProjectId(NSString *projectId) {
+    SEL projectIdSelector = NSSelectorFromString(@"initializeWithProjectId:");
+    if ([Gleap respondsToSelector:projectIdSelector]) {
+        void (*initializeWithProjectId)(id, SEL, NSString *) =
+            (void (*)(id, SEL, NSString *))[Gleap methodForSelector:projectIdSelector];
+        initializeWithProjectId([Gleap class], projectIdSelector, projectId);
+        return;
+    }
+    SEL tokenSelector = NSSelectorFromString(@"initializeWithToken:");
+    void (*initializeWithToken)(id, SEL, NSString *) =
+        (void (*)(id, SEL, NSString *))[Gleap methodForSelector:tokenSelector];
+    initializeWithToken([Gleap class], tokenSelector, projectId);
+}
+
 @implementation Gleapsdk
 {
     BOOL _hasListeners;
@@ -36,14 +53,13 @@ RCT_EXPORT_MODULE()
     [Gleap setApplicationType: REACTNATIVE];
 }
 
-// projectId: the Project ID (formerly "SDK key"). initializeWithToken: takes the same value and
-// exists in every native iOS SDK version this package supports.
+// projectId: the Project ID (formerly "SDK key"); see GleapInitializeWithProjectId.
 RCT_EXPORT_METHOD(initialize:(NSString *)projectId)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [self initSDK];
         [Gleap setAutoActivationMethodsDisabled];
-        [Gleap initializeWithToken: projectId];
+        GleapInitializeWithProjectId(projectId);
         [Gleap trackEvent: @"pageView" withData: @{
             @"page": @"MainPage"
         }];
