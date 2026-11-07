@@ -36,12 +36,14 @@ RCT_EXPORT_MODULE()
     [Gleap setApplicationType: REACTNATIVE];
 }
 
-RCT_EXPORT_METHOD(initialize:(NSString *)token)
+// projectId: the Project ID (formerly "SDK key"). initializeWithToken: takes the same value and
+// exists in every native iOS SDK version this package supports.
+RCT_EXPORT_METHOD(initialize:(NSString *)projectId)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [self initSDK];
         [Gleap setAutoActivationMethodsDisabled];
-        [Gleap initializeWithToken: token];
+        [Gleap initializeWithToken: projectId];
         [Gleap trackEvent: @"pageView" withData: @{
             @"page": @"MainPage"
         }];

@@ -250,4 +250,69 @@ describe('customer identity', () => {
     await flush();
     expect(native.userJwtProviderResult).toHaveBeenCalledWith('r2', null);
   });
+
+  it.each(['ios', 'android'] as const)(
+    '%s: a provider set before initialize answers token requests after it',
+    async (os) => {
+      const native = {
+        initialize: jest.fn(),
+        setUserJwtProviderEnabled: jest.fn(),
+        userJwtProviderResult: jest.fn(),
+      };
+      const { sdk, emit } = loadSdk(os, native);
+      sdk.setUserJwtProvider(() => 'early.jwt.token');
+      sdk.initialize('PROJECT_ID');
+
+      expect(native.setUserJwtProviderEnabled).toHaveBeenCalledWith(true);
+      expect(native.initialize).toHaveBeenCalledWith('PROJECT_ID');
+      expect(
+        native.setUserJwtProviderEnabled.mock.invocationCallOrder[0]
+      ).toBeLessThan(native.initialize.mock.invocationCallOrder[0]);
+
+      emit('userJwtRequested', { requestId: 'r1' });
+      await flush();
+      expect(native.userJwtProviderResult).toHaveBeenCalledWith(
+        'r1',
+        'early.jwt.token'
+      );
+    }
+  );
+
+  it.each(['ios', 'android'] as const)(
+    '%s: a provider set after initialize answers token requests',
+    async (os) => {
+      const native = {
+        initialize: jest.fn(),
+        setUserJwtProviderEnabled: jest.fn(),
+        userJwtProviderResult: jest.fn(),
+      };
+      const { sdk, emit } = loadSdk(os, native);
+      sdk.initialize('PROJECT_ID');
+      sdk.setUserJwtProvider(async () => 'late.jwt.token');
+      expect(native.setUserJwtProviderEnabled).toHaveBeenCalledWith(true);
+
+      emit('userJwtRequested', JSON.stringify({ requestId: 'r2' }));
+      await flush();
+      expect(native.userJwtProviderResult).toHaveBeenCalledWith(
+        'r2',
+        'late.jwt.token'
+      );
+    }
+  );
+});
+
+describe('initialize', () => {
+  beforeEach(() => {
+    jest.resetModules();
+  });
+
+  it.each(['ios', 'android'] as const)(
+    '%s: passes the Project ID (formerly SDK key) to the native initialize unchanged',
+    (os) => {
+      const initialize = jest.fn();
+      const { sdk } = loadSdk(os, { initialize });
+      sdk.initialize('YOUR_PROJECT_ID');
+      expect(initialize).toHaveBeenCalledWith('YOUR_PROJECT_ID');
+    }
+  );
 });
