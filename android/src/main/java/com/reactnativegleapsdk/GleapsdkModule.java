@@ -122,10 +122,12 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   /**
    * Auto-configures the Gleap SDK from the remote config.
    *
-   * @param sdkKey The SDK key, which can be found on dashboard.Gleap.io
+   * @param projectId The Project ID (formerly "SDK key"), found in the Gleap dashboard
+   *                  under Settings > Project. Passed to the native
+   *                  Gleap.initialize(String, Application), which takes the same value.
    */
   @ReactMethod
-  public void initialize(String sdkKey) {
+  public void initialize(String projectId) {
     try {
       getActivitySafe().runOnUiThread(
         new Runnable() {
@@ -136,7 +138,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
                 .getCurrentActivity();
               if (activity != null && !invalidated) {
                 Gleap.getInstance().setApplicationType(APPLICATIONTYPE.REACTNATIVE);
-                Gleap.initialize(sdkKey, activity.getApplication());
+                Gleap.initialize(projectId, activity.getApplication());
 
                 try {
                   JSONObject body = new JSONObject();

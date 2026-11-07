@@ -19,6 +19,7 @@ Gleap.unsetTicketAttribute('note');
 
 Gleap.clearTicketAttributes();
 
+// Your Project ID (Gleap dashboard: Settings > Project).
 Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
 
 Gleap.registerCustomAction(customAction => {

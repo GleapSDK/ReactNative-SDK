@@ -24,7 +24,12 @@ export type GleapUserProperty = {
 type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
 
 type GleapSdkType = {
-  initialize(token: string): void;
+  /**
+   * Initializes Gleap with your Project ID (Gleap dashboard: Settings > Project).
+   * The Project ID was called "SDK key" or "API key" before; the value is the
+   * same and existing keys keep working.
+   */
+  initialize(projectId: string): void;
   startFeedbackFlow(feedbackFlow: string, showBackButton: boolean): void;
   startBot(botId: string, showBackButton: boolean): void;
   sendSilentCrashReport(
