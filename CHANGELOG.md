@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.5.1
+Documentation only: README, package description and doc comments name the Project ID (Settings → Project → General) and sign users in with `setUserJwt`. No code changes.
+
 ## 19.5.0
 The key `Gleap.initialize` takes is now called **Project ID** (formerly "SDK key" / "API key"): `Gleap.initialize('YOUR_PROJECT_ID')`. The value is the same and every existing key keeps working; nothing needs to change in your app. Typings, the native bridge parameter names, the README and the example say Project ID. On iOS the bridge calls the native `initializeWithProjectId:` (and falls back to `initializeWithToken:` on older native SDKs); on Android it calls `Gleap.initialize(String, Application)`, which takes the same value.
 `setUserJwtProvider` works when it is set before or after `initialize` (the native SDKs keep the provider across initialize; now covered by tests on both platforms). With the native 19.5.0 SDKs the provider also restores the signed session after an app restart.
