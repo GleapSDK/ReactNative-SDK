@@ -25,9 +25,9 @@ type GleapActivationMethod = 'SHAKE' | 'SCREENSHOT';
 
 type GleapSdkType = {
   /**
-   * Initializes Gleap with your Project ID (Gleap dashboard: Settings > Project).
-   * The Project ID was called "SDK key" or "API key" before; the value is the
-   * same and existing keys keep working.
+   * Initializes Gleap with your Project ID (Gleap dashboard: Settings →
+   * Project → General). The Project ID was called "SDK key" or "API key"
+   * before; the value is the same and existing keys keep working.
    */
   initialize(projectId: string): void;
   startFeedbackFlow(feedbackFlow: string, showBackButton: boolean): void;
@@ -66,8 +66,8 @@ type GleapSdkType = {
    * `gleapFile` query parameter. Pass the URL that opened the app (e.g. from
    * `Linking.getInitialURL()` or the `Linking` `url` event). Resolves true if
    * the URL carries a Gleap file reference, false otherwise. The conversation
-   * opens once the user is identified with a user hash
-   * (`identifyWithUserHash`); the link alone grants no access.
+   * opens once the user is signed in with an identity token (`setUserJwt`);
+   * the link alone grants no access.
    */
   openProtectedFileFromUrl(url: string): Promise<boolean>;
   startConversation(showBackButton: boolean): void;
@@ -93,7 +93,17 @@ type GleapSdkType = {
    * the app below inline banners, wrap it in GleapBannerArea.
    */
   getBannerHeight(): Promise<number>;
+  /**
+   * Identifies an unsigned contact (no identity token). To sign the user in,
+   * use `setUserJwt` instead; it needs no separate identify call.
+   */
   identify(userId: string, userProperties: GleapUserProperty): void;
+  /**
+   * Older integrations that pass a user hash keep working (while "Accept
+   * legacy user hash" is on); see Upgrade to identity tokens:
+   * https://docs.gleap.ai/en/articles/16752008-upgrade-to-identity-tokens
+   * New integrations sign in with `setUserJwt`.
+   */
   identifyWithUserHash(
     userId: string,
     userProperties: GleapUserProperty,
@@ -102,18 +112,21 @@ type GleapSdkType = {
   updateContact(userProperties: GleapUserProperty): void;
   showFeedbackButton(show: boolean): void;
   /**
-   * Clears the current contact, its identity token and auth tokens. The JWT
-   * provider stays set.
+   * Clears the current contact, its identity token and auth tokens. Call it
+   * on logout. The JWT provider stays set.
    */
   clearIdentity(): void;
   /**
-   * Identifies the user with an identity token: an HS256 JWT your backend
-   * signs with an identity key. The token is the whole identify: its `userId`
-   * (or `user_id`) claim names the user and every other claim lands on the
-   * contact as signed data; no other contact field is sent. Call it after
-   * login and on every app start. Kept in memory only and sent again when it
-   * says something new (another claim or key; a token re-minted with only a
-   * new iat/exp is not sent again). A token that is not a JWT, has no user id
+   * Signs the user in with an identity token: a short HS256 JWT your backend
+   * signs with an identity key (Settings → Security → Customer identity →
+   * Identity keys). The token is the whole identify: its `userId` (or
+   * `user_id`) claim names the user and every other claim lands on the
+   * contact as signed data; no other contact field is sent and no separate
+   * identify call is needed. Call it after login and on every app start of a
+   * logged-in user (see
+   * https://docs.gleap.ai/en/articles/709-customer-identity). Kept in memory
+   * only and sent again when it says something new (another claim or key; a
+   * token re-minted with only a new iat/exp is not sent again). A token that is not a JWT, has no user id
    * or is over 4096 characters is refused with a log line and nothing is
    * sent. Resolves once the native SDK has the token, before the server
    * answers. Refusals (`token_expired`, `token_invalid`,
@@ -134,8 +147,9 @@ type GleapSdkType = {
    * retries once with the new token), and before it renews the file access or
    * sends the identify again when the token expires within 5 minutes. One
    * call at a time, 10 s timeout, 30 s pause after a failure (a rejection or
-   * no token counts as a failure). `clearIdentity` keeps it; pass `null` to
-   * remove it.
+   * no token counts as a failure). With the native 19.5.0 SDKs it also
+   * restores the signed session after an app restart. `clearIdentity` keeps
+   * it; pass `null` to remove it.
    */
   setUserJwtProvider(
     provider: (() => string | null | Promise<string | null>) | null

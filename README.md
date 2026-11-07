@@ -4,7 +4,7 @@
 
 Add AI-native customer support, live chat, in-app bug reporting, a help center and surveys to your React Native apps with [Gleap](https://www.gleap.ai). Gleap is an Intercom alternative for software teams that connects customer conversations and feedback with product development.
 
-[SDK documentation](https://docs.gleap.ai/documentation/reactnative/README) · [Website](https://www.gleap.ai) · [Plans and pricing](https://www.gleap.ai/pricing)
+[SDK documentation](https://docs.gleap.ai/en/articles/499-react-native-sdk-setup) · [Website](https://www.gleap.ai) · [Plans and pricing](https://www.gleap.ai/pricing)
 
 ## Installation
 
@@ -34,7 +34,7 @@ import Gleap from "react-native-gleapsdk";
 Gleap.initialize('YOUR_PROJECT_ID');
 ```
 
-Find the Project ID in the Gleap dashboard under Settings > Project. It was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
+Find the Project ID in the [Gleap dashboard](https://app.gleap.ai) under **Settings → Project → General**. It was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
 
 ## Data regions
 
@@ -124,11 +124,9 @@ Gleap.setNetworkLogPropsToIgnore(['password', 'token', 'user.email']);
 
 `setNetworkLogsBlacklist` drops every request whose URL contains one of the strings. `setNetworkLogPropsToIgnore` removes headers, JSON keys (at any depth; a dotted name such as `user.email` also works as a path from the root), form fields and query parameters with these names, case-insensitively. `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` headers are always masked, and requests to Gleap itself are never logged. Each call replaces the previous list. Bodies over 150 KB are cut; binary and streaming bodies (images, server-sent events, …) are left out.
 
-## Customer identity (JWT)
+## Sign in users (identity tokens)
 
-### Signed identity (recommended)
-
-Your backend signs an HS256 JWT with an identity key from Settings → Security → Identity keys (put the key id in the `kid` header; the secret never leaves your server). The `userId` claim is required. Optional claims: `email`, `name`, `company` (`{ id, name }`), `plan`, and provider ids such as `stripeCustomerId`. Set `exp` to at most one hour. Everything in the token lands on the contact as signed data the app cannot change. Pass the token to the SDK after login and on every app start of a logged-in user; `setUserJwt` keeps it in memory only. `setUserJwtProvider` fetches a fresh token when it expires, and `setAuthTokens` hands Kai your own API tokens for this user. See [Customer identity](https://docs.gleap.ai/documentation/guides/customer-identity).
+Your backend signs a short HS256 JWT with an identity key from **Settings → Security → Customer identity → Identity keys** (put the key id in the `kid` header; the secret never leaves your server). The `userId` claim is required. Optional claims: `email`, `name`, `company` (`{ id, name }`), `plan`, and provider ids such as `stripeCustomerId`. Set `exp` to at most one hour. Everything in the token lands on the contact as signed data the app cannot change. Pass the token to the SDK with `setUserJwt` after login and on every app start of a logged-in user; no separate `identify` call is needed, and the token is kept in memory only. The optional `setUserJwtProvider` fetches a fresh token when it expires and, with the native 19.5.0 SDKs, restores the signed session after an app restart. Call `clearIdentity` on logout. `setAuthTokens` hands Kai your own API tokens for this user. See [Customer identity](https://docs.gleap.ai/en/articles/709-customer-identity) and [React Native user identity](https://docs.gleap.ai/en/articles/500-react-native-sdk-user-identity).
 
 ```js
 // After login and on every app start of a logged-in user
@@ -148,6 +146,9 @@ Gleap.setSessionDuration(24 * 60 * 60 * 1000);
 
 // Optional: tokens API tools may use to call your backend as this user (null removes one)
 await Gleap.setAuthTokens({ backend: accessToken });
+
+// On logout
+Gleap.clearIdentity();
 ```
 
 `setSessionDuration(ms)` shortens the signed session; the project's maximum applies.
@@ -158,17 +159,13 @@ The identity handling runs in the native iOS and Android SDKs, so their behaviou
 
 `getIdentity()` returns the contact the native SDK knows (user id and contact fields); it never contains the identity token or the grant.
 
-### Legacy user hash
+`Gleap.identify(userId, userProperties)` without a token creates an unsigned contact.
 
-Instead of a token you can still identify with a user hash: the HMAC-SHA256 of the user id, created on your server with the project's identity verification secret. It is accepted while "Accept legacy user hash" stays on in the project's security settings.
-
-```js
-Gleap.identifyWithUserHash('user-1', { name: 'Jane', email: 'jane@example.com' }, userHash);
-```
+Older integrations that pass a user hash to `identifyWithUserHash` keep working while "Accept legacy user hash" stays on in the project's security settings; see [Upgrade to identity tokens](https://docs.gleap.ai/en/articles/16752008-upgrade-to-identity-tokens).
 
 ## Protected conversation files
 
-With "Require authenticated file access" (Project settings → User identity), conversation files can only be opened by agents and by the verified customer the conversation belongs to. The SDK supports it without extra setup, as long as the app identifies the customer with a signed identity on every app start (`Gleap.setUserJwt`, or the legacy user hash).
+With "Protect new files" (Settings → Security → Conversation files, see [Authenticated conversation files](https://docs.gleap.ai/en/articles/710-authenticated-conversation-files)), conversation files can only be opened by agents and by the verified customer the conversation belongs to. The SDK supports it without extra setup, as long as the app identifies the customer with a signed identity on every app start (`Gleap.setUserJwt`; older integrations that pass a user hash keep working).
 
 A signed identify gives the session a short-lived file access token, which the native SDK keeps in memory only and renews while the app is in use. `clearIdentity` revokes it. Guests and contacts identified without a signed identity see "Sign in to view" instead of the file.
 
@@ -191,4 +188,4 @@ Linking.addEventListener('url', ({ url }) => {
 
 ## Need help?
 
-Checkout our full [documentation](https://docs.gleap.ai/documentation/reactnative/README) or [contact us](https://www.gleap.ai/) - we are always here to help 👋.
+Checkout our full [documentation](https://docs.gleap.ai/en/articles/499-react-native-sdk-setup) or [contact us](https://www.gleap.ai/) - we are always here to help 👋.
