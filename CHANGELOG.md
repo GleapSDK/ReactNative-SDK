@@ -1,7 +1,10 @@
 # Changelog
 
-## Unreleased
+## 19.4.0
 Customer identity: `Gleap.setUserJwt(token)`, `Gleap.setUserJwtProvider(provider)` and `Gleap.setAuthTokens(tokens)` wrap the native SDK methods (iOS `Gleap.setUserJwt` / `setUserJwtProvider` / `setAuthTokens`, Android `Gleap.getInstance().setUserJwt` / `setUserJwtProvider` / `setAuthTokens`). `setUserJwt` identifies the user with one HS256 JWT signed by your backend (the token is the whole identify, kept in memory only); `setAuthTokens` stores per-user tokens for API tools on the signed contact (`null` removes one). Both return a Promise that resolves once the native SDK has the values. The provider runs in JavaScript: the native SDK asks for a token with the `userJwtRequested` event when the token expired or expires within 5 minutes, and keeps the rules (one call at a time, 10 second timeout, 30 second pause after a failure). Needs native SDKs with these methods (the next synchronized native release); JavaScript running on an older native build logs a warning and does nothing. New: `Gleap.setSessionDuration(ms)` shortens the signed session (the project's maximum applies); needs the native SDKs that include it.
+
+Updated native iOS dependency to 19.4.0
+Updated native Android dependency to 19.4.0
 
 ## 19.3.1
 Updated native iOS dependency to 19.3.1
