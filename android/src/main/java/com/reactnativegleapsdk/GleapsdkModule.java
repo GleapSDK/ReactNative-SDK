@@ -3,6 +3,7 @@ package com.reactnativegleapsdk;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -13,6 +14,8 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.Promise;
@@ -28,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +40,7 @@ import java.util.regex.Pattern;
 
 import io.gleap.APPLICATIONTYPE;
 import io.gleap.GleapSessionProperties;
+import io.gleap.GleapUserJwtProvider;
 import io.gleap.SurveyType;
 import io.gleap.callbacks.AiToolExecutedCallback;
 import io.gleap.callbacks.GleapAgentToolHandler;
@@ -66,6 +71,13 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
   private boolean isSilentBugReport = false;
   private volatile boolean invalidated = false;
   private final Map<String, GleapAgentToolResultCallback> pendingAgentToolExecutions = new ConcurrentHashMap<>();
+  // setUserJwtProvider: the native SDK's token requests waiting for the JS provider.
+  private final Map<String, GleapUserJwtProvider.Callback> pendingUserJwtRequests = new ConcurrentHashMap<>();
+  // The native SDK stops waiting for a token after 10 s; an unanswered request is forgotten a little later.
+  private static final long USER_JWT_REQUEST_FORGET_MS = 15000;
+  // The native SDK asks one token at a time, so more than a few pending requests are stale ones.
+  private static final int USER_JWT_PENDING_MAX = 16;
+  private final Handler userJwtHandler = new Handler(Looper.getMainLooper());
   // Capture requests: log flushes the native SDK waits for (at most 500 ms) until JS has handed
   // over the network requests it still holds back, by flush id.
   private final Map<String, Runnable> pendingLogFlushes = new ConcurrentHashMap<>();
@@ -1000,6 +1012,117 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
       });
     } catch (Exception e) {
       System.out.println("Error registering agent tool: " + e);
+    }
+  }
+
+  /**
+   * Customer identity: identifies the user with an identity token (JWT). See
+   * Gleap.getInstance().setUserJwt.
+   */
+  @ReactMethod
+  public void setUserJwt(String token) {
+    try {
+      Gleap.getInstance().setUserJwt(token);
+    } catch (Exception e) {
+      System.out.println("Error setting the user JWT: " + e);
+    }
+  }
+
+  /**
+   * Customer identity: caps how long a signed session stays signed (milliseconds).
+   */
+  @ReactMethod
+  public void setSessionDuration(double milliseconds) {
+    try {
+      Gleap.getInstance().setSessionDuration((long) milliseconds);
+    } catch (Exception e) {
+      System.out.println("Error setting the session duration: " + e);
+    }
+  }
+
+  /**
+   * Customer identity: per-user tokens for API tools; a null value removes one.
+   */
+  @ReactMethod
+  public void setAuthTokens(ReadableMap tokens) {
+    try {
+      Map<String, String> map = new HashMap<>();
+      if (tokens != null) {
+        ReadableMapKeySetIterator iterator = tokens.keySetIterator();
+        while (iterator.hasNextKey()) {
+          String name = iterator.nextKey();
+          if (tokens.getType(name) == ReadableType.Null) {
+            map.put(name, null);
+          } else if (tokens.getType(name) == ReadableType.String) {
+            map.put(name, tokens.getString(name));
+          } else {
+            System.out.println("Gleap: auth token \"" + name + "\" skipped: the value must be a string, or null to remove it.");
+          }
+        }
+      }
+      Gleap.getInstance().setAuthTokens(map);
+    } catch (Exception e) {
+      System.out.println("Error setting auth tokens: " + e);
+    }
+  }
+
+  /**
+   * Customer identity: the JS provider answers each userJwtRequested event with
+   * userJwtProviderResult. The native SDK keeps the rules (one call at a time,
+   * 10 s timeout, 30 s pause after a failure).
+   */
+  @ReactMethod
+  public void setUserJwtProviderEnabled(boolean enabled) {
+    try {
+      if (!enabled) {
+        Gleap.getInstance().setUserJwtProvider(null);
+        return;
+      }
+      Gleap.getInstance().setUserJwtProvider(new GleapUserJwtProvider() {
+        @Override
+        public void fetchToken(Callback callback) {
+          try {
+            if (invalidated) {
+              callback.onToken(null);
+              return;
+            }
+            final String requestId = UUID.randomUUID().toString();
+            if (pendingUserJwtRequests.size() >= USER_JWT_PENDING_MAX) {
+              pendingUserJwtRequests.clear();
+            }
+            pendingUserJwtRequests.put(requestId, callback);
+            userJwtHandler.postDelayed(new Runnable() {
+              @Override
+              public void run() {
+                pendingUserJwtRequests.remove(requestId);
+              }
+            }, USER_JWT_REQUEST_FORGET_MS);
+            JSONObject eventData = new JSONObject();
+            eventData.put("requestId", requestId);
+            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+              .emit("userJwtRequested", eventData.toString());
+          } catch (Exception e) {
+            callback.onToken(null);
+          }
+        }
+      });
+    } catch (Exception e) {
+      System.out.println("Error setting the user JWT provider: " + e);
+    }
+  }
+
+  @ReactMethod
+  public void userJwtProviderResult(String requestId, @Nullable String token) {
+    try {
+      if (requestId == null) {
+        return;
+      }
+      GleapUserJwtProvider.Callback callback = pendingUserJwtRequests.remove(requestId);
+      if (callback != null) {
+        callback.onToken(token != null && !token.isEmpty() ? token : null);
+      }
+    } catch (Exception e) {
+      System.out.println("Error passing the user JWT: " + e);
     }
   }
 

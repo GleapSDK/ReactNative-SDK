@@ -96,7 +96,54 @@ type GleapSdkType = {
   ): void;
   updateContact(userProperties: GleapUserProperty): void;
   showFeedbackButton(show: boolean): void;
+  /**
+   * Clears the current contact, its identity token and auth tokens. The JWT
+   * provider stays set.
+   */
   clearIdentity(): void;
+  /**
+   * Identifies the user with an identity token: an HS256 JWT your backend
+   * signs with an identity key. The token is the whole identify: its `userId`
+   * (or `user_id`) claim names the user and every other claim lands on the
+   * contact as signed data; no other contact field is sent. Call it after
+   * login and on every app start. Kept in memory only and sent again when it
+   * says something new (another claim or key; a token re-minted with only a
+   * new iat/exp is not sent again). A token that is not a JWT, has no user id
+   * or is over 4096 characters is refused with a log line and nothing is
+   * sent. Resolves once the native SDK has the token, before the server
+   * answers. Refusals (`token_expired`, `token_invalid`,
+   * `signature_required`) are logged natively, in the Xcode console and in
+   * logcat under the tag `Gleap`, not in Metro.
+   */
+  setUserJwt(token: string): Promise<void>;
+  /**
+   * Shortens how long a signed session stays signed, in milliseconds. Sent
+   * with every identify; the project's maximum (Settings > Security) applies
+   * when yours is longer. Call it before `setUserJwt`. `0` or less goes back
+   * to the project's maximum.
+   */
+  setSessionDuration(milliseconds: number): void;
+  /**
+   * Sets the function that fetches a fresh identity token from your backend.
+   * Gleap calls it when the server answers that the token expired (and
+   * retries once with the new token), and before it renews the file access or
+   * sends the identify again when the token expires within 5 minutes. One
+   * call at a time, 10 s timeout, 30 s pause after a failure (a rejection or
+   * no token counts as a failure). `clearIdentity` keeps it; pass `null` to
+   * remove it.
+   */
+  setUserJwtProvider(
+    provider: (() => string | null | Promise<string | null>) | null
+  ): void;
+  /**
+   * Stores per-user tokens on the signed contact that your API tools may send
+   * to your backend on this user's behalf (`{{session.authTokens.<name>}}`).
+   * Each call replaces the named tokens; a `null` value removes one. Names: a
+   * letter followed by up to 39 letters, digits, `_` or `-`. Needs a signed
+   * identity (`setUserJwt`). Kept in memory only and sent again after the next
+   * signed identify on a new session.
+   */
+  setAuthTokens(tokens: Record<string, string | null>): Promise<void>;
   preFillForm(formData: { [key: string]: string }): void;
   /**
    * Leaves requests whose URL contains one of the given strings out of the
@@ -213,6 +260,10 @@ type GleapSdkType = {
   registerCustomAction(
     customActionCallback: (data: { name: string; shareToken?: string }) => void
   ): void;
+  /**
+   * The contact the native SDK knows (user id and contact fields). Never
+   * contains the identity token or the grant.
+   */
   getIdentity(): Promise<any>;
   isUserIdentified(): Promise<boolean>;
   setTicketAttribute(key: string, value: string): void;
@@ -406,6 +457,76 @@ if (GleapSdk && !GleapSdk.touched) {
     nativeRegisterAgentTool(name);
   };
 
+  // Customer identity. JavaScript updated over the air can run on an older
+  // native build without these methods: they warn and do nothing there.
+  const missingNative = (name: string) =>
+    console.warn(
+      `Gleap: ${name} needs a native build of react-native-gleapsdk that includes it.`
+    );
+
+  const nativeSetUserJwt = GleapSdk.setUserJwt;
+  GleapSdk.setUserJwt = (token: string): Promise<void> => {
+    if (typeof nativeSetUserJwt !== 'function') {
+      missingNative('setUserJwt');
+      return Promise.resolve();
+    }
+    nativeSetUserJwt(token);
+    return Promise.resolve();
+  };
+
+  const nativeSetSessionDuration = GleapSdk.setSessionDuration;
+  GleapSdk.setSessionDuration = (milliseconds: number): void => {
+    if (typeof milliseconds !== 'number' || !isFinite(milliseconds)) {
+      console.warn('Gleap: setSessionDuration expects milliseconds.');
+      return;
+    }
+    if (typeof nativeSetSessionDuration !== 'function') {
+      missingNative('setSessionDuration');
+      return;
+    }
+    nativeSetSessionDuration(Math.max(0, Math.floor(milliseconds)));
+  };
+
+  const nativeSetAuthTokens = GleapSdk.setAuthTokens;
+  GleapSdk.setAuthTokens = (
+    tokens: Record<string, string | null>
+  ): Promise<void> => {
+    if (!tokens || typeof tokens !== 'object' || Array.isArray(tokens)) {
+      console.warn(
+        'Gleap: setAuthTokens expects an object of { name: token }.'
+      );
+      return Promise.resolve();
+    }
+    if (typeof nativeSetAuthTokens !== 'function') {
+      missingNative('setAuthTokens');
+      return Promise.resolve();
+    }
+    nativeSetAuthTokens(tokens);
+    return Promise.resolve();
+  };
+
+  // The native SDK asks for a token with the userJwtRequested event and keeps
+  // the rules (one call at a time, 10 s timeout, 30 s pause after a failure);
+  // the provider itself runs here.
+  let userJwtProvider: (() => string | null | Promise<string | null>) | null =
+    null;
+  GleapSdk.setUserJwtProvider = (
+    provider: (() => string | null | Promise<string | null>) | null
+  ) => {
+    if (provider !== null && typeof provider !== 'function') {
+      console.warn(
+        'Gleap: setUserJwtProvider expects a function returning a token (or a Promise of one).'
+      );
+      return;
+    }
+    if (typeof GleapSdk.setUserJwtProviderEnabled !== 'function') {
+      missingNative('setUserJwtProvider');
+      return;
+    }
+    userJwtProvider = provider;
+    GleapSdk.setUserJwtProviderEnabled(provider !== null);
+  };
+
   const notifyCallback = function (eventType: string, data?: any) {
     if (callbacks && callbacks[eventType] && callbacks[eventType].length > 0) {
       for (var i = 0; i < callbacks[eventType].length; i++) {
@@ -521,6 +642,33 @@ if (GleapSdk && !GleapSdk.touched) {
 
       GleapSdk.sendAgentToolResult(executionId, result);
     } catch (exp) {}
+  });
+
+  gleapEmitter.addListener('userJwtRequested', (data: any) => {
+    let requestId: string | undefined;
+    try {
+      const dataJSON = data instanceof Object ? data : JSON.parse(data);
+      requestId = dataJSON?.requestId;
+    } catch (exp) {}
+    if (!requestId) {
+      return;
+    }
+    const answer = (token: string | null) => {
+      try {
+        GleapSdk.userJwtProviderResult(requestId, token);
+      } catch (exp) {}
+    };
+    const provider = userJwtProvider;
+    if (!provider) {
+      answer(null);
+      return;
+    }
+    Promise.resolve()
+      .then(() => provider())
+      .then(
+        (token) => answer(typeof token === 'string' && token ? token : null),
+        () => answer(null)
+      );
   });
 
   gleapEmitter.addListener('feedbackSent', (data) => {
