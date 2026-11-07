@@ -34,7 +34,7 @@ import Gleap from "react-native-gleapsdk";
 Gleap.initialize('YOUR_PROJECT_ID');
 ```
 
-Find the Project ID in the [Gleap dashboard](https://app.gleap.io) under **Settings → Project → General**. It was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
+Find the Project ID in the [Gleap dashboard](https://app.gleap.ai) under **Settings → Project → General**. It was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
 
 ## Data regions
 
@@ -165,7 +165,7 @@ Older integrations that pass a user hash to `identifyWithUserHash` keep working 
 
 ## Protected conversation files
 
-With "Require authenticated file access" (Project settings → User identity), conversation files can only be opened by agents and by the verified customer the conversation belongs to. The SDK supports it without extra setup, as long as the app identifies the customer with a signed identity on every app start (`Gleap.setUserJwt`; older integrations that pass a user hash keep working).
+With "Protect new files" (Settings → Security → Conversation files, see [Authenticated conversation files](https://docs.gleap.ai/en/articles/710-authenticated-conversation-files)), conversation files can only be opened by agents and by the verified customer the conversation belongs to. The SDK supports it without extra setup, as long as the app identifies the customer with a signed identity on every app start (`Gleap.setUserJwt`; older integrations that pass a user hash keep working).
 
 A signed identify gives the session a short-lived file access token, which the native SDK keeps in memory only and renews while the app is in use. `clearIdentity` revokes it. Guests and contacts identified without a signed identity see "Sign in to view" instead of the file.
 
