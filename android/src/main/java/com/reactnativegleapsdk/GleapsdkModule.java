@@ -123,7 +123,7 @@ public class GleapsdkModule extends ReactContextBaseJavaModule {
    * Auto-configures the Gleap SDK from the remote config.
    *
    * @param projectId The Project ID (formerly "SDK key"), found in the Gleap dashboard
-   *                  under Settings > Project. Passed to the native
+   *                  under Settings → Project → General. Passed to the native
    *                  Gleap.initialize(String, Application), which takes the same value.
    */
   @ReactMethod
