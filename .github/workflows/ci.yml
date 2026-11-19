@@ -1,4 +1,5 @@
-# The pre-publish checks of release.yml, without publishing.
+# The pre-publish checks of release.yml, without publishing, plus the quality check's own tests and a check that the
+# package's entry points are in the tarball. No path filter, so the check always reports.
 name: CI
 
 on:
@@ -17,10 +18,12 @@ jobs:
   check:
     name: Build, typecheck, lint, test
     runs-on: ubuntu-latest
+    # The default is 360 minutes; a test that never exits must not burn them.
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: npm
@@ -40,5 +43,29 @@ jobs:
       - name: Test
         run: npx jest src
 
+      # The quality check parses with its own TypeScript (tools/quality/package.json), not the root's, which builds
+      # the package.
+      - name: Install the quality check's TypeScript
+        run: npm ci --prefix tools/quality --no-audit --no-fund
+
+      - name: Tests of the quality check
+        run: node --test "tools/quality/*.test.mjs"
+
       - name: Pack (dry run)
         run: npm pack --dry-run
+
+      # A TypeScript file outside src/ moves bob's declarations to lib/typescript/src/ and breaks `types` without any
+      # other check noticing. lib/ is already built, so no scripts.
+      - name: The package's entry points are in it
+        run: |
+          npm pack --dry-run --json --ignore-scripts > "$RUNNER_TEMP/pack.json"
+          node -e '
+            const pkg = require("./package.json");
+            const [pack] = require(process.argv[1]);
+            const files = new Set(pack.files.map(({ path }) => path));
+            const found = (entry) => [entry, `${entry}.js`, `${entry}.tsx`, `${entry}.ts`].some((path) => files.has(path));
+            const missing = ["main", "module", "types", "react-native"].filter((field) => !found(pkg[field]));
+            for (const field of missing) console.log(`::error::package.json ${field} (${pkg[field]}) is not in the tarball`);
+            console.log(`${pack.entryCount} files, shasum ${pack.shasum}`);
+            process.exit(missing.length ? 1 : 0);
+          ' "$RUNNER_TEMP/pack.json"
