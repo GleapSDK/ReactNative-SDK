@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "The quality check's own TypeScript (see tools/quality/config.mjs). Not part of the published package. No name: Jest's haste map would register a named package.json as a module.",
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

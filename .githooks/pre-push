@@ -1,0 +1,52 @@
+#!/bin/sh
+# Stops a push only when the quality check or the lint check finds problems in it. Anything else is noted and the push
+# goes on.
+
+nl='
+'
+blocked=0
+fetched=
+
+# Node also exits 1 when a check fails to load, so findings need the check's summary line as well as its exit 1.
+check() { # name, script
+  output=$(node "$2" --base refs/remotes/origin/main --head "$sha" 2>&1 </dev/null)
+  code=$?
+  case "$code:$output" in
+    0:* | 3:*) ;;
+    1:*"problem(s), "*) found=1 ;;
+    *) output="pre-push: $1 could not run (exit $code), pushing anyway." ;;
+  esac
+  report="$report$output$nl"
+}
+
+# Sets report, and found when a check finds problems in what $sha adds to origin/main.
+judge() {
+  report= found=
+  fork=$(git merge-base --all refs/remotes/origin/main "$sha" 2>/dev/null)
+  case "$fork" in
+    '' | *[!0-9a-f]*) report="pre-push: no single fork point with origin/main, checks skipped.$nl" && return ;;
+  esac
+  [ "$fork" = "$sha" ] && return
+  # A revert brings back code that was merged before; stopping it would turn a clean revert into an edit.
+  others=$(git rev-list --invert-grep --grep='^This reverts commit ' "$fork..$sha") && [ -z "$others" ] && return
+  check "quality check" tools/quality/check.mjs
+  [ -f tools/lint/check.mjs ] && check lint tools/lint/check.mjs
+}
+
+while read -r _ sha remote_ref _; do
+  case "$remote_ref" in refs/heads/*) ;; *) continue ;; esac
+  case "$sha" in *[!0]*) ;; *) continue ;; esac
+  judge
+  # This clone's origin/main may be behind, and then main's newer code looks like part of the branch.
+  if [ -n "$found" ] && [ -z "$fetched" ]; then
+    fetched=1
+    old=$(git rev-parse -q --verify refs/remotes/origin/main)
+    GIT_TERMINAL_PROMPT=0 git fetch -q --no-write-fetch-head origin main 2>/dev/null &&
+      [ "$(git rev-parse -q --verify refs/remotes/origin/main)" != "$old" ] && judge
+  fi
+  printf '%s' "$report"
+  [ -n "$found" ] && blocked=1
+done
+
+[ "$blocked" = 0 ] || echo "Push stopped. Fix the problems above, commit and push again."
+exit "$blocked"

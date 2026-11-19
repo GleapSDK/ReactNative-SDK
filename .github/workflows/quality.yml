@@ -1,0 +1,49 @@
+name: Quality
+
+# Compares the changed files of a PR with their state where the branch left the base. Old code may
+# stay as it is but must not get worse; new code keeps .claude/rules/code-conventions.md.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The PR's own commit, not the merge commit, and the history to find the fork point.
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      # Only the check's own TypeScript (tools/quality/package.json): it parses with it and needs nothing else, so this
+      # job skips the root's npm ci and build.
+      - name: Install typescript
+        run: npm ci --prefix tools/quality --no-audit --no-fund
+      # The base branch's copy of the check judges the PR, so a PR cannot switch the check off with its own edits.
+      # The first PR that adds the check has no such copy and runs its own.
+      - name: Check the changed files
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          tool="tools/quality/check.mjs"
+          if git cat-file -e "origin/$BASE_REF:$tool" 2>/dev/null; then
+            mkdir -p "$RUNNER_TEMP/gate"
+            git archive "origin/$BASE_REF" tools/quality | tar -x -C "$RUNNER_TEMP/gate"
+            ln -s "$GITHUB_WORKSPACE/tools/quality/node_modules" "$RUNNER_TEMP/gate/tools/quality/node_modules"
+            tool="$RUNNER_TEMP/gate/$tool"
+          fi
+          changed="$(git diff --name-only "$(git merge-base "origin/$BASE_REF" HEAD)" HEAD -- tools/quality .claude/hooks .claude/settings.json .github/workflows/quality.yml)"
+          if [ -n "$changed" ]; then
+            echo "::warning title=This PR changes the quality check::Review these on purpose, they run only after the merge: $(echo $changed)"
+          fi
+          node "$tool" --base "origin/$BASE_REF"

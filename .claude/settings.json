@@ -1,0 +1,72 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/.env*)",
+      "Bash(cat .env*)",
+      "Bash(head .env*)",
+      "Bash(tail .env*)",
+      "Bash(npm publish*)",
+      "Bash(npm version*)",
+      "Bash(npm dist-tag*)",
+      "Bash(npm deprecate*)",
+      "Bash(npm unpublish*)",
+      "Bash(npm run release*)",
+      "Bash(yarn release*)",
+      "Bash(npx release-it*)",
+      "Bash(release-it*)",
+      "Bash(git tag*)",
+      "Bash(git push --tags*)",
+      "Bash(git push * --tags*)",
+      "Bash(git push origin [0-9]*)",
+      "Bash(gh release*)",
+      "Bash(gh workflow run*)",
+      "Bash(pod trunk*)"
+    ],
+    "allow": [
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(git rev-parse*)",
+      "Bash(git fetch*)",
+      "Bash(git merge-base*)",
+      "Bash(git blame*)",
+      "Bash(npm ci)",
+      "Bash(npm ci --prefix tools/quality*)",
+      "Bash(npm pack --dry-run*)",
+      "Bash(npx jest*)",
+      "Bash(npx tsc --noEmit*)",
+      "Bash(npx eslint*)",
+      "Bash(node tools/quality/check.mjs*)",
+      "Bash(node --test*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-edited-file.mjs",
+            "timeout": 30,
+            "statusMessage": "Checking the edited file..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-before-stop.mjs",
+            "timeout": 600,
+            "statusMessage": "Quality check, typecheck, ESLint and affected tests..."
+          }
+        ]
+      }
+    ]
+  }
+}
